@@ -22,7 +22,6 @@ void MainComponent::changeFileName(String new_filename)
     if(loaded_local)
     {
         startThread(6);
-        //run();
         last_estimation = "";
         operation_start = Time::getCurrentTime().toMilliseconds();
         operation_estimate = operation_start;
@@ -342,7 +341,7 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
 
 void MainComponent::menuItemSelected (int menuItemID, int topLevelMenuIndex)
 {
-    //AlertWindow::showMessageBox(AlertWindow::QuestionIcon,MENU_FILE_OPEN,MENU_FILE_OPEN);
+
 }
 
 bool MainComponent::perform (const InvocationInfo& info)
@@ -423,13 +422,6 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandJump:
     {
-        /*AlertWindow *ask_where = new AlertWindow(LABEL_CHOOSE_JUMP,LABEL_FROM + " 1 " + LABEL_TO + " " + String(movie->total_frames),AlertWindow::QuestionIcon);
-        ask_where->centreAroundComponent (this,0,0);
-        ask_where->addButton(LABEL_OK,0);
-        ask_where->addButton(LABEL_CANCEL,-1);
-
-        ask_where->setVisible(true);
-        ask_where->addToDesktop(0);*/
 
         if(isVideoReady())
         {
@@ -448,14 +440,11 @@ bool MainComponent::perform (const InvocationInfo& info)
 }
 ApplicationCommandTarget* MainComponent::getNextCommandTarget()
 {
-    // this will return the next parent component that is an ApplicationCommandTarget (in this
-    // case, there probably isn't one, but it's best to use this method in your own apps).
     return findFirstTargetParentComponent();
 }
 
 void MainComponent::getAllCommands (Array <CommandID>& commands)
 {
-    // this returns the set of all commands that this target can perform..
     const CommandID ids[] = { commandOpen,
                               commandSave,
                               commandEncode,
@@ -482,7 +471,6 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     case commandOpen:
         result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, 0);
         result.addDefaultKeypress (T('O'), ModifierKeys::commandModifier);
-        //result.setActive(load_progress<0.);
         break;
     case commandSave:
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, 0);
