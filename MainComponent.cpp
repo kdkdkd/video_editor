@@ -372,7 +372,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         if(isVideoReady())
         {
-            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + "_frame_" + String(current_frame) + ".jpg","*.jpg",true);
+            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + "_frame_" + String(current_frame+1) + ".jpg","*.jpg",true);
             if (fc.browseForFileToSave(true))
             {
                 File chosenFile = fc.getResult();
