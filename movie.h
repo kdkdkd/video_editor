@@ -26,7 +26,7 @@ private:
 
     int videoStream;
 
-    int FindKeyFrame(double back, double dest, unsigned int offset=1);
+    int FindKeyFrame(double back, double dest);
     double ratio_to_internal;
     double ratio_to_seconds;
 

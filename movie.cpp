@@ -102,8 +102,8 @@ bool Movie::Load(String &filename)
 
     // Inform the codec that we can handle truncated bitstreams -- i.e.,
     // bitstreams where frame boundaries can fall in the middle of packets
-    if(pCodec->capabilities & CODEC_CAP_TRUNCATED)
-        pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;
+    /*if(pCodec->capabilities & CODEC_CAP_TRUNCATED)
+        pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;*/
 
     // Open codec
     if(avcodec_open(pCodecCtx, pCodec)<0)
@@ -163,47 +163,12 @@ double Movie::ToSeconds(int internals)
 {
     return ((double)(internals)) * ratio_to_seconds;
 }
-/*double Movie::Prepare()
-{
-    int i = 0;
-    while (fas_frame_available(context) )
-    {
-        fas_step_forward(context);
-        i++;
-        if(i>=200)
-            return (double)fs->getPosition()/file_size;
-
-    }
-    return (fas_get_seek_completed(context))?-1.:-2.;
-}
-
-int Movie::GetInfo()
-{
-    int loaded_local = false;
-    total_frames=fas_get_frame_count(context);
-    loaded_local = total_frames>0;
-    if(loaded_local)
-    {
-        double frame_duration = fas_get_frame_duration(context);
-        duration = frame_duration * ((double)total_frames/ 10000000.);
-        fps = 10000000./frame_duration;
-        fas_seek_to_frame(context,0);
-    }
-    loaded = loaded_local;
-    return loaded;
-}*/
 
 
 void Movie::Dispose()
 {
     if(loaded)
     {
-        /*fas_close_video(context);
-        av_close_input_stream(pFormatCtx);
-        delete[] pDataBuffer;
-        delete fs;
-        delete ByteIOCtx;
-        loaded = false;*/
 
         delete [] buffer;
         av_free(pFrameRGB);
@@ -236,9 +201,9 @@ Movie::~Movie()
 bool Movie::SeekToInternal(int frame)
 {
     int dest = ToSeconds(frame);
-    int flags = 0;
-    //if(dest<current)
-        flags = AVSEEK_FLAG_BACKWARD ;
+    int flags =AVSEEK_FLAG_FRAME;
+    if(dest<current)
+        flags = AVSEEK_FLAG_BACKWARD |AVSEEK_FLAG_FRAME;
 
     int res = av_seek_frame( pFormatCtx, videoStream, frame, flags);
     avcodec_flush_buffers (pCodecCtx);
@@ -250,9 +215,9 @@ bool Movie::SeekToInternal(int frame)
     return false;
 }
 
-int Movie::FindKeyFrame(double back, double dest, unsigned int offset)
+int Movie::FindKeyFrame(double back, double dest)
 {
-    list<int> keyframe_array;
+    int keyframe;
 
     int timestamp = ToInternalTime(dest);
 
@@ -277,18 +242,13 @@ int Movie::FindKeyFrame(double back, double dest, unsigned int offset)
 
             av_free_packet(packet);
             delete packet;
-            if(timestamp_new>timestamp)
+            if(timestamp_new>=timestamp)
             {
                 break;
             }
             if(pFrame->key_frame)
             {
-                keyframe_array.push_front(timestamp_new);
-                if(keyframe_array.size()>offset)
-                {
-                    keyframe_array.pop_back();
-                }
-                //DecodeFrame();
+                keyframe = timestamp_new;
             }
 
         }
@@ -297,15 +257,14 @@ int Movie::FindKeyFrame(double back, double dest, unsigned int offset)
     }
 
 
-    return (keyframe_array.size()==offset)?keyframe_array.back():0;
+    return keyframe;
 
 }
 
 bool Movie::GotoAndRead(double ratio)
 {
     double dest = ratio * duration;
-    int dest_int = ToInternalTime(dest);
-    /*if(dest == current)return true;
+    if(dest == current)return true;
     if(dest ==0.)
     {
         av_seek_frame( pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
@@ -315,56 +274,27 @@ bool Movie::GotoAndRead(double ratio)
     }
 
     int found = 0;
-    int offset = 1;
-    while(offset<10)
+    found = 0;
+    double back = 1.0;
+    while(!found && back<100.0)
     {
-        found = 0;
-        double back = 1.0;
-
-        while(!found && back<100.0)
+        if(back>dest)
         {
-            if(back>dest)
-            {
-                back = dest;
-                found = FindKeyFrame(back,dest,offset);
-                break;
-            }
-            found = FindKeyFrame(back,dest,offset);
-            back *= 2.0;
-
+            back = dest;
+            found = FindKeyFrame(back,dest);
+            break;
         }
+        found = FindKeyFrame(back,dest);
+        back *= 2.0;
 
-        if(found)
-        {
-            printf("found %d;seek %d; back %f\n",found,ToInternalTime(dest),back);*/
-            SeekToInternal(dest_int);
-            AVPacket* packet = ReadFrame();
-            if(packet)
-            {
-
-                int position = packet->dts - pStream->start_time;
-                printf("want %d;got %d; key %d\n",dest_int,position,pFrame->key_frame);
-                av_free_packet(packet);
-                delete packet;
-                //if(position == found)
-                {
-                    //ReadAndDecodeFrame();ReadAndDecodeFrame();ReadAndDecodeFrame();ReadAndDecodeFrame();ReadAndDecodeFrame();
-                    DecodeFrame();
-                    //break;
-                }
-                /*else
-                {
-                    offset++;
-
-                }*/
-            }
-            //else
-            //    return GotoAndRead(0.);
-            //current = dest;
-        /*}
     }
-    return (found)?found:GotoAndRead(0.);*/
-    return true;
+
+    if(found)
+    {
+        DecodeFrame();
+    }
+
+    return (found)?found:GotoAndRead(0.);
 }
 
 AVPacket* Movie::ReadFrame()
@@ -383,7 +313,7 @@ AVPacket* Movie::ReadFrame()
                 if ( frameFinished )
                 {
                     current = ToSeconds(packet->dts - pStream->start_time);
-                    return packet;a
+                    return packet;
                 }
 
             }
@@ -401,11 +331,9 @@ void Movie::ReadAndDecodeFrame()
     AVPacket* packet = ReadFrame();
     if(packet)
     {
-        printf("dts %d;pts %d\n",int(packet->dts),int(packet->pts));
         av_free_packet(packet);
         delete packet;
         DecodeFrame();
-
     }
 }
 

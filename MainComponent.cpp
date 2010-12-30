@@ -37,7 +37,7 @@ void  MainComponent::timerCallback()
 
 void MainComponent::buttonClicked (Button* button)
 {
-    startTimer(1000);
+    startTimer(20);
 }
 
 
