@@ -37,6 +37,7 @@ public:
     void Dispose();
     ~Movie();
     void ReadFrame();
+    void NextFrame();
     void GotoFrameAndRead(int frame);
 };
 

@@ -143,6 +143,11 @@ void Movie::GotoFrameAndRead(int frame)
     ReadFrame();
 }
 
+void Movie::NextFrame()
+{
+    fas_step_forward(context);
+}
+
 void Movie::ReadFrame()
 {
     delete image;

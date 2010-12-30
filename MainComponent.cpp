@@ -26,6 +26,7 @@ void MainComponent::changeFileName(String new_filename)
         operation_start = Time::getCurrentTime().toMilliseconds();
         operation_estimate = operation_start;
         progress->setVisible(true);
+
     }
     else
     {
@@ -42,6 +43,13 @@ void MainComponent::changeFileName(String new_filename)
     }
 }
 
+void MainComponent::timerCallback()
+{
+    movie->NextFrame();
+    movie->ReadFrame();
+
+    repaint();
+}
 
 void MainComponent::run()
 {
@@ -103,6 +111,7 @@ void MainComponent::run()
         movie->ReadFrame();
         current_frame = 0;
         repaint();
+        startTimer(100);
     }
     else
     {

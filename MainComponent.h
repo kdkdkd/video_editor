@@ -12,7 +12,7 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Thread
+class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Thread, public Timer
 {
 public:
     String filename;
@@ -40,7 +40,7 @@ public:
     Label* estimate_label;
     ProgressBar* progress;
 
-
+    void timerCallback();
 
     enum CommandIDs
     {
