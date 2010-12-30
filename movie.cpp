@@ -201,9 +201,9 @@ Movie::~Movie()
 bool Movie::SeekToInternal(int frame)
 {
     int dest = ToSeconds(frame);
-    int flags =AVSEEK_FLAG_FRAME;
-    if(dest<current)
-        flags = AVSEEK_FLAG_BACKWARD |AVSEEK_FLAG_FRAME;
+    //int flags =AVSEEK_FLAG_FRAME;
+    //if(dest<current)
+    int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME;
 
     int res = av_seek_frame( pFormatCtx, videoStream, frame, flags);
     avcodec_flush_buffers (pCodecCtx);
