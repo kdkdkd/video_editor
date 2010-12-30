@@ -12,33 +12,23 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Thread
+class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Timer
 {
 public:
     String filename;
     bool file_choosed;
 
-    int current_frame;
     int mouse_x;
     int mouse_y;
-    double load_progress;
     Movie *movie_new;
     String new_filename_cur;
-    bool loaded_something;
-    int64 operation_start;
-    int64 operation_estimate;
-    String last_estimation;
     AskJumpDestanation *ask_jump_target;
 
     void changeFileName(String new_filename);
 
-    void run();
-
     TooltipWindow tooltipWindow;
-    TextButton* myButton;
+    TextButton* playButton;
     Label* filename_label;
-    Label* estimate_label;
-    ProgressBar* progress;
 
 
 
@@ -65,11 +55,9 @@ public:
 
     void paint (Graphics& g);
     int GetArrowPosition();
+    int GetCurrentPosition();
     bool NeedDrawArrow();
-
-    int GetFrameFromPosition(int position);
-    int GetPositionByFrame(int frame);
-
+    void timerCallback();
     void DrawSlider(Graphics& g);
 
     void DrawArrow(Graphics& g);

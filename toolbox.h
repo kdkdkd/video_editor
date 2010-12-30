@@ -3,7 +3,7 @@
 #include <juce.h>
 namespace toolbox
 {
-String format_duration(unsigned int duration);
+String format_duration(double duration);
 }
 
 

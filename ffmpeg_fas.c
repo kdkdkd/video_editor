@@ -406,6 +406,12 @@ fas_error_type fas_step_forward (fas_context_ref_type context)
 	      else
 		context->keyframe_packet_dts = context->previous_dts;
 	    }
+	    /*else
+	    {
+	    if (context->current_frame_index - FIRST_FRAME_INDEX + 1 > context->seek_table.num_frames)
+		context->seek_table.num_frames = context->current_frame_index - FIRST_FRAME_INDEX + 1;
+		break;
+	    }*/
 
 	  avcodec_decode_video2(context->codec_context, context->frame_buffer, &frameFinished,&packet);
 

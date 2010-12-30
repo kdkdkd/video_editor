@@ -34,7 +34,6 @@ extern String LABEL_CANCEL;
 extern String FILE_SAVED;
 extern String FILE_NOT_SAVED;
 
-
 }
 
 

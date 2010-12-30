@@ -3,95 +3,14 @@
 
 void MainComponent::changeFileName(String new_filename)
 {
-    stopThread (2000);
-
     new_filename_cur = new_filename;
     movie_new = new Movie();
     bool loaded_local = false;
 
-    load_progress = 0.;
-    filename_label->setVisible(true);
-    filename_label->setText(new_filename_cur,true);
-    filename_label->setTooltip(new_filename_cur);
-
-
-
-    repaint();
-
-    loaded_local = movie_new->Open(new_filename_cur);
+    loaded_local = movie_new->Load(new_filename_cur);
     if(loaded_local)
     {
-        startThread(6);
-        last_estimation = "";
-        operation_start = Time::getCurrentTime().toMilliseconds();
-        operation_estimate = operation_start;
-        progress->setVisible(true);
-    }
-    else
-    {
-        load_progress = -1.;
-        repaint();
-        delete movie_new;
-        progress->setVisible(false);
-        AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename_cur);
-        if(!loaded_something)
-        {
-            filename_label->setVisible(false);
-        }
-
-    }
-}
-
-
-void MainComponent::run()
-{
-    double prep_res = movie_new->Prepare();
-
-    while (! threadShouldExit() && prep_res>=0.0)
-    {
-
-        prep_res = movie_new->Prepare();
-
-        const MessageManagerLock mml (Thread::getCurrentThread());
-
-        if (! mml.lockWasGained())
-            return;
-
-
-        int64 time_now = Time::getCurrentTime().toMilliseconds();
-        int64 delta_time = time_now - operation_start;
-        int64 delta_time_estimate = time_now - operation_estimate;
-        if(prep_res>0.05 && delta_time_estimate>1000)
-        {
-            last_estimation = LABEL_ESTIMATE + "  " + toolbox::format_duration((double)(delta_time/1000)*(1.0 - prep_res)/prep_res);
-            operation_estimate = time_now;
-            estimate_label->setVisible(true);
-        }
-        estimate_label->setText(last_estimation,true);
-
-        load_progress = prep_res;
-        repaint();
-
-    }
-
-    const MessageManagerLock mml (Thread::getCurrentThread());
-    estimate_label->setVisible(false);
-    progress->setVisible(false);
-    bool loaded_local = prep_res == -1;
-    if(loaded_local)
-    {
-        loaded_local = movie_new->GetInfo();
-    }
-
-    load_progress = -1.;
-    filename_label->setVisible(true);
-    repaint();
-
-    if(loaded_local)
-    {
-
         delete movie;
-        loaded_something=true;
         movie = movie_new;
         filename = new_filename_cur;
         file_choosed = true;
@@ -99,48 +18,43 @@ void MainComponent::run()
         filename_label->setText(new_filename_cur,true);
         filename_label->setTooltip(new_filename_cur);
         filename_label->setVisible(true);
-
-        movie->ReadFrame();
-        current_frame = 0;
+        movie->ReadAndDecodeFrame();
+        addAndMakeVisible(playButton);
         repaint();
-    }
-    else
+
+    }else
     {
         delete movie_new;
         AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename_cur);
-        if(!loaded_something)
-        {
-            filename_label->setVisible(false);
-        }
     }
+}
 
+void  MainComponent::timerCallback()
+{
+    movie->ReadAndDecodeFrame();
+    repaint();
 }
 
 void MainComponent::buttonClicked (Button* button)
 {
-
+    startTimer(1000);
 }
 
 
-MainComponent::MainComponent (MainAppWindow* mainWindow_):Thread("worker2")
+MainComponent::MainComponent (MainAppWindow* mainWindow_)
 {
     file_choosed = false;
     mainWindow = mainWindow_;
 
-    progress = new ProgressBar(load_progress);
-    addChildComponent(progress);
-
     filename_label = new Label ("","");
-    estimate_label = new Label ("","");
-
-    addChildComponent(estimate_label);
-
-    loaded_something = false;
     addChildComponent(filename_label);
     av_register_all();
+
+    playButton = new TextButton("Play");
+    playButton->addButtonListener(this);
+
     movie = new Movie();
-    current_frame = 0;
-    load_progress = -1.;
+
     ask_jump_target = 0;
 }
 
@@ -152,19 +66,16 @@ MainComponent::~MainComponent ()
         delete ask_jump_target;
         ask_jump_target = 0;
     }
-    stopThread (2000);
     deleteAllChildren();
 }
 
 
 void MainComponent::resized ()
 {
-
     int width_current = getWidth();
     int height_current = getHeight();
     filename_label->setBounds (0, height_current-20, width_current, 20);
-    progress->setBounds (10, height_current/2-30, width_current-20, 60);
-    estimate_label->setBounds (10, height_current/2+35, width_current-20, 12);
+    playButton->setBounds (10, height_current-200, 50, 30);
 }
 
 void MainComponent::paint (Graphics& g)
@@ -206,8 +117,8 @@ void MainComponent::paint (Graphics& g)
         g.drawHorizontalLine(height_current-105,width_current-25,width_current-10);
 
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration((int)(movie->FrameToDuration(current_frame))) + String(" / ") + toolbox::format_duration((int)(movie->duration)),width_current-320,height_current-155,200,20,Justification::centredRight,true);
-        g.drawText(LABEL_FRAMES + String("   ") + String(current_frame+1) + String(" / ")+ String(movie->total_frames),220,height_current-45,200,20,Justification::centredLeft,true);
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-155,400,20,Justification::centredRight,true);
+        //g.drawText(LABEL_FRAMES + String("   ") + String(current_frame+1) + String(" / ")+ String(movie->total_frames),220,height_current-45,200,20,Justification::centredLeft,true);
 
 
         g.setColour(Colour::fromRGB(200,200,250));
@@ -234,7 +145,7 @@ int MainComponent::GetArrowPosition()
         return max_y;
 
 
-    return GetPositionByFrame(GetFrameFromPosition(mouse_x));
+    return mouse_x;
 
 }
 bool MainComponent::NeedDrawArrow()
@@ -242,20 +153,14 @@ bool MainComponent::NeedDrawArrow()
     return ((mouse_y>=getHeight()-155&&mouse_y<=getHeight()-105)||(mouse_y>=getHeight()-105+30&&mouse_y<=getHeight()-25));
 }
 
-int MainComponent::GetFrameFromPosition(int position)
+int MainComponent::GetCurrentPosition()
 {
-    double ratio = (double)(position-25)/(double)(getWidth()-50);
-    return (int)round(ratio*(double)(movie->total_frames-1));
-}
-
-int MainComponent::GetPositionByFrame(int frame)
-{
-    return (int)round((double(getWidth()-50))*(double) frame/(double)(movie->total_frames-1))+25;
+    return (int)round((double(getWidth()-50))*movie->current/(double)(movie->duration))+25;
 }
 
 void MainComponent::DrawSlider(Graphics& g)
 {
-    int position = GetPositionByFrame(current_frame);
+    int position = GetCurrentPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(255,255,255));
     g.fillRoundedRectangle(position-3,height_current-105-5,6,40,4);
@@ -290,13 +195,12 @@ void MainComponent::mouseDown (const MouseEvent& e)
     mouse_y = e.y;
     if(NeedDrawArrow())
     {
-        int new_frame = GetFrameFromPosition(GetArrowPosition());
-        movie->GotoFrameAndRead(new_frame);
-        {
-            current_frame = new_frame;
-            repaint();
-            return;
-        }
+        int position = GetArrowPosition();
+        double ratio = (double)(position-25)/(double)(getWidth()-50);
+
+        movie->GotoAndRead(ratio);
+        repaint();
+        return;
     }
     repaintSlider();
 }
@@ -372,7 +276,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         if(isVideoReady())
         {
-            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + "_frame_" + String(current_frame+1) + ".jpg","*.jpg",true);
+            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + ".jpg","*.jpg",true);
             if (fc.browseForFileToSave(true))
             {
                 File chosenFile = fc.getResult();
@@ -458,7 +362,7 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 
 bool MainComponent::isVideoReady ()
 {
-    return movie&&movie->loaded && load_progress<0.;
+    return movie&&movie->loaded ;
 }
 
 void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)

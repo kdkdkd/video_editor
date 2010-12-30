@@ -17,27 +17,48 @@ private:
     static const long lSize = 32768;
     unsigned char* pDataBuffer;
     ByteIOContext* ByteIOCtx;
-    fas_context_ref_type context;
-    fas_raw_image_type image_buffer;
     FileInputStream *fs;
+
+    uint8_t         *buffer;
+    SwsContext *img_convert_ctx;
+    AVFrame         *pFrame;
+    AVFrame         *pFrameRGB;
+
+    int videoStream;
+
+    int FindKeyFrame(double back, double dest, unsigned int offset=1);
+    double ratio_to_internal;
+    double ratio_to_seconds;
+
 public:
+    AVCodecContext  *pCodecCtx;
+    AVCodec         *pCodec;
+    AVStream        *pStream;
+
     AVFormatContext *pFormatCtx;
     bool loaded;
     Image *image;
-    float fps;
-    int total_frames;
 
     double duration;
+    double current;
+
+
     double file_size;
-    double FrameToDuration(int frame);
+
     Movie();
-    int Open(String &filename);
-    double Prepare();
-    int GetInfo();
+
+    int ToInternalTime(double seconds);
+    double ToSeconds(int internals);
+
+    bool SeekToInternal(int frame);
+
+    bool Load(String &filename);
     void Dispose();
     ~Movie();
-    void ReadFrame();
-    void GotoFrameAndRead(int frame);
+    AVPacket* ReadFrame();
+    void DecodeFrame();
+    void ReadAndDecodeFrame();
+    bool GotoAndRead(double ratio);
 };
 
 
