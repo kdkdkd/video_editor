@@ -11,7 +11,15 @@ private:
 public:
     int result;
 
-    TextEditor * input;
+    TextEditor * input_hours;
+    TextEditor * input_minutes;
+    TextEditor * input_seconds;
+    TextEditor * input_microseconds;
+
+    TextButton * okButton;
+    TextButton * cancelButton;
+
+    void paint (Graphics& g);
 
     void buttonClicked (Button* button);
 

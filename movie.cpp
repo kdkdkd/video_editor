@@ -266,6 +266,11 @@ bool Movie::GotoRatioAndRead(double ratio)
 bool Movie::GotoSecondAndRead(double dest)
 {
     if(dest == current)return true;
+    if(dest>duration)
+        dest = duration;
+    if(dest<0.0d)
+        dest = 0.0d;
+
     if(dest ==0.)
     {
         av_seek_frame( pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
