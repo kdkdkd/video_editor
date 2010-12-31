@@ -12,7 +12,7 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Timer
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer
 {
 public:
     String filename;
@@ -27,7 +27,11 @@ public:
     void changeFileName(String new_filename);
 
     TooltipWindow tooltipWindow;
-    TextButton* playButton;
+    DrawableButton* playButton;
+    DrawableButton* pauseButton;
+
+    void SetVisibleButtons(bool visible);
+
     Label* filename_label;
 
 
@@ -38,7 +42,9 @@ public:
         commandSave                 = 0x2001,
         commandEncode               = 0x2002,
         commandJump                 = 0x2003,
-        commandSaveFrame            = 0x2004
+        commandSaveFrame            = 0x2004,
+        commandPlay                 = 0x2005,
+        commandPause                = 0x2006
 
     };
 

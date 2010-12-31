@@ -34,6 +34,8 @@ extern String LABEL_CANCEL;
 extern String FILE_SAVED;
 extern String FILE_NOT_SAVED;
 
+extern String LABEL_PLAY;
+extern String LABEL_PAUSE;
 }
 
 

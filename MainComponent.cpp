@@ -19,7 +19,7 @@ void MainComponent::changeFileName(String new_filename)
         filename_label->setTooltip(new_filename_cur);
         filename_label->setVisible(true);
         movie->ReadAndDecodeFrame();
-        addAndMakeVisible(playButton);
+        SetVisibleButtons(true);
         repaint();
 
     }else
@@ -29,16 +29,20 @@ void MainComponent::changeFileName(String new_filename)
     }
 }
 
+void MainComponent::SetVisibleButtons(bool visible)
+{
+    playButton->setVisible(visible);
+    pauseButton->setVisible(visible);
+
+}
+
 void  MainComponent::timerCallback()
 {
     movie->ReadAndDecodeFrame();
     repaint();
 }
 
-void MainComponent::buttonClicked (Button* button)
-{
-    startTimer(20);
-}
+
 
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
@@ -50,8 +54,29 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     addChildComponent(filename_label);
     av_register_all();
 
-    playButton = new TextButton("Play");
-    playButton->addButtonListener(this);
+
+    ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+
+    playButton = new DrawableButton("",DrawableButton::ImageFitted);
+    DrawableImage normal,over;
+    Image* play_image = ImageCache::getFromFile(String("pic\\play.png"));
+    normal.setImage (play_image, true);
+    normal.setOpacity(0.8);
+    over.setImage (play_image, true);
+    playButton->setImages (&normal, &over, &normal);
+    playButton->setCommandToTrigger(commandManager,commandPlay,true);
+    addChildComponent(playButton);
+
+    pauseButton = new DrawableButton("",DrawableButton::ImageFitted);
+    DrawableImage normal_pause,over_pause;
+    Image* pause_image = ImageCache::getFromFile(String("pic\\pause.png"));
+    normal_pause.setImage (pause_image, true);
+    normal_pause.setOpacity(0.8);
+    over_pause.setImage (pause_image, true);
+    pauseButton->setImages (&normal_pause, &over_pause, &normal_pause);
+    pauseButton->setCommandToTrigger(commandManager,commandPause,true);
+    addChildComponent(pauseButton);
+
 
     movie = new Movie();
 
@@ -60,6 +85,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
 MainComponent::~MainComponent ()
 {
+    stopTimer();
     delete movie;
     if(ask_jump_target)
     {
@@ -67,6 +93,7 @@ MainComponent::~MainComponent ()
         ask_jump_target = 0;
     }
     deleteAllChildren();
+    delete mainWindow->commandManager;
 }
 
 
@@ -75,7 +102,8 @@ void MainComponent::resized ()
     int width_current = getWidth();
     int height_current = getHeight();
     filename_label->setBounds (0, height_current-20, width_current, 20);
-    playButton->setBounds (10, height_current-200, 50, 30);
+    playButton->setBounds (10, height_current-200+30-25, 60, 65);
+    pauseButton->setBounds (70, height_current-200+30-25, 60, 65);
 }
 
 void MainComponent::paint (Graphics& g)
@@ -106,26 +134,21 @@ void MainComponent::paint (Graphics& g)
         g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::stretchToFit,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
-        g.drawRect(25,height_current-105,width_current-50,30,1);
+        g.drawRect(25,height_current-105+30,width_current-50,50,1);
 
-        g.drawVerticalLine(10,height_current-155,height_current-105+30);
-        g.drawVerticalLine(width_current - 11,height_current-75-30,height_current-25);
-        g.drawHorizontalLine(height_current-155,10,width_current-120);
-        g.drawHorizontalLine(height_current-25,220,width_current-10);
+        g.drawVerticalLine(10,height_current-155+30,height_current-105+30+50);
 
-        g.drawHorizontalLine(height_current-105+29,10,25);
-        g.drawHorizontalLine(height_current-105,width_current-25,width_current-10);
+        g.drawHorizontalLine(height_current-155+30,10,width_current-120);
 
+        g.drawHorizontalLine(height_current-105+29+50,10,25);
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-155,400,20,Justification::centredRight,true);
-        //g.drawText(LABEL_FRAMES + String("   ") + String(current_frame+1) + String(" / ")+ String(movie->total_frames),220,height_current-45,200,20,Justification::centredLeft,true);
-
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-155+30,400,20,Justification::centredRight,true);
 
         g.setColour(Colour::fromRGB(200,200,250));
-        g.fillRect(26,height_current-104,width_current-52,14);
+        g.fillRect(26,height_current-104+30,width_current-52,14+25-15);
 
         g.setColour(Colour::fromRGB(180,180,230));
-        g.fillRect(26,height_current-104+14,width_current-52,14);
+        g.fillRect(26,height_current-104+14+25+15,width_current-52,14+25-15);
 
 
         if(NeedDrawArrow())
@@ -150,7 +173,7 @@ int MainComponent::GetArrowPosition()
 }
 bool MainComponent::NeedDrawArrow()
 {
-    return ((mouse_y>=getHeight()-155&&mouse_y<=getHeight()-105)||(mouse_y>=getHeight()-105+30&&mouse_y<=getHeight()-25));
+    return (mouse_y>=getHeight()-125&&mouse_y<=getHeight()-75);
 }
 
 int MainComponent::GetCurrentPosition()
@@ -163,9 +186,9 @@ void MainComponent::DrawSlider(Graphics& g)
     int position = GetCurrentPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-105-5,6,40,4);
+    g.fillRoundedRectangle(position-3,height_current-105-5+30,6,40+20,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-105-5,6,40,4,1.5);
+    g.drawRoundedRectangle(position-3,height_current-105-5+30,6,40+20,4,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)
@@ -173,13 +196,12 @@ void MainComponent::DrawArrow(Graphics& g)
     int position = GetArrowPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawArrow(position,height_current - 140,position,height_current - 105-4,1,4,20);
-    g.drawArrow(position,height_current - 105+30+35,position,height_current - 105+30+4,1,4,20);
+    g.drawArrow(position,height_current - 140+30,position,height_current - 105-4+30,1,4,20);
 }
 
 void MainComponent::repaintSlider()
 {
-    repaint(0,getHeight()-220.0f,getWidth(),200.0f);
+    repaint(0,getHeight()-220.0f+30.0f,getWidth(),200.0f-30.0f);
 }
 
 void MainComponent::mouseMove (const MouseEvent& e)
@@ -229,6 +251,9 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
+        menu.addCommandItem(commandManager,commandPlay);
+        menu.addCommandItem(commandManager,commandPause);
+        menu.addSeparator();
         menu.addCommandItem (commandManager, StandardApplicationCommandIDs::quit,MENU_QUIT);
     }
     break;
@@ -260,6 +285,18 @@ bool MainComponent::perform (const InvocationInfo& info)
             File chosenFile = fc.getResult();
             changeFileName(chosenFile.getFullPathName());
         }
+    }
+    break;
+
+    case commandPlay:
+    {
+        startTimer(20);
+    }
+    break;
+
+    case commandPause:
+    {
+        stopTimer();
     }
     break;
 
@@ -353,7 +390,9 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandSave,
                               commandEncode,
                               commandSaveFrame,
-                              commandJump
+                              commandJump,
+                              commandPlay,
+                              commandPause
 
                             };
 
@@ -367,8 +406,6 @@ bool MainComponent::isVideoReady ()
 
 void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)
 {
-    const String generalCategory (T("General"));
-    const String demosCategory (T("Demos"));
 
     switch (commandID)
     {
@@ -393,6 +430,14 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     case commandJump:
         result.setInfo (MENU_JUMP, MENU_JUMP, MENU_FRAME, 0);
         result.addDefaultKeypress (T('J'), ModifierKeys::commandModifier);
+        result.setActive(isVideoReady());
+        break;
+    case commandPlay:
+        result.setInfo (LABEL_PLAY, LABEL_PLAY, MENU_FILE, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandPause:
+        result.setInfo (LABEL_PAUSE, LABEL_PAUSE, MENU_FILE, 0);
         result.setActive(isVideoReady());
         break;
     }

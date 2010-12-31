@@ -30,4 +30,8 @@ String LABEL_CANCEL = T("Отменить");
 String FILE_SAVED = T("Сохранено");
 String FILE_NOT_SAVED = T("Запись не удалась");
 
+
+String LABEL_PLAY = T("Воспроизвести");
+String LABEL_PAUSE = T("Пауза");
+
 }
