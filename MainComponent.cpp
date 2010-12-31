@@ -22,7 +22,8 @@ void MainComponent::changeFileName(String new_filename)
         SetVisibleButtons(true);
         repaint();
 
-    }else
+    }
+    else
     {
         delete movie_new;
         AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename_cur);
@@ -33,6 +34,9 @@ void MainComponent::SetVisibleButtons(bool visible)
 {
     playButton->setVisible(visible);
     pauseButton->setVisible(visible);
+    prevFrameButton->setVisible(visible);
+    nextFrameButton->setVisible(visible);
+    stopButton->setVisible(visible);
 
 }
 
@@ -49,10 +53,27 @@ void MainComponent::buttonClicked (Button* button)
         commandManager->invokeDirectly(commandPlay,false);
     else if(button == pauseButton)
         commandManager->invokeDirectly(commandPause,false);
+    else if(button == prevFrameButton)
+        commandManager->invokeDirectly(commandPrevFrame,false);
+    else if(button == nextFrameButton)
+        commandManager->invokeDirectly(commandNextFrame,false);
+    else if(button == stopButton)
+        commandManager->invokeDirectly(commandStop,false);
 
 
 }
-
+void MainComponent::initImageButton(String pic_name,DrawableButton*& button)
+{
+    button = new DrawableButton("",DrawableButton::ImageFitted);
+    DrawableImage normal,over;
+    Image* image = ImageCache::getFromFile(pic_name);
+    normal.setImage (image, true);
+    normal.setOpacity(0.8);
+    over.setImage (image, true);
+    button->setImages (&normal, &over, &normal);
+    button->addButtonListener(this);
+    addChildComponent(button);
+}
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
 {
@@ -64,29 +85,12 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     av_register_all();
 
 
+    initImageButton(String("pic\\play.png"),playButton);
+    initImageButton(String("pic\\pause.png"),pauseButton);
 
-
-    playButton = new DrawableButton("",DrawableButton::ImageFitted);
-    DrawableImage normal,over;
-    Image* play_image = ImageCache::getFromFile(String("pic\\play.png"));
-    normal.setImage (play_image, true);
-    normal.setOpacity(0.8);
-    over.setImage (play_image, true);
-    playButton->setImages (&normal, &over, &normal);
-    playButton->addButtonListener(this);
-    addChildComponent(playButton);
-
-    pauseButton = new DrawableButton("",DrawableButton::ImageFitted);
-    DrawableImage normal_pause,over_pause;
-    Image* pause_image = ImageCache::getFromFile(String("pic\\pause.png"));
-    normal_pause.setImage (pause_image, true);
-    normal_pause.setOpacity(0.8);
-    over_pause.setImage (pause_image, true);
-    pauseButton->setImages (&normal_pause, &over_pause, &normal_pause);
-
-    pauseButton->addButtonListener(this);
-    addChildComponent(pauseButton);
-
+    initImageButton(String("pic\\prev.png"),prevFrameButton);
+    initImageButton(String("pic\\next.png"),nextFrameButton);
+    initImageButton(String("pic\\stop.png"),stopButton);
 
     movie = new Movie();
 
@@ -114,6 +118,9 @@ void MainComponent::resized ()
     filename_label->setBounds (0, height_current-20, width_current, 20);
     playButton->setBounds (10, height_current-195, 60, 65);
     pauseButton->setBounds (70, height_current-195, 60, 65);
+    stopButton->setBounds (130, height_current-195, 60, 65);
+    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195, 60, 65);
+    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195, 60, 65);
 }
 
 void MainComponent::paint (Graphics& g)
@@ -230,7 +237,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
         int position = GetArrowPosition();
         double ratio = (double)(position-25)/(double)(getWidth()-50);
 
-        movie->GotoAndRead(ratio);
+        movie->GotoRatioAndRead(ratio);
         repaint();
         return;
     }
@@ -263,14 +270,23 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
+        menu.addCommandItem(commandManager,commandStop);
         menu.addSeparator();
         menu.addCommandItem (commandManager, StandardApplicationCommandIDs::quit,MENU_QUIT);
     }
     break;
     case 1:
     {
-        menu.addCommandItem(commandManager,commandJump);
         menu.addCommandItem(commandManager,commandSaveFrame);
+        PopupMenu sub_menu;
+        sub_menu.addCommandItem(commandManager,commandNextSecond);
+        sub_menu.addCommandItem(commandManager,commandNext5Frame);
+        sub_menu.addCommandItem(commandManager,commandNextFrame);
+        sub_menu.addCommandItem(commandManager,commandJump);
+        sub_menu.addCommandItem(commandManager,commandPrevFrame);
+        sub_menu.addCommandItem(commandManager,commandPrev5Frame);
+        sub_menu.addCommandItem(commandManager,commandPrevSecond);
+        menu.addSubMenu(MENU_JUMP,sub_menu);
     }
     break;
     }
@@ -292,6 +308,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
         if (fc.browseForFileToOpen())
         {
+            stopTimer();
             File chosenFile = fc.getResult();
             changeFileName(chosenFile.getFullPathName());
         }
@@ -310,17 +327,83 @@ bool MainComponent::perform (const InvocationInfo& info)
     }
     break;
 
+    case commandStop:
+    {
+        stopTimer();
+        movie->GotoSecondAndRead(0.0);
+        repaint();
+    }
+    break;
+
+    case commandNextFrame:
+    {
+        stopTimer();
+        movie->ReadAndDecodeFrame();
+        repaint();
+    }
+    break;
+
+    case commandPrevFrame:
+    {
+        stopTimer();
+
+    }
+    break;
+
+    case commandNext5Frame:
+    {
+        stopTimer();
+        for(int i = 0;i<5;++i)
+        {
+            movie->SkipFrame();
+        }
+        movie->DecodeFrame();
+        repaint();
+
+    }
+    break;
+
+    case commandPrev5Frame:
+    {
+        stopTimer();
+
+    }
+    break;
+
+    case commandNextSecond:
+    {
+        stopTimer();
+        movie->GotoSecondAndRead(movie->current+1.0d);
+        repaint();
+
+    }
+    break;
+
+    case commandPrevSecond:
+    {
+        stopTimer();
+        movie->GotoSecondAndRead(movie->current-1.0d);
+        repaint();
+
+    }
+    break;
+
     case commandSave:
     {
+        stopTimer();
 
     }
     break;
 
     case commandEncode:
+    {
+        stopTimer();
+    }
         break;
 
     case commandSaveFrame:
     {
+        stopTimer();
         if(isVideoReady())
         {
             FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + ".jpg","*.jpg",true);
@@ -345,7 +428,8 @@ bool MainComponent::perform (const InvocationInfo& info)
                         if(chosenFile.getFileName().toLowerCase().endsWith(".jpg"))
                         {
                             stream = chosenFile.createOutputStream();
-                        }else
+                        }
+                        else
                         {
                             File file_with_jpg_ext(chosenFile.getFullPathName() + ".jpg");
                             stream = file_with_jpg_ext.createOutputStream();
@@ -373,7 +457,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandJump:
     {
-
+        stopTimer();
         if(isVideoReady())
         {
             if(ask_jump_target)
@@ -402,8 +486,14 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandSaveFrame,
                               commandJump,
                               commandPlay,
-                              commandPause
-
+                              commandPause,
+                              commandPrevFrame,
+                              commandNextFrame,
+                              commandStop,
+                              commandNext5Frame,
+                              commandPrev5Frame,
+                              commandNextSecond,
+                              commandPrevSecond
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -438,7 +528,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setActive(isVideoReady());
         break;
     case commandJump:
-        result.setInfo (MENU_JUMP, MENU_JUMP, MENU_FRAME, 0);
+        result.setInfo (LABEL_SPECIFIC_TIME, LABEL_SPECIFIC_TIME, MENU_FRAME, 0);
         result.addDefaultKeypress (T('J'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
@@ -448,6 +538,36 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         break;
     case commandPause:
         result.setInfo (LABEL_PAUSE, LABEL_PAUSE, MENU_FILE, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandStop:
+        result.setInfo (LABEL_STOP, LABEL_STOP, MENU_FILE, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandPrevFrame:
+        result.setInfo (LABEL_PREV_FRAME, LABEL_PREV_FRAME, MENU_FRAME, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandNextFrame:
+        result.setInfo (LABEL_NEXT_FRAME, LABEL_NEXT_FRAME, MENU_FRAME, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandPrev5Frame:
+        result.setInfo (LABEL_PREV_FIVE_FRAME, LABEL_PREV_FIVE_FRAME, MENU_FRAME, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandNext5Frame:
+        result.setInfo (LABEL_NEXT_FIVE_FRAME, LABEL_NEXT_FIVE_FRAME, MENU_FRAME, 0);
+        result.setActive(isVideoReady());
+        break;
+    case commandPrevSecond:
+        result.setInfo (LABEL_PREV_SECOND, LABEL_PREV_SECOND, MENU_FRAME, 0);
+        result.addDefaultKeypress (T('P'), ModifierKeys::commandModifier);
+        result.setActive(isVideoReady());
+        break;
+    case commandNextSecond:
+        result.setInfo (LABEL_NEXT_SECOND, LABEL_NEXT_SECOND, MENU_FRAME, 0);
+        result.addDefaultKeypress (T('N'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
     }

@@ -8,7 +8,7 @@ String MENU_FILE_SAVE = T("Сохранить");
 String MENU_FILE_ENCODE = T("Перекодировать");
 String MENU_QUIT = T("Выход");
 String MENU_FRAME = T("Кадр");
-String MENU_JUMP = T("Перейти К");
+String MENU_JUMP = T("Перейти к...");
 String MENU_SAVE_FRAME = T("Скриншот");
 
 
@@ -34,4 +34,15 @@ String FILE_NOT_SAVED = T("Запись не удалась");
 String LABEL_PLAY = T("Воспроизвести");
 String LABEL_PAUSE = T("Пауза");
 
+String LABEL_STOP = T("Остановить");
+String LABEL_NEXT_FRAME = T("+1 кадр");
+String LABEL_PREV_FRAME = T("-1 кадр");
+
+String LABEL_NEXT_FIVE_FRAME = T("+5 кадров");
+String LABEL_PREV_FIVE_FRAME = T("-5 кадров");
+
+String LABEL_NEXT_SECOND = T("+1 секунда");
+String LABEL_PREV_SECOND = T("-1 секунда");
+
+String LABEL_SPECIFIC_TIME = T("Задать время");
 }

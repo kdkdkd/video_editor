@@ -28,6 +28,11 @@ public:
     TooltipWindow tooltipWindow;
     DrawableButton* playButton;
     DrawableButton* pauseButton;
+    DrawableButton* stopButton;
+    DrawableButton* nextFrameButton;
+    DrawableButton* prevFrameButton;
+
+    void initImageButton(String pic_name,DrawableButton*& button);
 
     void SetVisibleButtons(bool visible);
 
@@ -43,7 +48,14 @@ public:
         commandJump                 = 0x2003,
         commandSaveFrame            = 0x2004,
         commandPlay                 = 0x2005,
-        commandPause                = 0x2006
+        commandPause                = 0x2006,
+        commandStop                 = 0x2007,
+        commandNextFrame            = 0x2008,
+        commandPrevFrame            = 0x2009,
+        commandNext5Frame           = 0x200A,
+        commandPrev5Frame           = 0x200B,
+        commandNextSecond           = 0x200C,
+        commandPrevSecond           = 0x200D
 
     };
 

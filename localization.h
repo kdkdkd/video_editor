@@ -36,6 +36,18 @@ extern String FILE_NOT_SAVED;
 
 extern String LABEL_PLAY;
 extern String LABEL_PAUSE;
+
+extern String LABEL_STOP;
+extern String LABEL_NEXT_FRAME;
+extern String LABEL_PREV_FRAME;
+
+extern String LABEL_SPECIFIC_TIME;
+
+extern String LABEL_NEXT_FIVE_FRAME;
+extern String LABEL_PREV_FIVE_FRAME;
+
+extern String LABEL_NEXT_SECOND;
+extern String LABEL_PREV_SECOND;
 }
 
 

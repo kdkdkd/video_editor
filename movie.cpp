@@ -217,16 +217,13 @@ bool Movie::SeekToInternal(int frame)
 
 int Movie::FindKeyFrame(double back, double dest)
 {
-    int keyframe = 0;
+    int keyframe = -1;
 
     int timestamp = ToInternalTime(dest);
 
     int back_int = back * ratio_to_internal;
 
     int timestamp_new = timestamp - back_int;
-
-    int timestamp_prev = 0;
-
 
     bool res = SeekToInternal(timestamp_new);
     if(!res)return false;
@@ -237,7 +234,6 @@ int Movie::FindKeyFrame(double back, double dest)
         AVPacket* packet = ReadFrame();
         if(packet)
         {
-            timestamp_prev = timestamp_new;
             timestamp_new =  packet->dts - pStream->start_time;
 
             av_free_packet(packet);
@@ -246,7 +242,7 @@ int Movie::FindKeyFrame(double back, double dest)
             {
                 break;
             }
-            if(pFrame->key_frame)
+            if(pFrame->key_frame || timestamp_new==0)
             {
                 keyframe = timestamp_new;
             }
@@ -261,9 +257,14 @@ int Movie::FindKeyFrame(double back, double dest)
 
 }
 
-bool Movie::GotoAndRead(double ratio)
+bool Movie::GotoRatioAndRead(double ratio)
 {
-    double dest = ratio * duration;
+    return GotoSecondAndRead(ratio * duration);
+}
+
+
+bool Movie::GotoSecondAndRead(double dest)
+{
     if(dest == current)return true;
     if(dest ==0.)
     {
@@ -274,9 +275,9 @@ bool Movie::GotoAndRead(double ratio)
     }
 
     int found = 0;
-    found = 0;
+    found = -1;
     double back = 1.0;
-    while(!found && back<100.0)
+    while(found<0 && back<100.0)
     {
         if(back>dest)
         {
@@ -289,12 +290,12 @@ bool Movie::GotoAndRead(double ratio)
 
     }
 
-    if(found)
+    if(found>=0)
     {
         DecodeFrame();
     }
 
-    return (found)?found:GotoAndRead(0.);
+    return (found>=0)?true:GotoSecondAndRead(0.);
 }
 
 AVPacket* Movie::ReadFrame()
@@ -334,6 +335,15 @@ void Movie::ReadAndDecodeFrame()
         av_free_packet(packet);
         delete packet;
         DecodeFrame();
+    }
+}
+void Movie::SkipFrame()
+{
+    AVPacket* packet = ReadFrame();
+    if(packet)
+    {
+        av_free_packet(packet);
+        delete packet;
     }
 }
 

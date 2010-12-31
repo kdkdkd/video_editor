@@ -56,9 +56,11 @@ public:
     void Dispose();
     ~Movie();
     AVPacket* ReadFrame();
+    void SkipFrame();
     void DecodeFrame();
     void ReadAndDecodeFrame();
-    bool GotoAndRead(double ratio);
+    bool GotoRatioAndRead(double ratio);
+    bool GotoSecondAndRead(double dest);
 };
 
 
