@@ -129,15 +129,15 @@ bool Movie::Load(String &filename)
 
     img_convert_ctx = sws_getContext(pCodecCtx->width,pCodecCtx->height,pCodecCtx->pix_fmt,pCodecCtx->width,pCodecCtx->height,PIX_FMT_BGR24,SWS_BICUBIC, NULL, NULL, NULL);
 
-    /*int fps_num = pStream->r_frame_rate.num;
+    int fps_num = pStream->r_frame_rate.num;
     int fps_denum = pStream->r_frame_rate.den;
 
-    fps = ((float)fps_num / (float)fps_denum);
+    fps = ((double)fps_num / (double)fps_denum);
 
     if(fps<=0.0||fps>=1000.0)
     {
-        fps = ((float)pCodecCtx->time_base.den / (float)pCodecCtx->time_base.num);
-    }*/
+        fps = ((double)pCodecCtx->time_base.den / (double)pCodecCtx->time_base.num);
+    }
 
     int duration_num = pStream->duration * pStream->time_base.num;
     int duration_denum = pStream->time_base.den;

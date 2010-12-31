@@ -41,7 +41,7 @@ public:
 
     double duration;
     double current;
-
+    double fps;
 
     double file_size;
 
