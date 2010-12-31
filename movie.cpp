@@ -217,7 +217,7 @@ bool Movie::SeekToInternal(int frame)
 
 int Movie::FindKeyFrame(double back, double dest)
 {
-    int keyframe;
+    int keyframe = 0;
 
     int timestamp = ToInternalTime(dest);
 
