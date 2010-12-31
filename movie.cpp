@@ -238,7 +238,7 @@ int Movie::FindKeyFrame(double back, double dest)
 
             av_free_packet(packet);
             delete packet;
-            if(timestamp_new>=timestamp)
+            if(timestamp_new>timestamp)
             {
                 break;
             }
@@ -273,15 +273,14 @@ bool Movie::GotoSecondAndRead(double dest)
 
     if(dest ==0.)
     {
-        av_seek_frame( pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
-        avcodec_flush_buffers (pCodecCtx);
+        SeekToInternal(0);
         ReadAndDecodeFrame();
         return true;
     }
 
-    int found = 0;
-    found = -1;
-    double back = 1.0;
+    int found = -1;
+
+    double back = 0.0;
     while(found<0 && back<100.0)
     {
         if(back>dest)
@@ -291,7 +290,10 @@ bool Movie::GotoSecondAndRead(double dest)
             break;
         }
         found = FindKeyFrame(back,dest);
-        back *= 2.0;
+        if(back==0.0)
+            back = 0.5;
+        else
+            back *= 2.0;
 
     }
 
