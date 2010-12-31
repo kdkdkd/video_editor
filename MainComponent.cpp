@@ -102,8 +102,8 @@ void MainComponent::resized ()
     int width_current = getWidth();
     int height_current = getHeight();
     filename_label->setBounds (0, height_current-20, width_current, 20);
-    playButton->setBounds (10, height_current-200+30-25, 60, 65);
-    pauseButton->setBounds (70, height_current-200+30-25, 60, 65);
+    playButton->setBounds (10, height_current-195, 60, 65);
+    pauseButton->setBounds (70, height_current-195, 60, 65);
 }
 
 void MainComponent::paint (Graphics& g)
@@ -118,7 +118,7 @@ void MainComponent::paint (Graphics& g)
         int height_image = movie->image->getHeight();
 
         float scalex = width_current/(float)width_image;
-        float scaley = (height_current-220.0f)/(float)height_image;
+        float scaley = (height_current-210.0f)/(float)height_image;
         float scale = scalex;
         float deltax = 0.0f;
         float deltay = 0.0f;
@@ -129,26 +129,26 @@ void MainComponent::paint (Graphics& g)
         }
         else
         {
-            deltay = ((float)height_current - 220.0f - (float)height_image*scale)/2.0f;
+            deltay = ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
         }
         g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::stretchToFit,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
-        g.drawRect(25,height_current-105+30,width_current-50,50,1);
+        g.drawRect(25,height_current-75,width_current-50,50,1);
 
-        g.drawVerticalLine(10,height_current-155+30,height_current-105+30+50);
+        g.drawVerticalLine(10,height_current-125,height_current-25);
 
-        g.drawHorizontalLine(height_current-155+30,10,width_current-120);
+        g.drawHorizontalLine(height_current-125,10,width_current-120);
 
-        g.drawHorizontalLine(height_current-105+29+50,10,25);
+        g.drawHorizontalLine(height_current-26,10,25);
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-155+30,400,20,Justification::centredRight,true);
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
 
         g.setColour(Colour::fromRGB(200,200,250));
-        g.fillRect(26,height_current-104+30,width_current-52,14+25-15);
+        g.fillRect(26,height_current-74,width_current-52,24);
 
         g.setColour(Colour::fromRGB(180,180,230));
-        g.fillRect(26,height_current-104+14+25+15,width_current-52,14+25-15);
+        g.fillRect(26,height_current-50,width_current-52,24);
 
 
         if(NeedDrawArrow())
@@ -186,9 +186,9 @@ void MainComponent::DrawSlider(Graphics& g)
     int position = GetCurrentPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-105-5+30,6,40+20,4);
+    g.fillRoundedRectangle(position-3,height_current-80,6,60,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-105-5+30,6,40+20,4,1.5);
+    g.drawRoundedRectangle(position-3,height_current-80,6,60,4,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)
@@ -196,12 +196,12 @@ void MainComponent::DrawArrow(Graphics& g)
     int position = GetArrowPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawArrow(position,height_current - 140+30,position,height_current - 105-4+30,1,4,20);
+    g.drawArrow(position,height_current - 110,position,height_current - 79,1,4,20);
 }
 
 void MainComponent::repaintSlider()
 {
-    repaint(0,getHeight()-220.0f+30.0f,getWidth(),200.0f-30.0f);
+    repaint(0,getHeight()-170.0f,getWidth(),170.0f);
 }
 
 void MainComponent::mouseMove (const MouseEvent& e)
@@ -401,7 +401,7 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 
 bool MainComponent::isVideoReady ()
 {
-    return movie&&movie->loaded ;
+    return movie && movie->loaded ;
 }
 
 void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)
