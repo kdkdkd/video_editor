@@ -41,7 +41,7 @@ MainAppWindow::MainAppWindow()
 
 MainAppWindow::~MainAppWindow()
 {
-
+    delete commandManager;
 }
 
 void MainAppWindow::closeButtonPressed()

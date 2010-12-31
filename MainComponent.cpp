@@ -42,7 +42,16 @@ void  MainComponent::timerCallback()
     repaint();
 }
 
+void MainComponent::buttonClicked (Button* button)
+{
+    ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+    if(button==playButton)
+        commandManager->invokeDirectly(commandPlay,false);
+    else if(button == pauseButton)
+        commandManager->invokeDirectly(commandPause,false);
 
+
+}
 
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
@@ -55,7 +64,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     av_register_all();
 
 
-    ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+
 
     playButton = new DrawableButton("",DrawableButton::ImageFitted);
     DrawableImage normal,over;
@@ -64,7 +73,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     normal.setOpacity(0.8);
     over.setImage (play_image, true);
     playButton->setImages (&normal, &over, &normal);
-    playButton->setCommandToTrigger(commandManager,commandPlay,true);
+    playButton->addButtonListener(this);
     addChildComponent(playButton);
 
     pauseButton = new DrawableButton("",DrawableButton::ImageFitted);
@@ -74,7 +83,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     normal_pause.setOpacity(0.8);
     over_pause.setImage (pause_image, true);
     pauseButton->setImages (&normal_pause, &over_pause, &normal_pause);
-    pauseButton->setCommandToTrigger(commandManager,commandPause,true);
+
+    pauseButton->addButtonListener(this);
     addChildComponent(pauseButton);
 
 
@@ -93,7 +103,7 @@ MainComponent::~MainComponent ()
         ask_jump_target = 0;
     }
     deleteAllChildren();
-    delete mainWindow->commandManager;
+
 }
 
 
