@@ -9,7 +9,10 @@ AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(L
     addButton(LABEL_CANCEL,0);
 
     input = new TextEditor("input");
-    input->setBounds(90,62,100,25);
+    input->setBounds(90,62,33,25);
+
+    String letters = T("0123456789");
+    input->setInputRestrictions(3,letters);
 
     /*int number = mainWindow_->movie->total_frames;
     input->setInputRestrictions(floor( log10( abs( number != 0 ? number : 1 ) ) ) + 1,"0123456789");
