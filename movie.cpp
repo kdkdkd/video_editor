@@ -362,7 +362,7 @@ bool Movie::GoBack(int frames)
     double frame = 1.0d / fps;
     double eps = frame/5.0d;
     double desired = current - ((double)frames) * frame;
-    GotoSecondAndRead(desired - frame,false);
+    GotoSecondAndRead(desired - 3.0d*frame,false);
     while(desired - current > eps )
     {
         SkipFrame();
