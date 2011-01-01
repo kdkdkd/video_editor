@@ -38,6 +38,7 @@ public:
     AVFormatContext *pFormatCtx;
     bool loaded;
     Image *image;
+    Image::BitmapData *bitmapData;
 
     double duration;
     double current;

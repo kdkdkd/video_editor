@@ -5,6 +5,7 @@ Movie::Movie()
 {
     loaded = false;
     image = new Image(Image::RGB,1,1,true);
+    bitmapData = new Image::BitmapData(*image,0,0,1,1,true);
 };
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
@@ -190,6 +191,8 @@ void Movie::Dispose()
     }
     delete image;
 
+    delete bitmapData;
+
     loaded = false;
 }
 
@@ -238,7 +241,7 @@ int Movie::FindKeyFrame(double back, double dest)
 
             av_free_packet(packet);
             delete packet;
-            if(timestamp_new>timestamp)
+            if(timestamp_new>=timestamp)
             {
                 break;
             }
@@ -360,12 +363,14 @@ void Movie::DecodeFrame()
     {
         delete image;
         image = new Image(Image::RGB,pCodecCtx->width,pCodecCtx->height,true);
+        delete bitmapData;
+        bitmapData = new Image::BitmapData(*image,0,0,pCodecCtx->width,pCodecCtx->height,true);
     }
 
-    Image::BitmapData *bd = new Image::BitmapData(*image,0,0,pCodecCtx->width,pCodecCtx->height,true);
 
-    sws_scale (img_convert_ctx, pFrame->data, pFrame->linesize,0, pCodecCtx->height,&bd->data,pFrameRGB->linesize);
 
-    delete bd;
+    sws_scale (img_convert_ctx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height,&bitmapData->data,pFrameRGB->linesize);
+
+
 }
 
