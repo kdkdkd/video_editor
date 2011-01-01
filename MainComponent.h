@@ -12,35 +12,33 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public ButtonListener, public MenuBarModel, public ApplicationCommandTarget, public Thread, public Timer
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener
 {
 public:
     String filename;
     bool file_choosed;
 
-    int current_frame;
     int mouse_x;
     int mouse_y;
-    double load_progress;
     Movie *movie_new;
     String new_filename_cur;
-    bool loaded_something;
-    int64 operation_start;
-    int64 operation_estimate;
-    String last_estimation;
     AskJumpDestanation *ask_jump_target;
 
     void changeFileName(String new_filename);
-
-    void run();
-
     TooltipWindow tooltipWindow;
-    TextButton* myButton;
-    Label* filename_label;
-    Label* estimate_label;
-    ProgressBar* progress;
+    DrawableButton* playButton;
+    DrawableButton* pauseButton;
+    DrawableButton* stopButton;
+    DrawableButton* nextFrameButton;
+    DrawableButton* prevFrameButton;
 
-    void timerCallback();
+    void initImageButton(String pic_name,DrawableButton*& button);
+
+    void SetVisibleButtons(bool visible);
+
+    Label* filename_label;
+
+
 
     enum CommandIDs
     {
@@ -48,7 +46,16 @@ public:
         commandSave                 = 0x2001,
         commandEncode               = 0x2002,
         commandJump                 = 0x2003,
-        commandSaveFrame            = 0x2004
+        commandSaveFrame            = 0x2004,
+        commandPlay                 = 0x2005,
+        commandPause                = 0x2006,
+        commandStop                 = 0x2007,
+        commandNextFrame            = 0x2008,
+        commandPrevFrame            = 0x2009,
+        commandNext5Frame           = 0x200A,
+        commandPrev5Frame           = 0x200B,
+        commandNextSecond           = 0x200C,
+        commandPrevSecond           = 0x200D
 
     };
 
@@ -65,11 +72,9 @@ public:
 
     void paint (Graphics& g);
     int GetArrowPosition();
+    int GetCurrentPosition();
     bool NeedDrawArrow();
-
-    int GetFrameFromPosition(int position);
-    int GetPositionByFrame(int frame);
-
+    void timerCallback();
     void DrawSlider(Graphics& g);
 
     void DrawArrow(Graphics& g);

@@ -73,19 +73,10 @@
 		<Unit filename="MainAppWindow.h" />
 		<Unit filename="MainComponent.cpp" />
 		<Unit filename="MainComponent.h" />
-		<Unit filename="ffmpeg_fas.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="ffmpeg_fas.h" />
 		<Unit filename="localization.cpp" />
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />
 		<Unit filename="movie.h" />
-		<Unit filename="private_errors.h" />
-		<Unit filename="seek_indices.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="seek_indices.h" />
 		<Unit filename="toolbox.cpp" />
 		<Unit filename="toolbox.h" />
 		<Extensions>

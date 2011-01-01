@@ -25,8 +25,7 @@ extern String LABEL_ESTIMATE;
 
 
 extern String LABEL_CHOOSE_JUMP;
-extern String LABEL_FROM;
-extern String LABEL_TO;
+extern String LABEL_TOTAL_TIME;
 
 extern String LABEL_OK;
 extern String LABEL_CANCEL;
@@ -34,7 +33,25 @@ extern String LABEL_CANCEL;
 extern String FILE_SAVED;
 extern String FILE_NOT_SAVED;
 
+extern String LABEL_PLAY;
+extern String LABEL_PAUSE;
 
+extern String LABEL_STOP;
+extern String LABEL_NEXT_FRAME;
+extern String LABEL_PREV_FRAME;
+
+extern String LABEL_SPECIFIC_TIME;
+
+extern String LABEL_NEXT_FIVE_FRAME;
+extern String LABEL_PREV_FIVE_FRAME;
+
+extern String LABEL_NEXT_SECOND;
+extern String LABEL_PREV_SECOND;
+
+extern String LABEL_HOURS;
+extern String LABEL_MINUTES;
+extern String LABEL_SECONDS;
+extern String LABEL_MINI_SECONDS;
 }
 
 
