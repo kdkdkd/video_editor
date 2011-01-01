@@ -234,6 +234,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
     mouse_y = e.y;
     if(NeedDrawArrow())
     {
+        stopTimer();
         int position = GetArrowPosition();
         double ratio = (double)(position-25)/(double)(getWidth()-50);
 
@@ -265,7 +266,6 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
     {
         menu.addCommandItem(commandManager,commandOpen);
         menu.addCommandItem(commandManager,commandSave);
-        menu.addSeparator();
         menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
@@ -516,63 +516,63 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     switch (commandID)
     {
     case commandOpen:
-        result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, 0);
+        result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('O'), ModifierKeys::commandModifier);
         break;
     case commandSave:
-        result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, 0);
+        result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
-        result.setActive(false);
+        result.setActive(isVideoReady());
         break;
     case commandEncode:
-        result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, 0);
+        result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('E'), ModifierKeys::commandModifier);
         result.setActive(false);
         break;
     case commandSaveFrame:
-        result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, 0);
+        result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandJump:
-        result.setInfo (LABEL_SPECIFIC_TIME, LABEL_SPECIFIC_TIME, MENU_FRAME, 0);
+        result.setInfo (LABEL_SPECIFIC_TIME, LABEL_SPECIFIC_TIME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('J'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
     case commandPlay:
-        result.setInfo (LABEL_PLAY, LABEL_PLAY, MENU_FILE, 0);
+        result.setInfo (LABEL_PLAY, LABEL_PLAY, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandPause:
-        result.setInfo (LABEL_PAUSE, LABEL_PAUSE, MENU_FILE, 0);
+        result.setInfo (LABEL_PAUSE, LABEL_PAUSE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandStop:
-        result.setInfo (LABEL_STOP, LABEL_STOP, MENU_FILE, 0);
+        result.setInfo (LABEL_STOP, LABEL_STOP, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandPrevFrame:
-        result.setInfo (LABEL_PREV_FRAME, LABEL_PREV_FRAME, MENU_FRAME, 0);
+        result.setInfo (LABEL_PREV_FRAME, LABEL_PREV_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandNextFrame:
-        result.setInfo (LABEL_NEXT_FRAME, LABEL_NEXT_FRAME, MENU_FRAME, 0);
+        result.setInfo (LABEL_NEXT_FRAME, LABEL_NEXT_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandPrev5Frame:
-        result.setInfo (LABEL_PREV_FIVE_FRAME, LABEL_PREV_FIVE_FRAME, MENU_FRAME, 0);
+        result.setInfo (LABEL_PREV_FIVE_FRAME, LABEL_PREV_FIVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandNext5Frame:
-        result.setInfo (LABEL_NEXT_FIVE_FRAME, LABEL_NEXT_FIVE_FRAME, MENU_FRAME, 0);
+        result.setInfo (LABEL_NEXT_FIVE_FRAME, LABEL_NEXT_FIVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
     case commandPrevSecond:
-        result.setInfo (LABEL_PREV_SECOND, LABEL_PREV_SECOND, MENU_FRAME, 0);
+        result.setInfo (LABEL_PREV_SECOND, LABEL_PREV_SECOND, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('P'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
     case commandNextSecond:
-        result.setInfo (LABEL_NEXT_SECOND, LABEL_NEXT_SECOND, MENU_FRAME, 0);
+        result.setInfo (LABEL_NEXT_SECOND, LABEL_NEXT_SECOND, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('N'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
