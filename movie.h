@@ -29,6 +29,7 @@ private:
     int FindKeyFrame(double back, double dest);
     double ratio_to_internal;
     double ratio_to_seconds;
+    bool SeekToInternal(int frame);
 
 public:
     AVCodecContext  *pCodecCtx;
@@ -51,8 +52,6 @@ public:
     int ToInternalTime(double seconds);
     double ToSeconds(int internals);
 
-    bool SeekToInternal(int frame);
-
     bool Load(String &filename);
     void Dispose();
     ~Movie();
@@ -60,8 +59,9 @@ public:
     void SkipFrame();
     void DecodeFrame();
     void ReadAndDecodeFrame();
-    bool GotoRatioAndRead(double ratio);
-    bool GotoSecondAndRead(double dest);
+    bool GotoRatioAndRead(double ratio,bool decode = true);
+    bool GotoSecondAndRead(double dest,bool decode = true);
+    bool GoBack(int frames);
 };
 
 

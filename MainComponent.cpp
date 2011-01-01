@@ -347,6 +347,9 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         stopTimer();
 
+        movie->GoBack(1);
+        movie->DecodeFrame();
+        repaint();
     }
     break;
 
@@ -367,6 +370,9 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         stopTimer();
 
+        movie->GoBack(5);
+        movie->DecodeFrame();
+        repaint();
     }
     break;
 

@@ -260,13 +260,13 @@ int Movie::FindKeyFrame(double back, double dest)
 
 }
 
-bool Movie::GotoRatioAndRead(double ratio)
+bool Movie::GotoRatioAndRead(double ratio,bool decode)
 {
-    return GotoSecondAndRead(ratio * duration);
+    return GotoSecondAndRead(ratio * duration,decode);
 }
 
 
-bool Movie::GotoSecondAndRead(double dest)
+bool Movie::GotoSecondAndRead(double dest,bool decode)
 {
     if(dest == current)return true;
     if(dest>duration)
@@ -300,7 +300,7 @@ bool Movie::GotoSecondAndRead(double dest)
 
     }
 
-    if(found>=0)
+    if(found>=0 && decode)
     {
         DecodeFrame();
     }
@@ -355,6 +355,19 @@ void Movie::SkipFrame()
         av_free_packet(packet);
         delete packet;
     }
+}
+
+bool Movie::GoBack(int frames)
+{
+    double frame = 1.0d / fps;
+    double eps = frame/5.0d;
+    double desired = current - ((double)frames) * frame;
+    GotoSecondAndRead(desired - frame,false);
+    while(desired - current > eps )
+    {
+        SkipFrame();
+    }
+    return true;
 }
 
 void Movie::DecodeFrame()
