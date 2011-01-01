@@ -42,8 +42,24 @@ void MainComponent::SetVisibleButtons(bool visible)
 
 void  MainComponent::timerCallback()
 {
+    stopTimer();
+
     movie->ReadAndDecodeFrame();
     repaint();
+
+    int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
+    if(miliseconds_start<0)
+        spend = 0;
+    int need = 1000.0d / movie->fps;
+
+    int timer = need - spend;
+
+    if(timer<1)
+        timer = 1;
+
+    miliseconds_start = Time::getCurrentTime().toMilliseconds();
+    startTimer(timer);
+
 }
 
 void MainComponent::buttonClicked (Button* button)
@@ -95,11 +111,14 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     movie = new Movie();
 
     ask_jump_target = 0;
+
+    video_playing = false;
+    miliseconds_start = -1;
 }
 
 MainComponent::~MainComponent ()
 {
-    stopTimer();
+    StopVideo();
     delete movie;
     if(ask_jump_target)
     {
@@ -127,6 +146,7 @@ void MainComponent::paint (Graphics& g)
 {
     if(isVideoReady())
     {
+        g.setImageResamplingQuality(Graphics::lowResamplingQuality);
 
         int width_current = getWidth();
         int height_current = getHeight();
@@ -148,7 +168,7 @@ void MainComponent::paint (Graphics& g)
         {
             deltay = ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
         }
-        g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::stretchToFit,false);
+        g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::centred,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
         g.drawRect(25,height_current-75,width_current-50,50,1);
@@ -234,7 +254,6 @@ void MainComponent::mouseDown (const MouseEvent& e)
     mouse_y = e.y;
     if(NeedDrawArrow())
     {
-        stopTimer();
         int position = GetArrowPosition();
         double ratio = (double)(position-25)/(double)(getWidth()-50);
 
@@ -308,7 +327,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
         if (fc.browseForFileToOpen())
         {
-            stopTimer();
+            StopVideo();
             File chosenFile = fc.getResult();
             changeFileName(chosenFile.getFullPathName());
         }
@@ -317,19 +336,19 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandPlay:
     {
-        startTimer(20);
+        StartVideo();
     }
     break;
 
     case commandPause:
     {
-        stopTimer();
+        StopVideo();
     }
     break;
 
     case commandStop:
     {
-        stopTimer();
+        StopVideo();
         movie->GotoSecondAndRead(0.0);
         repaint();
     }
@@ -337,7 +356,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandNextFrame:
     {
-        stopTimer();
+        StopVideo();
         movie->ReadAndDecodeFrame();
         repaint();
     }
@@ -345,7 +364,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandPrevFrame:
     {
-        stopTimer();
+        StopVideo();
 
         movie->GoBack(1);
         movie->DecodeFrame();
@@ -355,8 +374,8 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandNext5Frame:
     {
-        stopTimer();
-        for(int i = 0;i<5;++i)
+        StopVideo();
+        for(int i = 0; i<5; ++i)
         {
             movie->SkipFrame();
         }
@@ -368,7 +387,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandPrev5Frame:
     {
-        stopTimer();
+        StopVideo();
 
         movie->GoBack(5);
         movie->DecodeFrame();
@@ -378,7 +397,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandNextSecond:
     {
-        stopTimer();
+        StopVideo();
         movie->GotoSecondAndRead(movie->current+1.0d);
         repaint();
 
@@ -387,7 +406,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandPrevSecond:
     {
-        stopTimer();
+        StopVideo();
         movie->GotoSecondAndRead(movie->current-1.0d);
         repaint();
 
@@ -396,20 +415,20 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandSave:
     {
-        stopTimer();
+        StopVideo();
 
     }
     break;
 
     case commandEncode:
     {
-        stopTimer();
+        StopVideo();
     }
-        break;
+    break;
 
     case commandSaveFrame:
     {
-        stopTimer();
+        StopVideo();
         if(isVideoReady())
         {
             FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + ".jpg","*.jpg",true);
@@ -463,7 +482,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandJump:
     {
-        stopTimer();
+        StopVideo();
         if(isVideoReady())
         {
             if(ask_jump_target)
@@ -508,6 +527,19 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 bool MainComponent::isVideoReady ()
 {
     return movie && movie->loaded ;
+}
+
+void MainComponent::StopVideo()
+{
+    stopTimer();
+    video_playing = false;
+    miliseconds_start = -1;
+}
+
+void MainComponent::StartVideo()
+{
+    startTimer(1);
+    video_playing = true;
 }
 
 void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)

@@ -94,6 +94,11 @@ public:
     void getAllCommands (Array <CommandID>& commands);
     bool isVideoReady ();
     void getCommandInfo (CommandID commandID, ApplicationCommandInfo& result);
+
+    int64 miliseconds_start;
+    bool video_playing;
+    void StopVideo();
+    void StartVideo();
 };
 
 #endif//_MAINCOMPONENT_H_
