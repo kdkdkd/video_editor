@@ -4,7 +4,7 @@
 
 #include "MainAppWindow.h"
 #include <juce.h>
-#include "movie.h"
+#include "timeline.h"
 #include "localization.h"
 #include "toolbox.h"
 
@@ -15,13 +15,8 @@ using namespace localization;
 class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener
 {
 public:
-    String filename;
-    bool file_choosed;
-
     int mouse_x;
     int mouse_y;
-    Movie *movie_new;
-    String new_filename_cur;
     AskJumpDestanation *ask_jump_target;
 
     void changeFileName(String new_filename);
@@ -35,9 +30,6 @@ public:
     void initImageButton(String pic_name,DrawableButton*& button);
 
     void SetVisibleButtons(bool visible);
-
-    Label* filename_label;
-
 
 
     enum CommandIDs
@@ -63,7 +55,7 @@ public:
 
     MainAppWindow* mainWindow;
 
-    Movie *movie;
+    Timeline *timeline;
     void buttonClicked (Button* button);
     MainComponent (MainAppWindow* mainWindow_);
 

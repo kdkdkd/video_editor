@@ -135,7 +135,6 @@ bool Movie::Load(String &filename)
 
     int fps_num = pStream->r_frame_rate.num;
     int fps_denum = pStream->r_frame_rate.den;
-
     fps = ((double)fps_num / (double)fps_denum);
 
     if(fps<=0.0||fps>=1000.0)
@@ -155,6 +154,8 @@ bool Movie::Load(String &filename)
 
     loaded = true;
 
+    width = pCodecCtx->width;
+    height = pCodecCtx->height;
     return loaded;
 
 }

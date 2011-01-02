@@ -45,6 +45,9 @@ public:
     double current;
     double fps;
 
+    int width;
+    int height;
+
     String filename;
 
     FileInputStream *fs;

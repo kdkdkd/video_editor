@@ -79,6 +79,8 @@
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />
 		<Unit filename="movie.h" />
+		<Unit filename="timeline.cpp" />
+		<Unit filename="timeline.h" />
 		<Unit filename="toolbox.cpp" />
 		<Unit filename="toolbox.h" />
 		<Extensions>

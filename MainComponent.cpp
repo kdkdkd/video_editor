@@ -4,30 +4,18 @@
 
 void MainComponent::changeFileName(String new_filename)
 {
-    new_filename_cur = new_filename;
-    movie_new = new Movie();
     bool loaded_local = false;
 
-    loaded_local = movie_new->Load(new_filename_cur);
+    loaded_local = timeline->Load(new_filename);
     if(loaded_local)
     {
-        delete movie;
-        movie = movie_new;
-        filename = new_filename_cur;
-        file_choosed = true;
-
-        filename_label->setText(new_filename_cur,true);
-        filename_label->setTooltip(new_filename_cur);
-        filename_label->setVisible(true);
-        movie->ReadAndDecodeFrame();
+        timeline->ReadAndDecodeFrame();
         SetVisibleButtons(true);
         repaint();
-
     }
     else
     {
-        delete movie_new;
-        AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename_cur);
+        AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename);
     }
 }
 
@@ -45,13 +33,13 @@ void  MainComponent::timerCallback()
 {
     stopTimer();
 
-    movie->ReadAndDecodeFrame();
+    timeline->ReadAndDecodeFrame();
     repaint();
 
     int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
     if(miliseconds_start<0)
         spend = 0;
-    int need = 1000.0d / movie->fps;
+    int need = 1000.0d / timeline->GetCurrentMovie()->fps;
 
     int timer = need - spend;
 
@@ -94,13 +82,9 @@ void MainComponent::initImageButton(String pic_name,DrawableButton*& button)
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
 {
-    file_choosed = false;
     mainWindow = mainWindow_;
 
-    filename_label = new Label ("","");
-    addChildComponent(filename_label);
     av_register_all();
-
 
     initImageButton(String("pic\\play.png"),playButton);
     initImageButton(String("pic\\pause.png"),pauseButton);
@@ -109,7 +93,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     initImageButton(String("pic\\next.png"),nextFrameButton);
     initImageButton(String("pic\\stop.png"),stopButton);
 
-    movie = new Movie();
+    timeline = new Timeline();
 
     ask_jump_target = 0;
 
@@ -120,7 +104,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 MainComponent::~MainComponent ()
 {
     StopVideo();
-    delete movie;
+    delete timeline;
     if(ask_jump_target)
     {
         delete ask_jump_target;
@@ -135,7 +119,6 @@ void MainComponent::resized ()
 {
     int width_current = getWidth();
     int height_current = getHeight();
-    filename_label->setBounds (0, height_current-20, width_current, 20);
     playButton->setBounds (10, height_current-195, 60, 65);
     pauseButton->setBounds (70, height_current-195, 60, 65);
     stopButton->setBounds (130, height_current-195, 60, 65);
@@ -152,8 +135,8 @@ void MainComponent::paint (Graphics& g)
         int width_current = getWidth();
         int height_current = getHeight();
 
-        int width_image = movie->image->getWidth();
-        int height_image = movie->image->getHeight();
+        int width_image = timeline->GetImage()->getWidth();
+        int height_image = timeline->GetImage()->getHeight();
 
         float scalex = width_current/(float)width_image;
         float scaley = (height_current-210.0f)/(float)height_image;
@@ -169,7 +152,7 @@ void MainComponent::paint (Graphics& g)
         {
             deltay = ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
         }
-        g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::centred,false);
+        g.drawImageWithin(timeline->GetImage(),deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::centred,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
         g.drawRect(25,height_current-75,width_current-50,50,1);
@@ -180,7 +163,7 @@ void MainComponent::paint (Graphics& g)
 
         g.drawHorizontalLine(height_current-26,10,25);
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
 
         g.setColour(Colour::fromRGB(200,200,250));
         g.fillRect(26,height_current-74,width_current-52,24);
@@ -216,7 +199,7 @@ bool MainComponent::NeedDrawArrow()
 
 int MainComponent::GetCurrentPosition()
 {
-    return (int)round((double(getWidth()-50))*movie->current/(double)(movie->duration))+25;
+    return (int)round((double(getWidth()-50))*timeline->current/(double)(timeline->duration))+25;
 }
 
 void MainComponent::DrawSlider(Graphics& g)
@@ -258,7 +241,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
         int position = GetArrowPosition();
         double ratio = (double)(position-25)/(double)(getWidth()-50);
 
-        movie->GotoRatioAndRead(ratio);
+        timeline->GotoRatioAndRead(ratio);
         repaint();
         return;
     }
@@ -352,7 +335,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandStop:
     {
         StopVideo();
-        movie->GotoSecondAndRead(0.0);
+        timeline->GotoSecondAndRead(0.0);
         repaint();
     }
     break;
@@ -360,7 +343,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextFrame:
     {
         StopVideo();
-        movie->ReadAndDecodeFrame();
+        timeline->ReadAndDecodeFrame();
         repaint();
     }
     break;
@@ -369,8 +352,8 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         StopVideo();
 
-        movie->GoBack(1);
-        movie->DecodeFrame();
+        timeline->GoBack(1);
+        timeline->DecodeFrame();
         repaint();
     }
     break;
@@ -380,9 +363,9 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
         for(int i = 0; i<5; ++i)
         {
-            movie->SkipFrame();
+            timeline->SkipFrame();
         }
-        movie->DecodeFrame();
+        timeline->DecodeFrame();
         repaint();
 
     }
@@ -392,8 +375,8 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         StopVideo();
 
-        movie->GoBack(5);
-        movie->DecodeFrame();
+        timeline->GoBack(5);
+        timeline->DecodeFrame();
         repaint();
     }
     break;
@@ -401,7 +384,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextSecond:
     {
         StopVideo();
-        movie->GotoSecondAndRead(movie->current+1.0d);
+        timeline->GotoSecondAndRead(timeline->current+1.0d);
         repaint();
 
     }
@@ -410,7 +393,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandPrevSecond:
     {
         StopVideo();
-        movie->GotoSecondAndRead(movie->current-1.0d);
+        timeline->GotoSecondAndRead(timeline->current-1.0d);
         repaint();
 
     }
@@ -423,7 +406,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandInfo:
     {
-        toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this);
+        toolbox::show_info_popup(LABEL_INFO,timeline->GetCurrentMovie()->GetMovieInfo(),this);
     }
 
     break;
@@ -439,7 +422,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
         if(isVideoReady())
         {
-            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + ".jpg","*.jpg",true);
+            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,timeline->GetCurrentMovie()->filename + ".jpg","*.jpg",true);
             if (fc.browseForFileToSave(true))
             {
                 File chosenFile = fc.getResult();
@@ -467,7 +450,7 @@ bool MainComponent::perform (const InvocationInfo& info)
                             File file_with_jpg_ext(chosenFile.getFullPathName() + ".jpg");
                             stream = file_with_jpg_ext.createOutputStream();
                         }
-                        jpeg_format->writeImageToStream(*movie->image,*stream);
+                        jpeg_format->writeImageToStream(*timeline->GetImage(),*stream);
                         if(stream)delete stream;
                         delete jpeg_format;
                     }
@@ -535,7 +518,7 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 
 bool MainComponent::isVideoReady ()
 {
-    return movie && movie->loaded ;
+    return timeline->loaded;
 }
 
 void MainComponent::StopVideo()

@@ -2,13 +2,13 @@
 #include "MainComponent.h"
 #include "localization.h"
 #include "toolbox.h"
-AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(LABEL_CHOOSE_JUMP,LABEL_TOTAL_TIME + "  " + toolbox::format_duration(mainWindow_->movie->duration),AlertWindow::QuestionIcon)
+AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(LABEL_CHOOSE_JUMP,LABEL_TOTAL_TIME + "  " + toolbox::format_duration(mainWindow_->timeline->duration),AlertWindow::QuestionIcon)
 {
 	mainWindow = mainWindow_;
 	centreAroundComponent(mainWindow,0,0);
 
     toolbox::TimeVideo tv;
-    tv.fromDouble(mainWindow_->movie->current);
+    tv.fromDouble(mainWindow_->timeline->current);
 
     String letters = T("0123456789");
 
@@ -87,9 +87,9 @@ void AskJumpDestanation::buttonClicked (Button* button)
     if(button==okButton)
     {
        double input = (double)(input_hours->getText().getIntValue())*3600.0d + (double)(input_minutes->getText().getIntValue())*60.0d + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0d;
-       if(fabs(mainWindow->movie->current - input) > 0.01d)
+       if(fabs(mainWindow->timeline->current - input) > 0.01d)
        {
-           mainWindow->movie->GotoSecondAndRead(input);
+           mainWindow->timeline->GotoSecondAndRead(input);
            mainWindow->repaint();
        }
     }
