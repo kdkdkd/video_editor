@@ -50,10 +50,12 @@ bool Movie::Load(String &filename)
     probeData->filename = "";
 
     File f(filename);
+    this->filename = filename;
     fs = f.createInputStream();
     fs->read(pDataBuffer,lSize);
     fs->setPosition(0);
     file_size = (double)fs->getFile().getSize();
+
     AVInputFormat* pAVInputFormat = av_probe_input_format(probeData,1);
     if(!pAVInputFormat)
     {

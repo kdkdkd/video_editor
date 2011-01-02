@@ -17,7 +17,7 @@ private:
     static const long lSize = 32768;
     unsigned char* pDataBuffer;
     ByteIOContext* ByteIOCtx;
-    FileInputStream *fs;
+
 
     uint8_t         *buffer;
     SwsContext *img_convert_ctx;
@@ -44,6 +44,10 @@ public:
     double duration;
     double current;
     double fps;
+
+    String filename;
+
+    FileInputStream *fs;
 
     double file_size;
 

@@ -52,6 +52,29 @@ extern String LABEL_HOURS;
 extern String LABEL_MINUTES;
 extern String LABEL_SECONDS;
 extern String LABEL_MINI_SECONDS;
+
+extern String LABEL_INFO;
+extern String LABEL_FILE;
+extern String LABEL_DURATION;
+extern String LABEL_SIZE;
+
+extern String LABEL_BITRATE;
+extern String LABEL_NOT_AVIABLE;
+extern String LABEL_KB_PER_SECOND;
+
+extern String LABEL_STREAM;
+extern String LABEL_VIDEO;
+extern String LABEL_AUDIO;
+extern String LABEL_SUBTITLES;
+extern String LABEL_FORMAT;
+
+
+extern String LABEL_CODEC;
+extern String LABEL_RESOLUTION;
+extern String LABEL_FPS;
+extern String LABEL_LANG;
+extern String LABEL_COMMENT;
+
 }
 
 

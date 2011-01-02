@@ -51,4 +51,30 @@ String LABEL_MINUTES = T("мин.");
 String LABEL_SECONDS = T("сек.");
 String LABEL_MINI_SECONDS = T("мсек.");
 
+String LABEL_INFO = T("Информация о файле");
+String LABEL_FILE = T("файл");
+String LABEL_DURATION = T("продолжительность");
+String LABEL_SIZE = T("размер");
+String LABEL_FORMAT = T("формат");
+
+
+String LABEL_CODEC = T("кодек");
+String LABEL_RESOLUTION = T("разрешение");
+String LABEL_FPS = T("част. кадров");
+String LABEL_LANG = T("язык");
+String LABEL_COMMENT = T("коммент");
+
+
+String LABEL_BITRATE = T("битрейт");
+String LABEL_NOT_AVIABLE = T("Не доступен");
+String LABEL_KB_PER_SECOND = T("кб/с");
+String LABEL_STREAM = T("Поток");
+String LABEL_VIDEO = T("Видео");
+String LABEL_AUDIO = T("Аудио");
+String LABEL_SUBTITLES = T("Субтитры");
+
+
+
+
+
 }

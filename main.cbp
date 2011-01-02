@@ -73,6 +73,8 @@
 		<Unit filename="MainAppWindow.h" />
 		<Unit filename="MainComponent.cpp" />
 		<Unit filename="MainComponent.h" />
+		<Unit filename="PopupWindow.cpp" />
+		<Unit filename="PopupWindow.h" />
 		<Unit filename="localization.cpp" />
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />
