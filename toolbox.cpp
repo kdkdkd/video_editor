@@ -41,8 +41,13 @@ String TimeVideo::toString()
         res<<"0";
     res<<second;
 
+    res<<" . ";
+    if(mini_second<10)
+        res<<"00";
+    else if(mini_second<100)
+        res<<"0";
 
-    res<<" . "<<mini_second;
+    res<<mini_second;
 
     return res;
 }

@@ -55,7 +55,8 @@ public:
         commandNext5Frame           = 0x200A,
         commandPrev5Frame           = 0x200B,
         commandNextSecond           = 0x200C,
-        commandPrevSecond           = 0x200D
+        commandPrevSecond           = 0x200D,
+        commandInfo                 = 0x200E
 
     };
 

@@ -1,4 +1,5 @@
 #include "MainComponent.h"
+#include "PopupWindow.h"
 #include "AskJumpDestanation.h"
 
 void MainComponent::changeFileName(String new_filename)
@@ -287,6 +288,8 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addCommandItem(commandManager,commandSave);
         menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
+        menu.addCommandItem(commandManager,commandInfo);
+        menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
         menu.addCommandItem(commandManager,commandStop);
@@ -416,8 +419,125 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSave:
     {
         StopVideo();
-
     }
+
+    case commandInfo:
+    {
+        TextEditor *te = new TextEditor();
+        te->setReadOnly(true);
+        String text;
+
+        File f(movie->filename);
+        text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
+        text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(movie->duration)<<"\n";
+        text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(movie->fs->getFile().getSize())<<"\n";
+        String bit_rate;
+        int bit_rate_int = movie->pFormatCtx->bit_rate / 1000;
+        if(bit_rate_int)
+        {
+            bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
+        }else
+        {
+            bit_rate = LABEL_NOT_AVIABLE;
+        }
+        text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
+        text<<"["<<LABEL_FORMAT<<"] "<<movie->pFormatCtx->iformat->long_name<<"\n\n";
+
+        int display_index = 1;
+        for(unsigned int i=0; i<movie->pFormatCtx->nb_streams; i++)
+        {
+            AVStream * stream = movie->pFormatCtx->streams[i];
+            if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
+            {
+                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
+                text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+                text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
+                text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
+                if(stream->codec->bit_rate)
+                    text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
+
+                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+                if(lang)
+                    text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
+
+                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+                if(title)
+                    text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
+                text<<"\n";
+                display_index++;
+            }
+
+            else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
+            {
+                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
+                text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+
+                text<<"   "<<"[sample rate] "<<stream->codec->sample_rate<<" Hz"<<"\n";
+                text<<"   "<<"[channels] "<<stream->codec->channels<<"\n";
+
+                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+                if(lang)
+                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
+
+                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+                if(title)
+                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
+                text<<"\n";
+                display_index++;
+            }
+            else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
+            {
+                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
+                //text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+                if(lang)
+                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
+
+                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+                if(title)
+                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
+                text<<"\n";
+                display_index++;
+            }
+
+        }
+
+        Font font = te->getFont();
+        font.setHeight(16);
+        te->setFont(font);
+        te->setText(text);
+
+        int width_text_editor = te->getTextWidth()+20;
+        int height_text_editor = te->getTextHeight()+50;
+        if(width_text_editor<200)
+            width_text_editor = 200;
+        if(width_text_editor>600)
+           width_text_editor = 600;
+
+
+        if(height_text_editor>600)
+           height_text_editor = 600;
+
+
+        te->setBounds(0,0,width_text_editor,height_text_editor);
+        te->setMultiLine(true,false);
+        te->setSelectAllWhenFocused(true);
+        te->setPopupMenuEnabled(false);
+
+
+        PopupWindow *doc = new PopupWindow(LABEL_INFO,Colours::whitesmoke,DocumentWindow::closeButton,true);
+        doc->setResizable(false, false);
+        doc->centreAroundComponent(this,width_text_editor,height_text_editor);
+
+        doc->setSize(width_text_editor,height_text_editor);
+        doc->setContentComponent(te);
+
+        doc->setVisible(true);
+        doc->addToDesktop(0);
+
+        te->grabKeyboardFocus();
+    }
+
     break;
 
     case commandEncode:
@@ -518,7 +638,8 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandNext5Frame,
                               commandPrev5Frame,
                               commandNextSecond,
-                              commandPrevSecond
+                              commandPrevSecond,
+                              commandInfo
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -554,6 +675,11 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     case commandSave:
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
+        result.setActive(false);
+        break;
+    case commandInfo:
+        result.setInfo (LABEL_INFO, LABEL_INFO, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.addDefaultKeypress (T('I'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
     case commandEncode:
