@@ -470,18 +470,18 @@ bool MainComponent::perform (const InvocationInfo& info)
             else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
             {
                 text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
-                text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+                text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
 
-                text<<"   "<<"[sample rate] "<<stream->codec->sample_rate<<" Hz"<<"\n";
-                text<<"   "<<"[channels] "<<stream->codec->channels<<"\n";
+                text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<stream->codec->sample_rate<<" Hz"<<"\n";
+                text<<"   ["<<LABEL_CHANNELS<<"] "<<stream->codec->channels<<"\n";
 
                 AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
                 if(lang)
-                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
+                    text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
 
                 AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
                 if(title)
-                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
+                    text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
                 text<<"\n";
                 display_index++;
             }
@@ -491,11 +491,11 @@ bool MainComponent::perform (const InvocationInfo& info)
                 //text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
                 AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
                 if(lang)
-                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
+                    text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
 
                 AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
                 if(title)
-                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
+                    text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
                 text<<"\n";
                 display_index++;
             }

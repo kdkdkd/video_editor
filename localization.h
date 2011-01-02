@@ -75,6 +75,9 @@ extern String LABEL_FPS;
 extern String LABEL_LANG;
 extern String LABEL_COMMENT;
 
+extern String LABEL_SAMPLE_RATE;
+extern String LABEL_CHANNELS;
+
 }
 
 

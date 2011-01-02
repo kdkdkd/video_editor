@@ -61,6 +61,8 @@ String LABEL_FORMAT = T("формат");
 String LABEL_CODEC = T("кодек");
 String LABEL_RESOLUTION = T("разрешение");
 String LABEL_FPS = T("част. кадров");
+String LABEL_SAMPLE_RATE = T("част. дискетизации");
+String LABEL_CHANNELS = T("каналы");
 String LABEL_LANG = T("язык");
 String LABEL_COMMENT = T("коммент");
 
