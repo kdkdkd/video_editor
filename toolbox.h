@@ -4,6 +4,9 @@
 namespace toolbox
 {
 String format_duration(double duration);
+
+void show_info_popup(String label,String text,Component *center_component);
+
 class TimeVideo
 {
 public:

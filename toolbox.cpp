@@ -1,6 +1,50 @@
 #include "toolbox.h"
+#include "PopupWindow.h"
 namespace toolbox
 {
+
+void show_info_popup(String label,String text,Component *center_component)
+{
+    TextEditor *te = new TextEditor();
+    te->setReadOnly(true);
+
+
+    Font font = te->getFont();
+    font.setHeight(16);
+    te->setFont(font);
+    te->setText(text);
+
+    int width_text_editor = te->getTextWidth()+20;
+    int height_text_editor = te->getTextHeight()+50;
+    if(width_text_editor<200)
+        width_text_editor = 200;
+    if(width_text_editor>600)
+        width_text_editor = 600;
+
+
+    if(height_text_editor>600)
+        height_text_editor = 600;
+
+
+    te->setBounds(0,0,width_text_editor,height_text_editor);
+    te->setMultiLine(true,false);
+    te->setSelectAllWhenFocused(true);
+    te->setPopupMenuEnabled(false);
+
+
+    PopupWindow *doc = new PopupWindow(label,Colours::whitesmoke,DocumentWindow::closeButton,true);
+    doc->setResizable(false, false);
+    doc->centreAroundComponent(center_component,width_text_editor,height_text_editor);
+
+    doc->setSize(width_text_editor,height_text_editor);
+    doc->setContentComponent(te);
+
+    doc->setVisible(true);
+    doc->addToDesktop(0);
+
+    te->grabKeyboardFocus();
+
+}
 String format_duration(double duration)
 {
     String res;

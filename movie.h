@@ -66,6 +66,7 @@ public:
     bool GotoRatioAndRead(double ratio,bool decode = true);
     bool GotoSecondAndRead(double dest,bool decode = true);
     bool GoBack(int frames);
+    String GetMovieInfo();
 };
 
 

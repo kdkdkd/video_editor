@@ -1,6 +1,7 @@
 #include "movie.h"
-#include <list>
-using namespace std;
+#include "localization.h"
+#include "toolbox.h"
+using namespace localization;
 Movie::Movie()
 {
     loaded = false;
@@ -77,7 +78,7 @@ bool Movie::Load(String &filename)
     if(av_find_stream_info(pFormatCtx)<0)
         return false;
 
-    dump_format(pFormatCtx, 0, filename.toCString(), false);
+    //dump_format(pFormatCtx, 0, filename.toCString(), false);
 
     // Find the first video stream
     videoStream=-1;
@@ -386,6 +387,81 @@ void Movie::DecodeFrame()
 
     sws_scale (img_convert_ctx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height,&bitmapData->data,pFrameRGB->linesize);
 
+
+}
+
+
+String Movie::GetMovieInfo()
+{
+    String text;
+
+    File f(filename);
+    text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
+    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(duration)<<"\n";
+    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(fs->getFile().getSize())<<"\n";
+    String bit_rate;
+    int bit_rate_int = pFormatCtx->bit_rate / 1000;
+    if(bit_rate_int)
+    {
+        bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
+    }
+    else
+    {
+        bit_rate = LABEL_NOT_AVIABLE;
+    }
+    text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
+    text<<"["<<LABEL_FORMAT<<"] "<<pFormatCtx->iformat->long_name<<"\n\n";
+
+    int display_index = 1;
+    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    {
+        AVStream * stream = pFormatCtx->streams[i];
+        bool displayed = false;
+        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
+            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+            text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
+            text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
+            if(stream->codec->bit_rate)
+                text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
+
+            displayed = true;
+            display_index++;
+        }
+
+        else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
+            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+
+            text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<stream->codec->sample_rate<<" Hz"<<"\n";
+            text<<"   ["<<LABEL_CHANNELS<<"] "<<stream->codec->channels<<"\n";
+
+            displayed = true;
+            display_index++;
+        }
+        else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
+            displayed = true;
+            display_index++;
+        }
+        if(displayed)
+        {
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
+
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
+            text<<"\n";
+
+        }
+
+    }
+    return text;
 
 }
 
