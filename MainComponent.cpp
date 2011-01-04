@@ -9,8 +9,8 @@ void MainComponent::changeFileName(String new_filename)
     loaded_local = timeline->Load(new_filename);
     if(loaded_local)
     {
-        timeline->ReadAndDecodeFrame();
         SetVisibleButtons(true);
+        ResizeViewport();
         repaint();
     }
     else
@@ -26,6 +26,19 @@ void MainComponent::SetVisibleButtons(bool visible)
     prevFrameButton->setVisible(visible);
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
+    movies_list_viewport->setVisible(visible);
+}
+
+void MainComponent::ResizeViewport()
+{
+    int height_current = getHeight();
+    int movies_border = 300;
+    if(isVideoReady())
+    {
+        movies_border = GetMoviesBorder();
+    }
+    movies_list_viewport->setBounds(11,10 + 9,movies_border-12,height_current - 210 - 10 - 9);
+    movies_list->setSize(movies_border-30,1000);
 
 }
 
@@ -71,12 +84,12 @@ void MainComponent::initImageButton(String pic_name,DrawableButton*& button)
 {
     button = new DrawableButton("",DrawableButton::ImageFitted);
     DrawableImage normal,over;
-    Image* image = ImageCache::getFromFile(pic_name);
-    normal.setImage (image, true);
+    Image image = ImageCache::getFromFile(pic_name);
+    normal.setImage (image);
     normal.setOpacity(0.8);
-    over.setImage (image, true);
+    over.setImage (image);
     button->setImages (&normal, &over, &normal);
-    button->addButtonListener(this);
+    button->addListener(this);
     addChildComponent(button);
 }
 
@@ -94,6 +107,11 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     initImageButton(String("pic\\stop.png"),stopButton);
 
     timeline = new Timeline();
+
+    movies_list = new Component("movies_list");
+    movies_list_viewport = new Viewport();
+    movies_list_viewport->setViewedComponent(movies_list);
+    addChildComponent(movies_list_viewport);
 
     ask_jump_target = 0;
 
@@ -124,6 +142,27 @@ void MainComponent::resized ()
     stopButton->setBounds (130, height_current-195, 60, 65);
     prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195, 60, 65);
     nextFrameButton->setBounds (width_current - 10 - 60, height_current-195, 60, 65);
+    ResizeViewport();
+
+
+}
+
+int MainComponent::GetMoviesBorder()
+{
+    int width_current = getWidth();
+    int height_current = getHeight();
+
+    int width_image = timeline->GetImage()->getWidth();
+    int height_image = timeline->GetImage()->getHeight();
+
+    int res = 300;
+    float scalex = (width_current-310.0f)/(float)width_image;
+    float scaley = (height_current-210.0f)/(float)height_image;
+    if(scaley<scalex)
+    {
+        res += width_current - 310 - (int)(width_image*scaley)-10;
+    }
+    return res;
 }
 
 void MainComponent::paint (Graphics& g)
@@ -138,21 +177,22 @@ void MainComponent::paint (Graphics& g)
         int width_image = timeline->GetImage()->getWidth();
         int height_image = timeline->GetImage()->getHeight();
 
-        float scalex = width_current/(float)width_image;
+        float scalex = (width_current-310.0f)/(float)width_image;
         float scaley = (height_current-210.0f)/(float)height_image;
         float scale = scalex;
-        float deltax = 0.0f;
+        float deltax = 305.0f;
         float deltay = 0.0f;
         if(scaley<scalex)
         {
             scale = scaley;
-            deltax = ((float)width_current - (float)width_image*scale)/2.0f;
+            deltax += ((float)width_current - 310.0f - (float)width_image*scale) - 5.0f;
         }
         else
         {
-            deltay = ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
+            deltay += ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
         }
-        g.drawImageWithin(timeline->GetImage(),deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::centred,false);
+
+        g.drawImageWithin(*(timeline->GetImage()),deltax,deltay,(width_image * scale),(height_image * scale) ,RectanglePlacement::centred,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
         g.drawRect(25,height_current-75,width_current-50,50,1);
@@ -164,6 +204,23 @@ void MainComponent::paint (Graphics& g)
         g.drawHorizontalLine(height_current-26,10,25);
 
         g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
+
+        Font f = g.getCurrentFont();
+        Font f_copy = f;
+        f.setItalic(true);
+        f.setHeight(18);
+        g.setFont(f);
+        int text_height = f.getHeight();
+        int text_width = f.getStringWidth(LABEL_MOVIES);
+        g.drawText(LABEL_MOVIES,30,10,text_width,text_height,Justification::centred,true);
+        int end_height = GetMoviesBorder();
+        g.drawHorizontalLine(10 + text_height/2,30 + text_width + 3,end_height);
+        g.drawHorizontalLine(10 + text_height/2,10,27);
+        g.drawHorizontalLine(height_current - 210,10,end_height);
+        g.drawVerticalLine(10,10 +text_height/2,height_current - 210);
+        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 210);
+        g.setFont(f_copy);
+
 
         g.setColour(Colour::fromRGB(200,200,250));
         g.fillRect(26,height_current-74,width_current-52,24);
@@ -217,7 +274,8 @@ void MainComponent::DrawArrow(Graphics& g)
     int position = GetArrowPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawArrow(position,height_current - 110,position,height_current - 79,1,4,20);
+    Line<float> line(position,height_current - 110,position,height_current - 79);
+    g.drawArrow(line,1,4,20);
 }
 
 void MainComponent::repaintSlider()

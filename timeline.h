@@ -1,7 +1,7 @@
 #ifndef TIMELINE_H
 #define	TIMELINE_H
 
-#include <juce.h>
+#include "juce/juce.h"
 #include "movie.h"
 #include <list>
 
@@ -11,7 +11,7 @@ class Timeline
 {
 public:
     list<Movie*> movies;
-	bool loaded;
+    bool loaded;
     double duration;
     double current;
     bool Load(String &filename);

@@ -1,6 +1,7 @@
 ﻿#include "localization.h"
 
-namespace localization{
+namespace localization
+{
 String LABEL_PROGRAMM_CAPTION = T("Редактор Видео");
 String MENU_FILE = T("Файл");
 String MENU_FILE_OPEN = T("Открыть");
@@ -74,6 +75,8 @@ String LABEL_STREAM = T("Поток");
 String LABEL_VIDEO = T("Видео");
 String LABEL_AUDIO = T("Аудио");
 String LABEL_SUBTITLES = T("Субтитры");
+
+String LABEL_MOVIES = T("Ролики");
 
 
 

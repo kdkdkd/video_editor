@@ -1,7 +1,7 @@
 #ifndef _ASKJUMPDESTANATION_H_
 #define _ASKJUMPDESTANATION_H_
 
-#include <juce.h>
+#include "juce/juce.h"
 #include "MainComponent.h"
 
 class AskJumpDestanation : public AlertWindow

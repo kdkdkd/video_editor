@@ -3,7 +3,7 @@
 
 
 #include "MainAppWindow.h"
-#include <juce.h>
+#include "juce/juce.h"
 #include "timeline.h"
 #include "localization.h"
 #include "toolbox.h"
@@ -52,7 +52,6 @@ public:
 
     };
 
-
     MainAppWindow* mainWindow;
 
     Timeline *timeline;
@@ -92,6 +91,13 @@ public:
     bool video_playing;
     void StopVideo();
     void StartVideo();
+
+    int GetMoviesBorder();
+
+    Component * movies_list;
+    Viewport *movies_list_viewport;
+
+    void ResizeViewport();
 };
 
 #endif//_MAINCOMPONENT_H_

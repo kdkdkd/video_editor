@@ -1,9 +1,10 @@
 ﻿#ifndef LOCALIZATION_H_INCLUDED
 #define LOCALIZATION_H_INCLUDED
 
-#include <juce.h>
+#include "juce/juce.h"
 
-namespace localization{
+namespace localization
+{
 extern String LABEL_PROGRAMM_CAPTION;
 
 extern String MENU_FILE;
@@ -77,6 +78,8 @@ extern String LABEL_COMMENT;
 
 extern String LABEL_SAMPLE_RATE;
 extern String LABEL_CHANNELS;
+
+extern String LABEL_MOVIES;
 
 }
 

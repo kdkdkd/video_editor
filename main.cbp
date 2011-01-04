@@ -37,34 +37,27 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
+			<Add option="-march=i486" />
 		</Compiler>
 		<Linker>
-			<Add library="gdi32" />
-			<Add library="user32" />
-			<Add library="kernel32" />
-			<Add library="libjuce.a" />
-			<Add library="libshell32.a" />
-			<Add library="libole32.a" />
-			<Add library="libvfw32.a" />
-			<Add library="libwinmm.a" />
-			<Add library="libwininet.a" />
-			<Add library="libws2_32.a" />
-			<Add library="libdsound.a" />
-			<Add library="libwsock32.a" />
-			<Add library="libwldap32.a" />
-			<Add library="libopengl32.a" />
-			<Add library="libglu32.a" />
-			<Add library="libuuid.a" />
-			<Add library="librpcrt4.a" />
-			<Add library="libgdi32.a" />
-			<Add library="libcomdlg32.a" />
-			<Add library="libversion.a" />
 			<Add library="libavformat.a" />
 			<Add library="libavcodec.a" />
 			<Add library="libswscale.a" />
 			<Add library="libavdevice.a" />
 			<Add library="libavutil.a" />
+			<Add library="juce\bin\Release\libjuce.a" />
+			<Add library="libimm32.a" />
+			<Add library="libwsock32.a" />
+			<Add library="libole32.a" />
+			<Add library="libwinmm.a" />
+			<Add library="libversion.a" />
+			<Add library="libuuid.a" />
+			<Add library="libopengl32.a" />
+			<Add library="libwininet.a" />
+			<Add library="libvfw32.a" />
+			<Add library="liboleaut32.a" />
+			<Add library="libgdi32.a" />
+			<Add library="libcomdlg32.a" />
 		</Linker>
 		<Unit filename="ApplicationStartup.cpp" />
 		<Unit filename="AskJumpDestanation.cpp" />
