@@ -10,6 +10,20 @@ void MainComponent::changeFileName(String new_filename)
     if(loaded_local)
     {
         SetVisibleButtons(true);
+
+        movies_list->deleteAllChildren();
+        DrawableButton *button_preview = new DrawableButton("",DrawableButton::ImageFitted);
+        DrawableImage normal,over;
+
+        normal.setImage(*timeline->GetCurrentMovie()->image_preview);
+        normal.setOpacity(0.8);
+        over.setImage(*timeline->GetCurrentMovie()->image_preview);
+
+        button_preview->setImages (&normal, &over, &over);
+        button_preview->addListener(this);
+        button_preview->setBounds(0,0,132,99);
+        movies_list->addAndMakeVisible(button_preview);
+
         ResizeViewport();
         repaint();
     }
@@ -37,8 +51,8 @@ void MainComponent::ResizeViewport()
     {
         movies_border = GetMoviesBorder();
     }
-    movies_list_viewport->setBounds(11,10 + 9,movies_border-12,height_current - 210 - 10 - 9);
-    movies_list->setSize(movies_border-30,1000);
+    movies_list_viewport->setBounds(13,10 + 18,movies_border-15,height_current - 210 - 10 - 18 - 1);
+    movies_list->setSize(movies_border-33,1000);
 
 }
 

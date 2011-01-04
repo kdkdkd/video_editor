@@ -26,7 +26,7 @@ private:
 
     int videoStream;
 
-    int FindKeyFrame(double back, double dest);
+    int FindKeyFrame(double back, double dest, bool accurate = true);
     double ratio_to_internal;
     double ratio_to_seconds;
     bool SeekToInternal(int frame);
@@ -39,6 +39,8 @@ public:
     AVFormatContext *pFormatCtx;
     bool loaded;
     Image *image;
+
+    Image *image_preview;
     Image::BitmapData *bitmapData;
 
     double duration;
@@ -66,8 +68,8 @@ public:
     void SkipFrame();
     void DecodeFrame();
     void ReadAndDecodeFrame();
-    bool GotoRatioAndRead(double ratio,bool decode = true);
-    bool GotoSecondAndRead(double dest,bool decode = true);
+    bool GotoRatioAndRead(double ratio,bool decode = true, bool accurate = true);
+    bool GotoSecondAndRead(double dest,bool decode = true, bool accurate = true);
     bool GoBack(int frames);
     String GetMovieInfo();
 };

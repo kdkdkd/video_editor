@@ -5,8 +5,9 @@ using namespace localization;
 Movie::Movie()
 {
     loaded = false;
-    image = new Image(Image::RGB,1,1,true);
-    bitmapData = new Image::BitmapData(*image,0,0,1,1,true);
+    image = new Image();
+    bitmapData = 0;
+    image_preview=new Image();
 };
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
@@ -43,6 +44,8 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
 
 bool Movie::Load(String &filename)
 {
+
+
     pDataBuffer = new unsigned char[lSize];
 
     probeData = new AVProbeData();
@@ -152,12 +155,24 @@ bool Movie::Load(String &filename)
         duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
     }
 
-    loaded = true;
+
 
     width = pCodecCtx->width;
     height = pCodecCtx->height;
 
-    ReadAndDecodeFrame();
+    //Generate preview
+    GotoRatioAndRead(.1,true,false);
+
+    int preview_width = 132;
+    int preview_height = 99;
+
+
+    *image_preview = image->rescaled(preview_width,preview_height);
+
+    GotoSecondAndRead(.0);
+    //~Generate preview
+
+    loaded = true;
     return loaded;
 
 }
@@ -197,6 +212,8 @@ void Movie::Dispose()
     }
     delete image;
 
+    delete image_preview;
+
     delete bitmapData;
 
     loaded = false;
@@ -222,7 +239,7 @@ bool Movie::SeekToInternal(int frame)
     return false;
 }
 
-int Movie::FindKeyFrame(double back, double dest)
+int Movie::FindKeyFrame(double back, double dest, bool accurate)
 {
     int keyframe = -1;
 
@@ -247,6 +264,8 @@ int Movie::FindKeyFrame(double back, double dest)
             delete packet;
             if(timestamp_new>=timestamp)
             {
+                if(!accurate)
+                    return keyframe;
                 break;
             }
             if(pFrame->key_frame || timestamp_new==0)
@@ -264,13 +283,13 @@ int Movie::FindKeyFrame(double back, double dest)
 
 }
 
-bool Movie::GotoRatioAndRead(double ratio,bool decode)
+bool Movie::GotoRatioAndRead(double ratio,bool decode, bool accurate)
 {
-    return GotoSecondAndRead(ratio * duration,decode);
+    return GotoSecondAndRead(ratio * duration,decode,accurate);
 }
 
 
-bool Movie::GotoSecondAndRead(double dest,bool decode)
+bool Movie::GotoSecondAndRead(double dest,bool decode, bool accurate)
 {
     if(dest == current)return true;
     if(dest>duration)
@@ -293,10 +312,10 @@ bool Movie::GotoSecondAndRead(double dest,bool decode)
         if(back>dest)
         {
             back = dest;
-            found = FindKeyFrame(back,dest);
+            found = FindKeyFrame(back,dest,accurate);
             break;
         }
-        found = FindKeyFrame(back,dest);
+        found = FindKeyFrame(back,dest,accurate);
         if(back==0.0)
             back = 0.5;
         else
