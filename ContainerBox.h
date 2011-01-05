@@ -13,6 +13,7 @@ public:
     void addChildComponent (Component* child, int zOrder = -1);
     void addAndMakeVisible (Component* child, int zOrder = -1);
     ContainerBox(const String& name);
+    int getIndexOfChildComponent(const Component* const child);
     void resized ();
     ~ContainerBox();
 };

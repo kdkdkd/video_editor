@@ -7,6 +7,8 @@ String format_duration(double duration);
 
 void show_info_popup(String label,String text,Component *center_component);
 
+void delete_all_child_components(Component * comp);
+
 class TimeVideo
 {
 public:

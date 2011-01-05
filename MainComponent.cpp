@@ -10,19 +10,7 @@ void MainComponent::changeFileName(String new_filename)
     if(loaded_local)
     {
         SetVisibleButtons(true);
-
-        DrawableButton *button_preview = new DrawableButton("",DrawableButton::ImageFitted);
-        DrawableImage normal,over;
-
-        normal.setImage(*timeline->GetCurrentMovie()->image_preview);
-        normal.setOpacity(0.9);
-        over.setImage(*timeline->GetCurrentMovie()->image_preview);
-
-        button_preview->setImages (&normal, &over, &over);
-        button_preview->addListener(this);
-        button_preview->setBounds(0,0,124,96);
-        movies_list->addAndMakeVisible(button_preview);
-
+        AddMovieToList(timeline->GetCurrentMovie());
         ResizeViewport();
         repaint();
     }
@@ -30,6 +18,40 @@ void MainComponent::changeFileName(String new_filename)
     {
         AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename);
     }
+}
+
+void MainComponent::AddMovieToList(Movie*movie)
+{
+    Component *preview = new Component();
+    preview->setSize(124,96+42);
+
+
+    DrawableButton *button_preview = new DrawableButton("",DrawableButton::ImageFitted);
+
+    button_preview->addListener(this);
+    DrawableImage normal,over;
+
+    normal.setImage(*movie->image_preview);
+    normal.setOpacity(0.9);
+    over.setImage(*movie->image_preview);
+
+    button_preview->setImages (&normal, &over, &over);
+    button_preview->addListener(this);
+    button_preview->setBounds(0,0,124,96);
+    preview->addAndMakeVisible(button_preview);
+    File f(movie->filename);
+    String file_name = f.getFileName();
+    Label *caption = new Label(file_name,file_name);
+    caption->setTooltip(movie->filename);
+
+    Font font = caption->getFont();
+    font.setHeight(14);
+    caption->setFont(font);
+    caption->setBounds(0,96,124,42);
+    caption->setJustificationType(Justification::centredTop);
+    preview->addAndMakeVisible(caption);
+    movies_list->addAndMakeVisible(preview);
+
 }
 
 void MainComponent::SetVisibleButtons(bool visible)
@@ -89,6 +111,36 @@ void MainComponent::buttonClicked (Button* button)
         commandManager->invokeDirectly(commandNextFrame,false);
     else if(button == stopButton)
         commandManager->invokeDirectly(commandStop,false);
+    else
+    {
+        int index = movies_list->getIndexOfChildComponent(button->getParentComponent());
+        PopupMenu context_menu;
+        Movie*movie = timeline->movies[index];
+        context_menu.addItem(1000, LABEL_INFO, true, false);
+        context_menu.addItem(1001, LABEL_DELETE, true, false);
+        Rectangle<int> area=button->getScreenBounds();
+        area.setHeight(0);
+        int result = context_menu.showAt(area);
+        switch(result)
+        {
+            case 1000: toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this); break;
+            case 1001:
+                Component *viewed = button->getParentComponent();
+                for(int i = 0; i<viewed->getNumChildComponents();++i)
+                {
+                    Component *child = viewed->getChildComponent(i);
+                    viewed->removeChildComponent(child);
+                    delete child;
+                }
+                movies_list->getViewedComponent()->removeChildComponent(button->getParentComponent());
+                delete viewed;
+
+                movies_list->resized();
+                timeline->movies.erase(timeline->movies.begin()+index);
+            break;
+        }
+
+    }
 
 
 }
@@ -297,6 +349,7 @@ void MainComponent::mouseMove (const MouseEvent& e)
 {
     mouse_x = e.x;
     mouse_y = e.y;
+
     repaintSlider();
 }
 
@@ -338,8 +391,6 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addCommandItem(commandManager,commandOpen);
         menu.addCommandItem(commandManager,commandSave);
         menu.addCommandItem(commandManager,commandEncode);
-        menu.addSeparator();
-        menu.addCommandItem(commandManager,commandInfo);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
@@ -472,10 +523,6 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
     }
 
-    case commandInfo:
-    {
-        toolbox::show_info_popup(LABEL_INFO,timeline->GetCurrentMovie()->GetMovieInfo(),this);
-    }
 
     break;
 
@@ -577,8 +624,7 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandNext5Frame,
                               commandPrev5Frame,
                               commandNextSecond,
-                              commandPrevSecond,
-                              commandInfo
+                              commandPrevSecond
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -615,11 +661,6 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
         result.setActive(false);
-        break;
-    case commandInfo:
-        result.setInfo (LABEL_INFO, LABEL_INFO, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.addDefaultKeypress (T('I'), ModifierKeys::commandModifier);
-        result.setActive(isVideoReady());
         break;
     case commandEncode:
         result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);

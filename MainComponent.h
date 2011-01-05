@@ -18,10 +18,13 @@ class MainComponent : public Component, public MenuBarModel, public ApplicationC
 public:
     int mouse_x;
     int mouse_y;
+
     AskJumpDestanation *ask_jump_target;
 
     void changeFileName(String new_filename);
+
     TooltipWindow tooltipWindow;
+
     DrawableButton* playButton;
     DrawableButton* pauseButton;
     DrawableButton* stopButton;
@@ -48,8 +51,7 @@ public:
         commandNext5Frame           = 0x200A,
         commandPrev5Frame           = 0x200B,
         commandNextSecond           = 0x200C,
-        commandPrevSecond           = 0x200D,
-        commandInfo                 = 0x200E
+        commandPrevSecond           = 0x200D
 
     };
 
@@ -98,6 +100,7 @@ public:
     ContainerBox * movies_list;
 
     void ResizeViewport();
+    void AddMovieToList(Movie*movie);
 };
 
 #endif//_MAINCOMPONENT_H_

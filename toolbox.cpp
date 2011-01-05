@@ -2,6 +2,15 @@
 #include "PopupWindow.h"
 namespace toolbox
 {
+void delete_all_child_components(Component * comp)
+{
+    for(int i = 0;i<comp->getNumChildComponents();i++)
+    {
+        delete_all_child_components(comp->getChildComponent(i));
+    }
+    comp->getParentComponent()->removeChildComponent(comp);
+    delete comp;
+}
 
 void show_info_popup(String label,String text,Component *center_component)
 {

@@ -2,8 +2,8 @@
 ContainerBox::~ContainerBox()
 {
     getViewedComponent()->deleteAllChildren();
-    deleteAllChildren();
 }
+
 ContainerBox::ContainerBox(const String& name):Viewport(name)
 {
     Component * movies_list_component = new Component();
@@ -12,6 +12,8 @@ ContainerBox::ContainerBox(const String& name):Viewport(name)
 
     setScrollBarsShown(true,false);
 }
+
+
 void ContainerBox::resized()
 {
     Viewport::resized();
@@ -29,14 +31,14 @@ void ContainerBox::resized()
         Component* comp = child->getChildComponent(i);
         int comp_height = comp->getHeight();
         int comp_width = comp->getWidth();
-        if(already_taken_width && width_all - already_taken_width - 5 < comp_width)
+        if(already_taken_width && width_all - already_taken_width - 10 < comp_width)
         {
-            already_taken_height += max_height + 5;
+            already_taken_height += max_height + 10;
             already_taken_width = 0;
             max_height = 0;
         }
-        comp->setBounds(already_taken_width+5,already_taken_height,comp_width,comp_height);
-        already_taken_width += comp_width;
+        comp->setBounds(already_taken_width + 10,already_taken_height,comp_width,comp_height);
+        already_taken_width += comp_width + 10;
         if(comp_height>max_height)
             max_height = comp_height;
 
@@ -70,8 +72,12 @@ void ContainerBox::addChildComponent (Component* child, int zOrder)
 {
     getViewedComponent()->addChildComponent(child,zOrder);
     resized();
+}
 
+int ContainerBox::getIndexOfChildComponent(const Component* const child)
+{
 
+    return  getViewedComponent()->getIndexOfChildComponent(child);
 }
 
 

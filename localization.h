@@ -80,6 +80,7 @@ extern String LABEL_SAMPLE_RATE;
 extern String LABEL_CHANNELS;
 
 extern String LABEL_MOVIES;
+extern String LABEL_DELETE;
 
 }
 

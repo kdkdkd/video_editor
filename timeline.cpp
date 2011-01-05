@@ -16,7 +16,8 @@ bool Timeline::Load(String &filename)
     bool loaded_local = movie->loaded;
     if(loaded_local)
     {
-        movies.push_front(movie);
+        movies.push_back(movie);
+        movies_internal.push_back(movie);
         duration = movie->duration;
         current = movie->current;
     }
@@ -32,7 +33,7 @@ bool Timeline::Load(String &filename)
 
 Movie* Timeline::GetCurrentMovie()
 {
-    return movies.front();
+    return movies_internal.back();
 }
 
 Image* Timeline::GetImage()
@@ -45,7 +46,7 @@ void Timeline::Dispose()
 {
     if(loaded)
     {
-        for(list<Movie*>::iterator it = movies.begin(); it!=movies.end(); it++)
+        for(vector<Movie*>::iterator it = movies_internal.begin(); it!=movies_internal.end(); it++)
         {
             delete *it;
         }

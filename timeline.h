@@ -3,14 +3,15 @@
 
 #include "juce/juce.h"
 #include "movie.h"
-#include <list>
+#include <vector>
 
 using namespace std;
 
 class Timeline
 {
 public:
-    list<Movie*> movies;
+    vector<Movie*> movies;
+    vector<Movie*> movies_internal;
     bool loaded;
     double duration;
     double current;

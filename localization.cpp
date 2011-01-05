@@ -78,8 +78,6 @@ String LABEL_SUBTITLES = T("Субтитры");
 
 String LABEL_MOVIES = T("Ролики");
 
-
-
-
+String LABEL_DELETE = T("Удалить");
 
 }
