@@ -373,7 +373,10 @@ void Button::sendClickMessage (const ModifierKeys& modifiers)
     clicked (modifiers);
 
     if (! checker.shouldBailOut())
+    {
         buttonListeners.callChecked (checker, &ButtonListener::buttonClicked, this);  // (can't use Button::Listener due to idiotic VC2005 bug)
+        buttonListeners.callChecked (checker, &ButtonListener::buttonClickedWithMods, this, modifiers);  // (can't use Button::Listener due to idiotic VC2005 bug)
+    }
 }
 
 void Button::sendStateMessage()

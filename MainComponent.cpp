@@ -1,6 +1,8 @@
 #include "MainComponent.h"
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
+#include "DrawableButtonAndDrag.h"
+
 
 void MainComponent::changeFileName(String new_filename)
 {
@@ -26,7 +28,7 @@ void MainComponent::AddMovieToList(Movie*movie)
     preview->setSize(124,96+42);
 
 
-    DrawableButton *button_preview = new DrawableButton("",DrawableButton::ImageFitted);
+    DrawableButtonAndDrag *button_preview = new DrawableButtonAndDrag("",DrawableButton::ImageFitted,timeline,movies_list,this);
 
     button_preview->addListener(this);
     DrawableImage normal,over;
@@ -98,8 +100,10 @@ void  MainComponent::timerCallback()
 
 }
 
-void MainComponent::buttonClicked (Button* button)
+void MainComponent::buttonClickedWithMods (Button* button, const ModifierKeys&  e)
 {
+
+
     ApplicationCommandManager* const commandManager = mainWindow->commandManager;
     if(button==playButton)
         commandManager->invokeDirectly(commandPlay,false);
@@ -114,19 +118,24 @@ void MainComponent::buttonClicked (Button* button)
     else
     {
         int index = movies_list->getIndexOfChildComponent(button->getParentComponent());
-        PopupMenu context_menu;
         Movie*movie = timeline->movies[index];
-        context_menu.addItem(1000, LABEL_INFO, true, false);
-        context_menu.addItem(1001, LABEL_DELETE, true, false);
-        Rectangle<int> area=button->getScreenBounds();
-        area.setHeight(0);
-        int result = context_menu.showAt(area);
-        switch(result)
+
+        if(e.isRightButtonDown())
         {
-            case 1000: toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this); break;
+            PopupMenu context_menu;
+            context_menu.addItem(1000, LABEL_INFO, true, false);
+            context_menu.addItem(1001, LABEL_DELETE, true, false);
+            Rectangle<int> area=button->getScreenBounds();
+            area.setHeight(0);
+            int result = context_menu.showAt(area);
+            switch(result)
+            {
+            case 1000:
+                toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this);
+                break;
             case 1001:
                 Component *viewed = button->getParentComponent();
-                for(int i = 0; i<viewed->getNumChildComponents();++i)
+                for(int i = 0; i<viewed->getNumChildComponents(); ++i)
                 {
                     Component *child = viewed->getChildComponent(i);
                     viewed->removeChildComponent(child);
@@ -137,7 +146,9 @@ void MainComponent::buttonClicked (Button* button)
 
                 movies_list->resized();
                 timeline->movies.erase(timeline->movies.begin()+index);
-            break;
+                break;
+            }
+
         }
 
     }

@@ -185,7 +185,10 @@ public:
         virtual ~Listener()                                     {}
 
         /** Called when the button is clicked. */
-        virtual void buttonClicked (Button* button) = 0;
+        virtual void buttonClicked (Button* button) {}
+
+        /** Called when the button is clicked. */
+        virtual void buttonClickedWithMods (Button* button, const ModifierKeys&  e)     {}
 
         /** Called when the button's state changes. */
         virtual void buttonStateChanged (Button*)               {}

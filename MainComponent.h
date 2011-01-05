@@ -13,11 +13,14 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer
 {
 public:
     int mouse_x;
     int mouse_y;
+
+
+
 
     AskJumpDestanation *ask_jump_target;
 
@@ -58,7 +61,7 @@ public:
     MainAppWindow* mainWindow;
 
     Timeline *timeline;
-    void buttonClicked (Button* button);
+    void buttonClickedWithMods (Button* button, const ModifierKeys&  e) ;
     MainComponent (MainAppWindow* mainWindow_);
 
     ~MainComponent ();
@@ -101,6 +104,7 @@ public:
 
     void ResizeViewport();
     void AddMovieToList(Movie*movie);
+
 };
 
 #endif//_MAINCOMPONENT_H_
