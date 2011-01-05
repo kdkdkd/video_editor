@@ -44,7 +44,9 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
 
 bool Movie::Load(String &filename)
 {
-
+    File f(filename);
+    if(!f.exists())
+        return false;
 
     pDataBuffer = new unsigned char[lSize];
 
