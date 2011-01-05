@@ -74,7 +74,7 @@ void MainComponent::ResizeViewport()
     {
         movies_border = GetMoviesBorder();
     }
-    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 210 - 10 - 18 - 1);
+    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 230 - 10 - 18 - 1);
 
 }
 
@@ -210,11 +210,11 @@ void MainComponent::resized ()
 {
     int width_current = getWidth();
     int height_current = getHeight();
-    playButton->setBounds (10, height_current-195, 60, 65);
-    pauseButton->setBounds (70, height_current-195, 60, 65);
-    stopButton->setBounds (130, height_current-195, 60, 65);
-    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195, 60, 65);
-    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195, 60, 65);
+    playButton->setBounds (10, height_current-195-25, 60, 65);
+    pauseButton->setBounds (70, height_current-195-25, 60, 65);
+    stopButton->setBounds (130, height_current-195-25, 60, 65);
+    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25, 60, 65);
+    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25, 60, 65);
     ResizeViewport();
 
 
@@ -230,7 +230,7 @@ int MainComponent::GetMoviesBorder()
 
     int res = 300;
     float scalex = (width_current-310.0f)/(float)width_image;
-    float scaley = (height_current-210.0f)/(float)height_image;
+    float scaley = (height_current-230.0f)/(float)height_image;
     if(scaley<scalex)
     {
         res += width_current - 310 - (int)(width_image*scaley)-10;
@@ -251,7 +251,7 @@ void MainComponent::paint (Graphics& g)
         int height_image = timeline->GetImage()->getHeight();
 
         float scalex = (width_current-310.0f)/(float)width_image;
-        float scaley = (height_current-210.0f)/(float)height_image;
+        float scaley = (height_current-230.0f)/(float)height_image;
         float scale = scalex;
         float deltax = 305.0f;
         float deltay = 0.0f;
@@ -262,7 +262,7 @@ void MainComponent::paint (Graphics& g)
         }
         else
         {
-            deltay += ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
+            deltay += ((float)height_current - 230.0f - (float)height_image*scale)/2.0f;
         }
 
         g.drawImageWithin(*(timeline->GetImage()),deltax,deltay,(width_image * scale),(height_image * scale) ,RectanglePlacement::centred,false);
@@ -289,9 +289,9 @@ void MainComponent::paint (Graphics& g)
         int end_height = GetMoviesBorder();
         g.drawHorizontalLine(10 + text_height/2,30 + text_width + 3,end_height);
         g.drawHorizontalLine(10 + text_height/2,10,27);
-        g.drawHorizontalLine(height_current - 210,10,end_height);
-        g.drawVerticalLine(10,10 +text_height/2,height_current - 210);
-        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 210);
+        g.drawHorizontalLine(height_current - 230,10,end_height);
+        g.drawVerticalLine(10,10 +text_height/2,height_current - 230);
+        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230);
         g.setFont(f_copy);
 
 

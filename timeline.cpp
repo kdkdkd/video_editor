@@ -6,6 +6,8 @@ using namespace localization;
 Timeline::Timeline()
 {
     loaded = false;
+    duration = 0.;
+    current = 0.;
 };
 
 
@@ -17,6 +19,8 @@ bool Timeline::Load(String &filename)
     if(loaded_local)
     {
         movies.push_back(movie);
+        Interval *interval = new Interval(movie,duration);
+        intervals.push_back(interval);
         movies_internal.push_back(movie);
         duration = movie->duration;
         current = movie->current;
@@ -47,6 +51,11 @@ void Timeline::Dispose()
     if(loaded)
     {
         for(vector<Movie*>::iterator it = movies_internal.begin(); it!=movies_internal.end(); it++)
+        {
+            delete *it;
+        }
+
+        for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
         {
             delete *it;
         }
