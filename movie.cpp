@@ -163,8 +163,8 @@ bool Movie::Load(String &filename)
     //Generate preview
     GotoRatioAndRead(.1,true,false);
 
-    int preview_width = 132;
-    int preview_height = 99;
+    int preview_width = 128;
+    int preview_height = 96;
 
 
     *image_preview = image->rescaled(preview_width,preview_height);

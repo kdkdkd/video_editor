@@ -7,6 +7,7 @@
 #include "timeline.h"
 #include "localization.h"
 #include "toolbox.h"
+#include "ContainerBox.h"
 
 class AskJumpDestanation;
 
@@ -94,8 +95,7 @@ public:
 
     int GetMoviesBorder();
 
-    Component * movies_list;
-    Viewport *movies_list_viewport;
+    ContainerBox * movies_list;
 
     void ResizeViewport();
 };

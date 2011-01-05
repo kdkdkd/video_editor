@@ -11,17 +11,16 @@ void MainComponent::changeFileName(String new_filename)
     {
         SetVisibleButtons(true);
 
-        movies_list->deleteAllChildren();
         DrawableButton *button_preview = new DrawableButton("",DrawableButton::ImageFitted);
         DrawableImage normal,over;
 
         normal.setImage(*timeline->GetCurrentMovie()->image_preview);
-        normal.setOpacity(0.8);
+        normal.setOpacity(0.9);
         over.setImage(*timeline->GetCurrentMovie()->image_preview);
 
         button_preview->setImages (&normal, &over, &over);
         button_preview->addListener(this);
-        button_preview->setBounds(0,0,132,99);
+        button_preview->setBounds(0,0,124,96);
         movies_list->addAndMakeVisible(button_preview);
 
         ResizeViewport();
@@ -40,7 +39,7 @@ void MainComponent::SetVisibleButtons(bool visible)
     prevFrameButton->setVisible(visible);
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
-    movies_list_viewport->setVisible(visible);
+    movies_list->setVisible(visible);
 }
 
 void MainComponent::ResizeViewport()
@@ -51,8 +50,7 @@ void MainComponent::ResizeViewport()
     {
         movies_border = GetMoviesBorder();
     }
-    movies_list_viewport->setBounds(13,10 + 18,movies_border-15,height_current - 210 - 10 - 18 - 1);
-    movies_list->setSize(movies_border-33,1000);
+    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 210 - 10 - 18 - 1);
 
 }
 
@@ -122,10 +120,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     timeline = new Timeline();
 
-    movies_list = new Component("movies_list");
-    movies_list_viewport = new Viewport();
-    movies_list_viewport->setViewedComponent(movies_list);
-    addChildComponent(movies_list_viewport);
+    movies_list = new ContainerBox("movies_list");
+    addChildComponent(movies_list);
 
     ask_jump_target = 0;
 
