@@ -64,6 +64,8 @@
 		<Unit filename="AskJumpDestanation.h" />
 		<Unit filename="ContainerBox.cpp" />
 		<Unit filename="ContainerBox.h" />
+		<Unit filename="DrawableButtonAndDrag.cpp" />
+		<Unit filename="DrawableButtonAndDrag.h" />
 		<Unit filename="MainAppWindow.cpp" />
 		<Unit filename="MainAppWindow.h" />
 		<Unit filename="MainComponent.cpp" />
