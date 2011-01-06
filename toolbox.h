@@ -4,6 +4,7 @@
 namespace toolbox
 {
 String format_duration(double duration);
+String format_duration_small(double duration);
 
 void show_info_popup(String label,String text,Component *center_component);
 
@@ -18,6 +19,7 @@ public:
     int mini_second;
     void fromDouble(double time);
     String toString();
+    String toStringSmall();
 };
 }
 

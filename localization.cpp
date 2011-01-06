@@ -80,4 +80,6 @@ String LABEL_MOVIES = T("Ролики");
 
 String LABEL_DELETE = T("Удалить");
 
+String LABEL_SCALE = T("Масштаб");
+
 }

@@ -81,6 +81,7 @@ extern String LABEL_CHANNELS;
 
 extern String LABEL_MOVIES;
 extern String LABEL_DELETE;
+extern String LABEL_SCALE;
 
 }
 

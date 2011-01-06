@@ -64,6 +64,16 @@ String format_duration(double duration)
     return res;
 }
 
+String format_duration_small(double duration)
+{
+    String res;
+    TimeVideo * tv = new TimeVideo();
+    tv->fromDouble(duration);
+    res = tv->toStringSmall();
+    delete tv;
+    return res;
+}
+
 void TimeVideo::fromDouble(double time)
 {
     int duration_int = time;
@@ -101,6 +111,28 @@ String TimeVideo::toString()
         res<<"0";
 
     res<<mini_second;
+
+    return res;
+}
+
+String TimeVideo::toStringSmall()
+{
+
+    String res;
+    if(hour>0)
+    {
+        res<<hour<<":";
+    }
+
+
+    if(minute<10)
+        res<<"0";
+    res<<minute<<":";
+
+
+    if(second<10)
+        res<<"0";
+    res<<second;
 
     return res;
 }

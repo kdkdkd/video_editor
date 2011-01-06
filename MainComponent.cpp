@@ -2,6 +2,9 @@
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
+#include <math.h>
+
+
 #define TIMELINE_OFFSET 26
 
 void MainComponent::changeFileName(String new_filename)
@@ -13,6 +16,7 @@ void MainComponent::changeFileName(String new_filename)
     {
         SetVisibleButtons(true);
         AddMovieToList(timeline->GetCurrentMovie());
+        sliderValueChanged(scale_timeline);
         ResizeViewport();
         repaint();
     }
@@ -64,10 +68,7 @@ void MainComponent::SetVisibleButtons(bool visible)
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
     movies_list->setVisible(visible);
-
-    //TEMP
-
-    timeline_scrollbar->setCurrentRange(0.0,.5);
+    scale_timeline->setVisible(visible);
 }
 
 void MainComponent::ResizeViewport()
@@ -172,6 +173,35 @@ void MainComponent::initImageButton(String pic_name,DrawableButton*& button)
     addChildComponent(button);
 }
 
+void MainComponent::scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newRangeStart)
+{
+    timeline_position = newRangeStart;
+    repaintSlider();
+}
+
+void MainComponent::sliderValueChanged(Slider* slider)
+{
+    second_to_pixel = slider->getValue()*(0.14620516440220848680255318407494) + 0.31622776601683793319988935444327;
+    second_to_pixel*=second_to_pixel;
+    second_to_pixel*=second_to_pixel;
+
+    //TEMP
+    double dur = 0.0;
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
+        {
+            dur+=(*it)->GetDuration();
+        }
+
+
+    timeline_scrollbar->setRangeLimits(0.0,1.3*dur);
+    timeline_scrollbar->setCurrentRange(timeline_position,(double)(getWidth()-65)/second_to_pixel);
+
+
+
+    repaintSlider();
+}
+
+
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
 {
     mainWindow = mainWindow_;
@@ -193,9 +223,19 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
 
     timeline_scrollbar = new ScrollBar(false,true);
-    timeline_scrollbar->setRangeLimits(0.0,1.0);
-    timeline_scrollbar->setCurrentRange(0.0,1.0);
+    timeline_scrollbar->addListener(this);
     addChildComponent(timeline_scrollbar);
+
+
+    second_to_pixel = 3.0;
+    timeline_position = 0.0;
+    scale_timeline = new Slider("scale_timeline");
+    scale_timeline->setSliderStyle(Slider::LinearHorizontal);
+    scale_timeline->setTextBoxStyle(Slider::NoTextBox,true,0,0);
+    scale_timeline->addListener(this);
+    scale_timeline->setValue(second_to_pixel);
+    scale_timeline->setTooltip(LABEL_SCALE);
+    addChildComponent(scale_timeline);
 
     ask_jump_target = 0;
 
@@ -226,6 +266,8 @@ void MainComponent::resized ()
     stopButton->setBounds (130, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    scale_timeline->setBounds (width_current - 10 - 120 - 100, height_current-195-30-TIMELINE_OFFSET, 100, 65);
+
     timeline_scrollbar->setBounds ( 40, height_current-25, width_current - 65, 18);
     ResizeViewport();
 
@@ -309,20 +351,103 @@ void MainComponent::paint (Graphics& g)
         g.setFont(f_copy);
 
 
-        g.setColour(Colour::fromRGB(200,200,250));
-        g.fillRect(41,height_current-74-30- TIMELINE_OFFSET,width_current-52-15,24);
+        //List of intervals
+        double timeline_duration = (double)(width_current-65-1)/second_to_pixel;
+        vector<Timeline::Interval*> intervals = timeline->GetAllIntervalsIn(timeline_position,timeline_duration);
+        for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+        {
+            int start_position_interval = (-timeline_position + (*it)->absolute_start) * second_to_pixel;
+            if(start_position_interval<0)
+                start_position_interval = 0;
 
-        g.setColour(Colour::fromRGB(180,180,230));
-        g.fillRect(41,height_current-50-30- TIMELINE_OFFSET,width_current-52-15,24);
+            int end_position_interval = (-timeline_position + (*it)->GetAbsoluteEnd()) * second_to_pixel;
+            if(end_position_interval>width_current-65-1)
+                end_position_interval = width_current-65-1;
+
+            g.setColour(Colour::fromRGB(70,70,70));
+
+            g.drawRect(start_position_interval + 40,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,50,1);
+
+            g.setColour(Colour::fromRGB(200,200,250));
+            g.fillRect(start_position_interval+40+1,height_current-74-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,24);
+
+            g.setColour(Colour::fromRGB(180,180,230));
+            g.fillRect(start_position_interval+40+1,height_current-50-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,24);
+
+            String label = (*it)->movie->filename;
+            File f(label);
+            label = f.getFileName();
+            g.setColour(Colour::fromRGB(50,50,50));
+            g.drawText(label,start_position_interval + 50,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 20,50,Justification::centredLeft,true);
+
+        }
+        //~List of intervals
+
+        //TimeLine
+        int number_of_lines = 0;
+        double display_interval = 120.0 / second_to_pixel ;
+        if(display_interval<60.0)
+        {
+            display_interval = ((int)display_interval/10) * 10.0d;
+            number_of_lines = 5;
+        }
+        else if(display_interval<600.0)
+        {
+            display_interval = ((int)display_interval/60) * 60.0d;
+            number_of_lines = 4;
+        }
+        else
+        {
+            display_interval = ((int)display_interval/600) * 600.0d;
+            number_of_lines = 3;
+        }
+
+        int x = (int)ceilf(timeline_position / display_interval);
+
+        double label_time = (display_interval * (double)x);
+        int label_position = (label_time - timeline_position)*second_to_pixel;
+        int safe_space = g.getCurrentFont().getStringWidth("99:99:99")/second_to_pixel;
+
+        g.setColour(Colour::fromRGB(70,70,70));
+        for(;;)
+        {
+
+            if(label_time<timeline_position+timeline_duration)
+            {
+                g.drawVerticalLine(40 + label_position,height_current-36 - TIMELINE_OFFSET,height_current-36 + 26 - TIMELINE_OFFSET);
+                String label = toolbox::format_duration_small(label_time);
+                if(g.getCurrentFont().getStringWidth(label) + 43+label_position < width_current)
+                    g.drawText(label,43+label_position,height_current-36 + 16 - TIMELINE_OFFSET,100,10,Justification::centredLeft,true);
+            }
+
+            if(label_time <timeline_position+timeline_duration + display_interval)
+            {
+                double line_interval = -display_interval * second_to_pixel/(double)(number_of_lines + 1);
+                double current_position_line = label_position + line_interval;
+                for(int i=0; i<number_of_lines; ++i)
+                {
+                    if(current_position_line<0)
+                        break;
+                    if(current_position_line<width_current - 65 - 1)
+                        g.drawVerticalLine(40 + current_position_line,height_current-36 - TIMELINE_OFFSET,height_current-36 + 10 - TIMELINE_OFFSET);
+                    current_position_line += line_interval;
+                }
+            }
+            else
+                break;
+            label_time += display_interval;
+            label_position = (label_time - timeline_position)*second_to_pixel;
+
+
+        }
+
+        //~TimeLine
 
         g.setColour(Colour::fromRGB(220,220,220));
         g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET,width_current-52-15,9);
         g.setColour(Colour::fromRGB(210,210,210));
         g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET,width_current-52-15,9);
 
-        g.setColour(Colour::fromRGB(70,70,70));
-        g.drawVerticalLine(45,height_current-36 - TIMELINE_OFFSET,height_current-36 + 26 - TIMELINE_OFFSET);
-        g.drawText(String("test"),48,height_current-36 + 16 - TIMELINE_OFFSET,100,10,Justification::centredLeft,true);
 
         if(NeedDrawArrow())
             DrawArrow(g);
@@ -359,9 +484,9 @@ void MainComponent::DrawSlider(Graphics& g)
     int position = GetCurrentPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET,6,60+19,4);
+    g.fillRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET+2,6,60+19-4,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET,6,60+19,4,1.5);
+    g.drawRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET+2,6,60+19-4,4,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)

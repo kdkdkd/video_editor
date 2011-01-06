@@ -10,6 +10,19 @@ Timeline::Timeline()
     current = 0.;
 };
 
+vector<Timeline::Interval*> Timeline::GetAllIntervalsIn(double start,double length)
+{
+    vector<Interval*> res;
+    for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        double end = start + length,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
+        if(start1<=end&&end1>=start)
+        {
+            res.push_back(*it);
+        }
+    }
+    return res;
+}
 
 bool Timeline::Load(String &filename)
 {
@@ -19,7 +32,14 @@ bool Timeline::Load(String &filename)
     if(loaded_local)
     {
         movies.push_back(movie);
-        Interval *interval = new Interval(movie,duration);
+        //TEMP
+        double dur = 0.0;
+        for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+        {
+            dur+=(*it)->GetDuration();
+        }
+
+        Interval *interval = new Interval(movie,dur);
         intervals.push_back(interval);
         movies_internal.push_back(movie);
         duration = movie->duration;

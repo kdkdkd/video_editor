@@ -13,7 +13,7 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener
 {
 public:
     int mouse_x;
@@ -106,6 +106,12 @@ public:
     void AddMovieToList(Movie*movie);
 
     ScrollBar * timeline_scrollbar;
+
+    double second_to_pixel;
+    double timeline_position;
+    Slider *scale_timeline;
+    void sliderValueChanged(Slider* slider);
+    void scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newRangeStart);
 
 };
 
