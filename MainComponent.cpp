@@ -2,7 +2,7 @@
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
-
+#define TIMELINE_OFFSET 26
 
 void MainComponent::changeFileName(String new_filename)
 {
@@ -64,6 +64,10 @@ void MainComponent::SetVisibleButtons(bool visible)
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
     movies_list->setVisible(visible);
+
+    //TEMP
+
+    timeline_scrollbar->setCurrentRange(0.0,.5);
 }
 
 void MainComponent::ResizeViewport()
@@ -74,7 +78,7 @@ void MainComponent::ResizeViewport()
     {
         movies_border = GetMoviesBorder();
     }
-    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 230 - 10 - 18 - 1);
+    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 230 - 10 - 18 - 1 - TIMELINE_OFFSET);
 
 }
 
@@ -186,6 +190,13 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     movies_list = new ContainerBox("movies_list");
     addChildComponent(movies_list);
 
+
+
+    timeline_scrollbar = new ScrollBar(false,true);
+    timeline_scrollbar->setRangeLimits(0.0,1.0);
+    timeline_scrollbar->setCurrentRange(0.0,1.0);
+    addChildComponent(timeline_scrollbar);
+
     ask_jump_target = 0;
 
     video_playing = false;
@@ -210,11 +221,12 @@ void MainComponent::resized ()
 {
     int width_current = getWidth();
     int height_current = getHeight();
-    playButton->setBounds (10, height_current-195-25, 60, 65);
-    pauseButton->setBounds (70, height_current-195-25, 60, 65);
-    stopButton->setBounds (130, height_current-195-25, 60, 65);
-    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25, 60, 65);
-    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25, 60, 65);
+    playButton->setBounds (10, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    pauseButton->setBounds (70, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    stopButton->setBounds (130, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    timeline_scrollbar->setBounds ( 40, height_current-25, width_current - 65, 18);
     ResizeViewport();
 
 
@@ -229,11 +241,11 @@ int MainComponent::GetMoviesBorder()
     int height_image = timeline->GetImage()->getHeight();
 
     int res = 300;
-    float scalex = (width_current-310.0f)/(float)width_image;
-    float scaley = (height_current-230.0f)/(float)height_image;
+    float scalex = (float)(width_current-310.0f)/(float)width_image;
+    float scaley = (height_current-230.0f - TIMELINE_OFFSET)/(float)height_image;
     if(scaley<scalex)
     {
-        res += width_current - 310 - (int)(width_image*scaley)-10;
+        res += width_current - 310  - (int)(width_image*scaley)-10;
     }
     return res;
 }
@@ -250,33 +262,35 @@ void MainComponent::paint (Graphics& g)
         int width_image = timeline->GetImage()->getWidth();
         int height_image = timeline->GetImage()->getHeight();
 
-        float scalex = (width_current-310.0f)/(float)width_image;
-        float scaley = (height_current-230.0f)/(float)height_image;
+        float scalex = (width_current-310.0f )/(float)width_image;
+        float scaley = (height_current-230.0f - TIMELINE_OFFSET)/(float)height_image;
         float scale = scalex;
         float deltax = 305.0f;
         float deltay = 0.0f;
         if(scaley<scalex)
         {
             scale = scaley;
-            deltax += ((float)width_current - 310.0f - (float)width_image*scale) - 5.0f;
+            deltax += ((float)width_current - 310.0f  - (float)width_image*scale) - 5.0f;
         }
         else
         {
-            deltay += ((float)height_current - 230.0f - (float)height_image*scale)/2.0f;
+            deltay += ((float)height_current - 230.0f - TIMELINE_OFFSET - (float)height_image*scale)/2.0f;
         }
 
         g.drawImageWithin(*(timeline->GetImage()),deltax,deltay,(width_image * scale),(height_image * scale) ,RectanglePlacement::centred,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
-        g.drawRect(25,height_current-75,width_current-50,50,1);
 
-        g.drawVerticalLine(10,height_current-125,height_current-25);
+        g.drawRect(40,height_current-75 - 30- TIMELINE_OFFSET,width_current-65,50,1);
+        g.drawRect(40,height_current-75 - 30+49- TIMELINE_OFFSET,width_current-65,20,1);
 
-        g.drawHorizontalLine(height_current-125,10,width_current-120);
+        g.drawVerticalLine(10,height_current-125 - 30 - TIMELINE_OFFSET,height_current-25-30 + 19- TIMELINE_OFFSET);
 
-        g.drawHorizontalLine(height_current-26,10,25);
+        g.drawHorizontalLine(height_current-125 - 30- TIMELINE_OFFSET,10,width_current-120);
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
+        g.drawHorizontalLine(height_current-37- TIMELINE_OFFSET,10,40);
+
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125-30 - TIMELINE_OFFSET,400,20,Justification::centredRight,true);
 
         Font f = g.getCurrentFont();
         Font f_copy = f;
@@ -289,18 +303,26 @@ void MainComponent::paint (Graphics& g)
         int end_height = GetMoviesBorder();
         g.drawHorizontalLine(10 + text_height/2,30 + text_width + 3,end_height);
         g.drawHorizontalLine(10 + text_height/2,10,27);
-        g.drawHorizontalLine(height_current - 230,10,end_height);
-        g.drawVerticalLine(10,10 +text_height/2,height_current - 230);
-        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230);
+        g.drawHorizontalLine(height_current - 230 - TIMELINE_OFFSET,10,end_height);
+        g.drawVerticalLine(10,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
+        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
         g.setFont(f_copy);
 
 
         g.setColour(Colour::fromRGB(200,200,250));
-        g.fillRect(26,height_current-74,width_current-52,24);
+        g.fillRect(41,height_current-74-30- TIMELINE_OFFSET,width_current-52-15,24);
 
         g.setColour(Colour::fromRGB(180,180,230));
-        g.fillRect(26,height_current-50,width_current-52,24);
+        g.fillRect(41,height_current-50-30- TIMELINE_OFFSET,width_current-52-15,24);
 
+        g.setColour(Colour::fromRGB(220,220,220));
+        g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET,width_current-52-15,9);
+        g.setColour(Colour::fromRGB(210,210,210));
+        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET,width_current-52-15,9);
+
+        g.setColour(Colour::fromRGB(70,70,70));
+        g.drawVerticalLine(45,height_current-36 - TIMELINE_OFFSET,height_current-36 + 26 - TIMELINE_OFFSET);
+        g.drawText(String("test"),48,height_current-36 + 16 - TIMELINE_OFFSET,100,10,Justification::centredLeft,true);
 
         if(NeedDrawArrow())
             DrawArrow(g);
@@ -312,8 +334,8 @@ void MainComponent::paint (Graphics& g)
 }
 int MainComponent::GetArrowPosition()
 {
-    if(mouse_x<25)
-        return 25;
+    if(mouse_x<40)
+        return 40;
     int max_y = getWidth()-25;
     if(mouse_x>max_y)
         return max_y;
@@ -324,12 +346,12 @@ int MainComponent::GetArrowPosition()
 }
 bool MainComponent::NeedDrawArrow()
 {
-    return (mouse_y>=getHeight()-125&&mouse_y<=getHeight()-75);
+    return (mouse_y>=getHeight()-125-30 - TIMELINE_OFFSET &&mouse_y<=getHeight()-75-30 - TIMELINE_OFFSET);
 }
 
 int MainComponent::GetCurrentPosition()
 {
-    return (int)round((double(getWidth()-50))*timeline->current/(double)(timeline->duration))+25;
+    return (int)round((double(getWidth()-65))*timeline->current/(double)(timeline->duration))+40;
 }
 
 void MainComponent::DrawSlider(Graphics& g)
@@ -337,9 +359,9 @@ void MainComponent::DrawSlider(Graphics& g)
     int position = GetCurrentPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-80,6,60,4);
+    g.fillRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET,6,60+19,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-80,6,60,4,1.5);
+    g.drawRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET,6,60+19,4,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)
@@ -347,13 +369,13 @@ void MainComponent::DrawArrow(Graphics& g)
     int position = GetArrowPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(150,100,100));
-    Line<float> line(position,height_current - 110,position,height_current - 79);
+    Line<float> line(position,height_current - 110-30- TIMELINE_OFFSET,position,height_current - 79-30 - TIMELINE_OFFSET);
     g.drawArrow(line,1,4,20);
 }
 
 void MainComponent::repaintSlider()
 {
-    repaint(0,getHeight()-170.0f,getWidth(),170.0f);
+    repaint(0,getHeight()-200.0f - TIMELINE_OFFSET,getWidth(),200.0f + TIMELINE_OFFSET - 25.0f);
 }
 
 void MainComponent::mouseMove (const MouseEvent& e)
@@ -371,7 +393,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
     if(NeedDrawArrow())
     {
         int position = GetArrowPosition();
-        double ratio = (double)(position-25)/(double)(getWidth()-50);
+        double ratio = (double)(position-40)/(double)(getWidth()-65);
 
         timeline->GotoRatioAndRead(ratio);
         repaint();

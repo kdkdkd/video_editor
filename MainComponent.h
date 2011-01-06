@@ -105,6 +105,8 @@ public:
     void ResizeViewport();
     void AddMovieToList(Movie*movie);
 
+    ScrollBar * timeline_scrollbar;
+
 };
 
 #endif//_MAINCOMPONENT_H_
