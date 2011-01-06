@@ -55,7 +55,6 @@ bool Movie::Load(String &filename)
     probeData->buf_size = lSize;
     probeData->filename = "";
 
-    File f(filename);
     this->filename = filename;
     fs = f.createInputStream();
     fs->read(pDataBuffer,lSize);
