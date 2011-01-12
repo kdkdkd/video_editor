@@ -185,15 +185,9 @@ void MainComponent::sliderValueChanged(Slider* slider)
     second_to_pixel*=second_to_pixel;
     second_to_pixel*=second_to_pixel;
 
-    //TEMP
-    double dur = 0.0;
-        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
-        {
-            dur+=(*it)->GetDuration();
-        }
 
 
-    timeline_scrollbar->setRangeLimits(0.0,1.3*dur);
+    timeline_scrollbar->setRangeLimits(0.0,1.3*timeline->duration);
     timeline_scrollbar->setCurrentRange(timeline_position,(double)(getWidth()-65)/second_to_pixel);
 
 
@@ -227,7 +221,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     addChildComponent(timeline_scrollbar);
 
 
-    second_to_pixel = 3.0;
+    second_to_pixel = 2.0;
     timeline_position = 0.0;
     scale_timeline = new Slider("scale_timeline");
     scale_timeline->setSliderStyle(Slider::LinearHorizontal);
@@ -457,16 +451,18 @@ void MainComponent::paint (Graphics& g)
 
 
 }
-int MainComponent::GetArrowPosition()
+int MainComponent::GetArrowPosition(int arrow_position = -1)
 {
-    if(mouse_x<40)
+    if(arrow_position<0)
+        arrow_position = mouse_x;
+    if(arrow_position<40)
         return 40;
     int max_y = getWidth()-25;
-    if(mouse_x>max_y)
+    if(arrow_position>max_y)
         return max_y;
 
 
-    return mouse_x;
+    return arrow_position;
 
 }
 bool MainComponent::NeedDrawArrow()
@@ -477,6 +473,15 @@ bool MainComponent::NeedDrawArrow()
 int MainComponent::GetCurrentPosition()
 {
     return (int)round((double(getWidth()-65))*timeline->current/(double)(timeline->duration))+40;
+}
+
+double MainComponent::GetPositionSecond(int arrow_position = -1)
+{
+    if(arrow_position<0)
+        arrow_position = mouse_x;
+
+    double pos = GetArrowPosition(arrow_position) - 40;
+    return pos / second_to_pixel + timeline_position;
 }
 
 void MainComponent::DrawSlider(Graphics& g)
@@ -873,6 +878,35 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setActive(isVideoReady());
         break;
     }
+
+
+}
+
+bool MainComponent::isInterestedInDragSource (const String& sourceDescription,Component* sourceComponent)
+{
+    return true;
+}
+
+void MainComponent::itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y)
+{
+
+}
+
+bool MainComponent::shouldDrawDragImageWhenOver()
+{
+    bool res = !(current_drag_y<=getHeight()-5-30  - TIMELINE_OFFSET &&current_drag_y>=getHeight()-75-30 - TIMELINE_OFFSET);
+    if(!res)
+    {
+        //printf("drop in %s\n",toolbox::format_duration(GetPositionSecond(current_drag_x)).toCString());
+    }
+    return res;
+}
+
+void MainComponent::itemDragMove (const String& sourceDescription,Component* sourceComponent,int x, int y)
+{
+    current_drag_x = x;
+    current_drag_y = y;
+
 }
 
 

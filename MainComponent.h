@@ -13,7 +13,7 @@ class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener, public DragAndDropTarget
 {
 public:
     int mouse_x;
@@ -69,7 +69,7 @@ public:
     void resized ();
 
     void paint (Graphics& g);
-    int GetArrowPosition();
+    int GetArrowPosition(int arrow_position);
     int GetCurrentPosition();
     bool NeedDrawArrow();
     void timerCallback();
@@ -112,6 +112,15 @@ public:
     Slider *scale_timeline;
     void sliderValueChanged(Slider* slider);
     void scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newRangeStart);
+    bool isInterestedInDragSource (const String& sourceDescription,Component* sourceComponent);
+    void itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y);
+    void itemDragMove (const String& sourceDescription,Component* sourceComponent,int x, int y);
+
+    bool shouldDrawDragImageWhenOver();
+    int current_drag_x;
+    int current_drag_y;
+
+    double GetPositionSecond(int arrow_position);
 
 };
 

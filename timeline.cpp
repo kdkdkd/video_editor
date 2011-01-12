@@ -32,15 +32,10 @@ bool Timeline::Load(String &filename)
     if(loaded_local)
     {
         movies.push_back(movie);
-        //TEMP
-        double dur = 0.0;
-        for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
-        {
-            dur+=(*it)->GetDuration();
-        }
 
-        Interval *interval = new Interval(movie,dur);
-        intervals.push_back(interval);
+        if(!loaded)
+            intervals.push_back(new Interval(movie,0));
+
         movies_internal.push_back(movie);
         duration = movie->duration;
         current = movie->current;
