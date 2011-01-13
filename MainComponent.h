@@ -61,7 +61,7 @@ public:
     MainAppWindow* mainWindow;
 
     Timeline *timeline;
-    void buttonClickedWithMods (Button* button, const ModifierKeys&  e) ;
+    void buttonClicked (Button* button) ;
     MainComponent (MainAppWindow* mainWindow_);
 
     ~MainComponent ();
@@ -120,7 +120,10 @@ public:
     int current_drag_x;
     int current_drag_y;
 
+
     double GetPositionSecond(int arrow_position);
+
+
 
 };
 

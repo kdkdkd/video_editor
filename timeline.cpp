@@ -10,19 +10,6 @@ Timeline::Timeline()
     current = 0.;
 };
 
-vector<Timeline::Interval*> Timeline::GetAllIntervalsIn(double start,double length)
-{
-    vector<Interval*> res;
-    for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
-    {
-        double end = start + length,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
-        if(start1<=end&&end1>=start)
-        {
-            res.push_back(*it);
-        }
-    }
-    return res;
-}
 
 bool Timeline::Load(String &filename)
 {
@@ -74,6 +61,8 @@ void Timeline::Dispose()
         {
             delete *it;
         }
+
+
     }
     loaded = false;
 }
@@ -119,5 +108,96 @@ void Timeline::DecodeFrame()
 {
     GetCurrentMovie()->DecodeFrame();
 }
+
+vector<Timeline::Interval*> Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
+{
+    vector<Interval*> intervals_preview;
+
+    double diff = 0.0d;
+    vector<Timeline::Interval*>::iterator it = intervals.begin();
+    Timeline::Interval * interval_current = 0;
+    while(it!=intervals.end())
+    {
+      interval_current = *it;
+      if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
+      {
+        intervals_preview.push_back(new Interval(interval_current));
+      }else
+      break;
+      it++;
+    }
+    if(!interval_current || it==intervals.end())
+    {
+        intervals_preview.push_back(interval);
+        if(it!=intervals.end())
+            it++;
+    }else
+    if(interval_current->absolute_start>interval->GetAbsoluteEnd())
+    {
+        intervals_preview.push_back(interval);
+        intervals_preview.push_back(new Interval(interval_current));
+        it++;
+    }else if(interval_current->absolute_start + interval_current->GetDuration()/2>interval->absolute_start)
+    {
+        intervals_preview.push_back(interval);
+        diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
+        intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
+        it++;
+    }else
+    {
+        intervals_preview.push_back(new Interval(interval_current));
+        interval->absolute_start = interval_current->GetAbsoluteEnd();
+        intervals_preview.push_back(interval);
+        it++;
+        if(it!=intervals.end() && interval->GetAbsoluteEnd()> (*it)->absolute_start)
+        {
+            diff = - interval->GetAbsoluteEnd() + (*it)->absolute_start;
+        }
+    }
+
+    while(it!=intervals.end())
+    {
+      interval_current = *it;
+      intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
+      it++;
+    }
+
+
+    /*for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        Timeline::Interval * interval_current = *it;
+
+        if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
+        {
+            intervals_preview.push_back(new Interval(interval_current));
+        }else if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
+        {
+            intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + interval->GetDuration()));
+        }
+        else if(interval_current->absolute_start + interval_current->GetDuration()/2<interval->absolute_start)
+        {
+            if(interval_current->absolute_start>interval->GetAbsoluteEnd())
+            {
+               current_added = true;
+               intervals_preview.push_back(interval);
+            }else
+            {
+                current_added = true;
+                intervals_preview.push_back(interval);
+                diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
+                intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
+            }
+        }
+
+
+
+    }
+    if(!current_added)
+       intervals_preview.push_back(interval);
+       */
+    return intervals_preview;
+
+}
+
 
 
