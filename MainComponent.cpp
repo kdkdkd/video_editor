@@ -140,9 +140,10 @@ void MainComponent::buttonClicked (Button* button)
                 break;
             case 1001:
                 Component *viewed = button->getParentComponent();
-                for(int i = 0; i<viewed->getNumChildComponents(); ++i)
+                int num = viewed->getNumChildComponents();
+                for(int i = 0; i<num; ++i)
                 {
-                    Component *child = viewed->getChildComponent(i);
+                    Component *child = viewed->getChildComponent(0);
                     viewed->removeChildComponent(child);
                     delete child;
                 }
@@ -244,6 +245,27 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 MainComponent::~MainComponent ()
 {
     StopVideo();
+
+
+    Component *container = movies_list->getViewedComponent();
+    int container_num = container->getNumChildComponents();
+    for(int i=0;i<container_num;++i)
+    {
+        Component *viewed = container->getChildComponent(0);
+        int num = viewed->getNumChildComponents();
+        for(int i = 0; i<num; ++i)
+        {
+            Component *child = viewed->getChildComponent(0);
+            viewed->removeChildComponent(child);
+            delete child;
+        }
+        movies_list->getViewedComponent()->removeChildComponent(viewed);
+        delete viewed;
+    }
+
+
+
+
     delete timeline;
     if(ask_jump_target)
     {
@@ -937,7 +959,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         current_interval = new Timeline::Interval(timeline->movies[movie_index],pos);
         intervals = timeline->PreviewInsertIntervalIn(current_interval);
         int size = timeline->intervals.size();
-        for(int i=0;i<size;++i)
+        for(int i=0; i<size; ++i)
         {
             delete timeline->intervals.back();
             timeline->intervals.pop_back();

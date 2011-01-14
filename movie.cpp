@@ -196,6 +196,9 @@ void Movie::Dispose()
         delete [] buffer;
         av_free(pFrameRGB);
 
+        delete []pDataBuffer;
+
+
         // Free the YUV frame
         av_free(pFrame);
 
