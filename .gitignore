@@ -3,3 +3,5 @@ bin
 *.layout
 *.depend
 debug_new
+lib
+*.dll

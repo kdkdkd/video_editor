@@ -40,11 +40,6 @@
 			<Add option="-march=i486" />
 		</Compiler>
 		<Linker>
-			<Add library="libavformat.a" />
-			<Add library="libavcodec.a" />
-			<Add library="libswscale.a" />
-			<Add library="libavdevice.a" />
-			<Add library="libavutil.a" />
 			<Add library="juce\bin\Release\libjuce.a" />
 			<Add library="libimm32.a" />
 			<Add library="libwsock32.a" />
@@ -58,6 +53,11 @@
 			<Add library="liboleaut32.a" />
 			<Add library="libgdi32.a" />
 			<Add library="libcomdlg32.a" />
+			<Add library="lib\libavcodec.dll.a" />
+			<Add library="lib\libavdevice.dll.a" />
+			<Add library="lib\libavformat.dll.a" />
+			<Add library="lib\libavutil.dll.a" />
+			<Add library="lib\libswscale.dll.a" />
 		</Linker>
 		<Unit filename="ApplicationStartup.cpp" />
 		<Unit filename="AskJumpDestanation.cpp" />
