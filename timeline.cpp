@@ -109,92 +109,61 @@ void Timeline::DecodeFrame()
     GetCurrentMovie()->DecodeFrame();
 }
 
-vector<Timeline::Interval*> Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
+vector<Timeline::Interval*>* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
 {
-    vector<Interval*> intervals_preview;
+    vector<Interval*> *intervals_preview = new vector<Interval*>();
 
     double diff = 0.0d;
     vector<Timeline::Interval*>::iterator it = intervals.begin();
     Timeline::Interval * interval_current = 0;
-    while(it!=intervals.end())
+    bool end = false;
+    while(true)
     {
+      if(it==intervals.end())
+      {
+        end = true;
+        break;
+      }
       interval_current = *it;
+      it++;
       if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
       {
-        intervals_preview.push_back(new Interval(interval_current));
+        intervals_preview->push_back(new Interval(interval_current));
       }else
       break;
-      it++;
+
     }
-    if(!interval_current || it==intervals.end())
+    if(!interval_current || end)
     {
-        intervals_preview.push_back(interval);
-        if(it!=intervals.end())
-            it++;
+        intervals_preview->push_back(interval);
     }else
     if(interval_current->absolute_start>interval->GetAbsoluteEnd())
     {
-        intervals_preview.push_back(interval);
-        intervals_preview.push_back(new Interval(interval_current));
-        it++;
+        intervals_preview->push_back(interval);
+        intervals_preview->push_back(new Interval(interval_current));
     }else if(interval_current->absolute_start + interval_current->GetDuration()/2>interval->absolute_start)
     {
-        intervals_preview.push_back(interval);
+        intervals_preview->push_back(interval);
         diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
-        intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
-        it++;
+        intervals_preview->push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
     }else
     {
-        intervals_preview.push_back(new Interval(interval_current));
+        intervals_preview->push_back(new Interval(interval_current));
         interval->absolute_start = interval_current->GetAbsoluteEnd();
-        intervals_preview.push_back(interval);
-        it++;
+        intervals_preview->push_back(interval);
         if(it!=intervals.end() && interval->GetAbsoluteEnd()> (*it)->absolute_start)
         {
-            diff = - interval->GetAbsoluteEnd() + (*it)->absolute_start;
+            diff = interval->GetAbsoluteEnd() - (*it)->absolute_start;
         }
     }
 
     while(it!=intervals.end())
     {
       interval_current = *it;
-      intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
+      intervals_preview->push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
       it++;
     }
 
-
-    /*for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
-    {
-        Timeline::Interval * interval_current = *it;
-
-        if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
-        {
-            intervals_preview.push_back(new Interval(interval_current));
-        }else if(interval_current->GetAbsoluteEnd()<interval->absolute_start)
-        {
-            intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + interval->GetDuration()));
-        }
-        else if(interval_current->absolute_start + interval_current->GetDuration()/2<interval->absolute_start)
-        {
-            if(interval_current->absolute_start>interval->GetAbsoluteEnd())
-            {
-               current_added = true;
-               intervals_preview.push_back(interval);
-            }else
-            {
-                current_added = true;
-                intervals_preview.push_back(interval);
-                diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
-                intervals_preview.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
-            }
-        }
-
-
-
-    }
-    if(!current_added)
-       intervals_preview.push_back(interval);
-       */
     return intervals_preview;
 
 }

@@ -236,6 +236,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     video_playing = false;
     miliseconds_start = -1;
 
+    current_drag_x = -1;
+
 
 }
 
@@ -350,16 +352,20 @@ void MainComponent::paint (Graphics& g)
 
         //List of intervals
         double timeline_duration = (double)(width_current-65-1)/second_to_pixel;
-        vector<Timeline::Interval*> intervals;
+        vector<Timeline::Interval*>* intervals;
         Timeline::Interval *current_interval = 0;
-        bool need_clear = isDragAndDropActive() && !shouldDrawDragImageWhenOver();
+        bool need_clear = isDragAndDropActive() && !shouldDrawDragImageWhenOver() && current_drag_x > 0;
         if(need_clear)
         {
             current_interval = new Timeline::Interval(timeline->movies[getCurrentDragDescription().getIntValue()],GetPositionSecond(current_drag_x));
             intervals = timeline->PreviewInsertIntervalIn(current_interval);
         }
-        else intervals = timeline->intervals;
-        for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+        else
+        {
+            intervals = &timeline->intervals;
+        }
+
+        for(vector<Timeline::Interval*>::iterator it = intervals->begin(); it!=intervals->end(); it++)
         {
             double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
             if(start1<=end&&end1>=start)
@@ -399,7 +405,14 @@ void MainComponent::paint (Graphics& g)
             }
         }
         if(need_clear)
-            intervals.clear();
+        {
+            for(vector<Timeline::Interval*>::iterator it = intervals->begin(); it!=intervals->end(); it++)
+            {
+                delete *it;
+            }
+            intervals->clear();
+            delete intervals;
+        }
         //~List of intervals
 
         //TimeLine
@@ -917,18 +930,24 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
     if(!shouldDrawDragImageWhenOver())
     {
 
-        vector<Timeline::Interval*> intervals;
+        vector<Timeline::Interval*>* intervals;
         Timeline::Interval *current_interval = 0;
         int movie_index = getCurrentDragDescription().getIntValue();
         double pos = GetPositionSecond(x);
         current_interval = new Timeline::Interval(timeline->movies[movie_index],pos);
         intervals = timeline->PreviewInsertIntervalIn(current_interval);
-        timeline->intervals.clear();
-        for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+        int size = timeline->intervals.size();
+        for(int i=0;i<size;++i)
+        {
+            delete timeline->intervals.back();
+            timeline->intervals.pop_back();
+        }
+        for(vector<Timeline::Interval*>::iterator it = intervals->begin(); it!=intervals->end(); it++)
         {
             timeline->intervals.push_back(*it);
         }
-
+        delete intervals;
+        current_drag_x = -1;
         repaintSlider();
     }
 }
@@ -944,8 +963,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
 {
     current_drag_x = x;
     current_drag_y = y;
-    if(!shouldDrawDragImageWhenOver())
-        repaintSlider();
+    repaintSlider();
 
 }
 
