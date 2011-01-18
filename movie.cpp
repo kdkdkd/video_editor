@@ -364,7 +364,7 @@ AVPacket* Movie::ReadFrame()
     return 0;
 }
 
-void Movie::ReadAndDecodeFrame()
+bool Movie::ReadAndDecodeFrame()
 {
     AVPacket* packet = ReadFrame();
     if(packet)
@@ -372,16 +372,20 @@ void Movie::ReadAndDecodeFrame()
         av_free_packet(packet);
         delete packet;
         DecodeFrame();
+        return true;
     }
+    return false;
 }
-void Movie::SkipFrame()
+bool Movie::SkipFrame()
 {
     AVPacket* packet = ReadFrame();
     if(packet)
     {
         av_free_packet(packet);
         delete packet;
+        return true;
     }
+    return false;
 }
 
 bool Movie::GoBack(int frames)
@@ -389,7 +393,10 @@ bool Movie::GoBack(int frames)
     double frame = 1.0d / fps;
     double eps = frame/5.0d;
     double desired = current - ((double)frames) * frame;
-    GotoSecondAndRead(desired - 3.0d*frame,false);
+    double guess = desired - 3.0d*frame;
+    if(guess<0.0)
+        guess = 0.0;
+    GotoSecondAndRead(guess,false);
     while(desired - current > eps )
     {
         SkipFrame();

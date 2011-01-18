@@ -61,6 +61,7 @@ public:
     MainAppWindow* mainWindow;
 
     Timeline *timeline;
+    Timeline *timeline_original;
     void buttonClicked (Button* button) ;
     MainComponent (MainAppWindow* mainWindow_);
 
@@ -122,8 +123,9 @@ public:
 
 
     double GetPositionSecond(int arrow_position);
+    void mouseDrag (const MouseEvent& e);
 
-
+    void RecalculatePreviewDrag();
 
 };
 
