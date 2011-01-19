@@ -60,6 +60,8 @@ public:
         Movie*movie;
     };
 
+    int FindNumberIntervalBySecond(double second);
+
     Interval* current_interval;
     Interval* GetCurrentInterval();
 
@@ -67,9 +69,9 @@ public:
     vector<Interval*> intervals;
 
     vector<Interval*>* GetAllIntervalsIn(double start,double length);
-    Timeline* PreviewInsertIntervalIn(Interval* interval);
+    Timeline* PreviewInsertIntervalIn(Interval* interval, double insert_position = -1.0);
 
-    void InsertIntervalIn(Timeline::Interval* insert_interval);
+    void InsertIntervalIn(Timeline::Interval* insert_interval, double insert_position = -1.0);
 
     Interval  * FindIntervalBySecond(double second);
 

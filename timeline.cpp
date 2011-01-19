@@ -106,6 +106,19 @@ Timeline::Interval * Timeline::FindIntervalBySecond(double second)
 
 }
 
+int Timeline::FindNumberIntervalBySecond(double second)
+{
+    int res = 0;
+    for(vector<Interval*>::iterator it = intervals.begin(); it != intervals.end(); it++)
+    {
+        if(second>=(*it)->absolute_start && second<=(*it)->GetAbsoluteEnd())
+            return res;
+        res++;
+    }
+    return -1;
+
+}
+
 bool Timeline::GotoSecondAndRead(double dest,bool decode)
 {
     current_interval = FindIntervalBySecond(dest);
@@ -214,9 +227,9 @@ void Timeline::DecodeFrame()
 }
 
 
-void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval)
+void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double insert_position)
 {
-    Timeline* timeline_preview = PreviewInsertIntervalIn(insert_interval);
+    Timeline* timeline_preview = PreviewInsertIntervalIn(insert_interval, insert_position);
     int size = this->intervals.size();
     for(int i=0; i<size; ++i)
     {
@@ -236,8 +249,35 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval)
     RecalculateCurrent();
 }
 
-Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
+Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double insert_position)
 {
+    if(insert_position>0)
+    {
+        double diff = -1.0;
+        Timeline *res_prepare = new Timeline();
+        for(vector<Interval*>::iterator it = intervals.begin(); it != intervals.end(); it++)
+        {
+            if(diff>0.0)
+            {
+                (*it)->absolute_start-=diff;
+            }
+            if(*it == interval)
+            {
+                diff = (*it)->GetDuration();
+            }else
+            {
+                res_prepare->intervals.push_back(*it);
+            }
+
+        }
+        interval->absolute_start = insert_position;
+        res_prepare->current_interval = current_interval;
+        Timeline *res = res_prepare->PreviewInsertIntervalIn(interval,-1.0);
+        delete res_prepare;
+        return res;
+    }
+
+
     interval->color=Timeline::Interval::selected;
     Timeline *timeline_preview = new Timeline;
     timeline_preview->disposeMovies = false;
@@ -267,10 +307,14 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
     }
     if(!interval_current || end)
     {
+        if(interval == current_interval)
+            timeline_preview->current_interval = interval;
         timeline_preview->intervals.push_back(interval);
     }
     else if(interval_current->absolute_start>interval->GetAbsoluteEnd())
     {
+        if(interval == current_interval)
+            timeline_preview->current_interval = interval;
         timeline_preview->intervals.push_back(interval);
         Interval * new_interval = new Interval(interval_current);
         if(interval_current == current_interval)
@@ -279,6 +323,8 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
     }
     else if(interval_current->absolute_start + interval_current->GetDuration()/2>interval->absolute_start)
     {
+        if(interval == current_interval)
+            timeline_preview->current_interval = interval;
         timeline_preview->intervals.push_back(interval);
         diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
         Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff);
@@ -293,6 +339,8 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
             timeline_preview->current_interval = new_interval;
         timeline_preview->intervals.push_back(new_interval);
         interval->absolute_start = interval_current->GetAbsoluteEnd();
+        if(interval == current_interval)
+            timeline_preview->current_interval = interval;
         timeline_preview->intervals.push_back(interval);
         if(it!=intervals.end() && interval->GetAbsoluteEnd()> (*it)->absolute_start)
         {

@@ -986,15 +986,21 @@ void MainComponent::RecalculatePreviewDrag()
 
     if(!shouldDrawDragImageWhenOver())
     {
+        if(timeline_original)
+            delete timeline;
+        else
+            timeline_original = timeline;
         if(getCurrentDragDescription().startsWith("m"))
         {
-            if(timeline_original)
-                delete timeline;
-            else
-                timeline_original = timeline;
             Timeline::Interval *current_interval = new Timeline::Interval(timeline_original->movies[getCurrentDragDescription().substring(1).getIntValue()],GetPositionSecond(current_drag_x));
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval);
         }
+        else if(getCurrentDragDescription().startsWith("i"))
+        {
+            Timeline::Interval *current_interval = timeline_original->intervals[getCurrentDragDescription().substring(1).getIntValue()];
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,GetPositionSecond(current_drag_x));
+        }
+
     }
     else if(timeline_original)
     {
@@ -1008,6 +1014,20 @@ void MainComponent::RecalculatePreviewDrag()
 
 void MainComponent::mouseDrag (const MouseEvent& e)
 {
+    current_drag_x = e.x;
+    current_drag_y = e.y;
+    if(!shouldDrawDragImageWhenOver())
+    {
+        double ratio = ((double)GetArrowPosition() - 40.0) / (double)(getWidth()-60.0);
+        double timeline_duration = ((double)(getWidth()-65-1)/second_to_pixel);
+        double second = ratio * timeline_duration + timeline_position;
+        int number = timeline->FindNumberIntervalBySecond(second);
+        if(number>=0)
+        {
+            startDragging(String("i") + String(number),this,*timeline->intervals[number]->movie->image_preview);
+            StopVideo();
+        }
+    }
     //startDragging(String("i"),this);
 }
 
