@@ -412,15 +412,6 @@ void MainComponent::paint (Graphics& g)
                 g.drawText(label,start_position_interval + 50,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 20,50,Justification::centredLeft,true);
             }
         }
-        /*if(need_clear)
-        {
-            for(vector<Timeline::Interval*>::iterator it = intervals->begin(); it!=intervals->end(); it++)
-            {
-                delete *it;
-            }
-            intervals->clear();
-            delete intervals;
-        }*/
         //~List of intervals
 
         //TimeLine
@@ -519,8 +510,11 @@ bool MainComponent::NeedDrawArrow()
 int MainComponent::GetCurrentPosition()
 {
     if(timeline->current<timeline_position)
+    {
+        if(timeline_position==0)
+            return 40;
         return -1;
-
+    }
     double timeline_duration = (double)(getWidth()-65-1)/second_to_pixel;
     if(timeline->current>timeline_position + timeline_duration)
         return -1;
@@ -949,20 +943,24 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
     if(!shouldDrawDragImageWhenOver() && timeline_original)
     {
         String description = getCurrentDragDescription();
+        double pos = GetPositionSecond(x);
+        int index = description.substring(1).getIntValue();
+
         if(description.startsWith("m"))
         {
-            description = description.substring(1);
-            Timeline::Interval *current_interval = 0;
-            int movie_index = description.getIntValue();
-            double pos = GetPositionSecond(x);
-            current_interval = new Timeline::Interval(timeline_original->movies[movie_index],pos);
+            Timeline::Interval *current_interval = current_interval = new Timeline::Interval(timeline_original->movies[index],pos);
             timeline_original->InsertIntervalIn(current_interval);
-            current_drag_x = -1;
-            delete timeline;
-            timeline = timeline_original;
-            timeline_original = 0;
-            sliderValueChanged(scale_timeline);
+        }else if(description.startsWith("i"))
+        {
+            Timeline::Interval *current_interval = timeline_original->intervals[index];
+            timeline_original->InsertIntervalIn(current_interval,pos);
         }
+
+        current_drag_x = -1;
+        delete timeline;
+        timeline = timeline_original;
+        timeline_original = 0;
+        sliderValueChanged(scale_timeline);
     }
 }
 
@@ -978,13 +976,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
     current_drag_x = x;
     current_drag_y = y;
 
-    RecalculatePreviewDrag();
-}
-
-void MainComponent::RecalculatePreviewDrag()
-{
-
-    if(!shouldDrawDragImageWhenOver())
+     if(!shouldDrawDragImageWhenOver())
     {
         if(timeline_original)
             delete timeline;
@@ -997,6 +989,7 @@ void MainComponent::RecalculatePreviewDrag()
         }
         else if(getCurrentDragDescription().startsWith("i"))
         {
+
             Timeline::Interval *current_interval = timeline_original->intervals[getCurrentDragDescription().substring(1).getIntValue()];
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval,GetPositionSecond(current_drag_x));
         }
@@ -1004,30 +997,34 @@ void MainComponent::RecalculatePreviewDrag()
     }
     else if(timeline_original)
     {
-        delete timeline;
-        timeline = timeline_original;
-        timeline_original = 0;
+        //if(getCurrentDragDescription().startsWith("m"))
+        {
+            delete timeline;
+            timeline = timeline_original;
+            timeline_original = 0;
+        }
     }
 
     repaintSlider();
 }
 
+
 void MainComponent::mouseDrag (const MouseEvent& e)
 {
-    current_drag_x = e.x;
-    current_drag_y = e.y;
-    if(!shouldDrawDragImageWhenOver())
+    if(!timeline_original)
     {
-        double ratio = ((double)GetArrowPosition() - 40.0) / (double)(getWidth()-60.0);
-        double timeline_duration = ((double)(getWidth()-65-1)/second_to_pixel);
-        double second = ratio * timeline_duration + timeline_position;
-        int number = timeline->FindNumberIntervalBySecond(second);
-        if(number>=0)
+        current_drag_x = e.x;
+        current_drag_y = e.y;
+        if(!shouldDrawDragImageWhenOver())
         {
-            startDragging(String("i") + String(number),this,*timeline->intervals[number]->movie->image_preview);
-            StopVideo();
+            double second = GetPositionSecond();
+            int number = timeline->FindNumberIntervalBySecond(second);
+            if(number>=0)
+            {
+                startDragging(String("i") + String(number),this,*timeline->intervals[number]->movie->image_preview);
+                StopVideo();
+            }
         }
     }
-    //startDragging(String("i"),this);
 }
 

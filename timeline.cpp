@@ -251,28 +251,31 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
 
 Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double insert_position)
 {
-    if(insert_position>0)
+    if(insert_position>=0.0)
     {
-        double diff = -1.0;
         Timeline *res_prepare = new Timeline();
+        res_prepare->disposeIntervals = false;
+        res_prepare->disposeMovies = false;
         for(vector<Interval*>::iterator it = intervals.begin(); it != intervals.end(); it++)
         {
-            if(diff>0.0)
-            {
-                (*it)->absolute_start-=diff;
-            }
-            if(*it == interval)
-            {
-                diff = (*it)->GetDuration();
-            }else
+            if(*it != interval)
             {
                 res_prepare->intervals.push_back(*it);
             }
 
         }
-        interval->absolute_start = insert_position;
+        Interval* new_interval = new Interval(interval);
+        new_interval->absolute_start = insert_position;
         res_prepare->current_interval = current_interval;
-        Timeline *res = res_prepare->PreviewInsertIntervalIn(interval,-1.0);
+        if(current_interval == interval)
+        {
+            res_prepare->current_interval = new_interval;
+        }
+        copy(movies.begin(),movies.end(),back_inserter(res_prepare->movies));
+        copy(movies_internal.begin(),movies_internal.end(),back_inserter(res_prepare->movies_internal));
+
+        Timeline *res = res_prepare->PreviewInsertIntervalIn(new_interval,-1.0);
+
         delete res_prepare;
         return res;
     }

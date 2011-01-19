@@ -72,6 +72,7 @@ public:
     void paint (Graphics& g);
     int GetArrowPosition(int arrow_position);
     int GetCurrentPosition();
+    double GetSecond(int mouse);
     bool NeedDrawArrow();
     void timerCallback();
     void DrawSlider(Graphics& g);
@@ -125,7 +126,6 @@ public:
     double GetPositionSecond(int arrow_position);
     void mouseDrag (const MouseEvent& e);
 
-    void RecalculatePreviewDrag();
 
 };
 
