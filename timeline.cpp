@@ -291,7 +291,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
         Interval * new_interval = new Interval(interval_current);
         if(interval_current == current_interval)
             timeline_preview->current_interval = new_interval;
-        timeline_preview->intervals.push_back(new Interval(interval_current));
+        timeline_preview->intervals.push_back(new_interval);
         interval->absolute_start = interval_current->GetAbsoluteEnd();
         timeline_preview->intervals.push_back(interval);
         if(it!=intervals.end() && interval->GetAbsoluteEnd()> (*it)->absolute_start)
@@ -306,7 +306,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval)
         Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff);
         if(interval_current == current_interval)
             timeline_preview->current_interval = new_interval;
-        timeline_preview->intervals.push_back(new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff));
+        timeline_preview->intervals.push_back(new_interval);
         it++;
     }
 
