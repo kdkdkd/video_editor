@@ -69,8 +69,11 @@ public:
     vector<Interval*> intervals;
 
     vector<Interval*>* GetAllIntervalsIn(double start,double length);
-    Timeline* PreviewInsertIntervalIn(Interval* interval, double insert_position = -1.0);
 
+    // -2 - remove interval
+    // -1 - insert interval at interval->absolute_position, interval must be new
+    // >0 - move interval to insert_position, interval must be from existing timeline
+    Timeline* PreviewInsertIntervalIn(Interval* interval, double insert_position = -1.0);
     void InsertIntervalIn(Timeline::Interval* insert_interval, double insert_position = -1.0);
 
     Interval  * FindIntervalBySecond(double second);

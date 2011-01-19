@@ -940,7 +940,7 @@ bool MainComponent::isInterestedInDragSource (const String& sourceDescription,Co
 
 void MainComponent::itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y)
 {
-    if(!shouldDrawDragImageWhenOver() && timeline_original)
+    if((!shouldDrawDragImageWhenOver() || getCurrentDragDescription().startsWith("i")) && timeline_original)
     {
         String description = getCurrentDragDescription();
         double pos = GetPositionSecond(x);
@@ -950,9 +950,12 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         {
             Timeline::Interval *current_interval = current_interval = new Timeline::Interval(timeline_original->movies[index],pos);
             timeline_original->InsertIntervalIn(current_interval);
-        }else if(description.startsWith("i"))
+        }
+        else if(description.startsWith("i"))
         {
             Timeline::Interval *current_interval = timeline_original->intervals[index];
+            if(shouldDrawDragImageWhenOver())
+                pos = -2.0;
             timeline_original->InsertIntervalIn(current_interval,pos);
         }
 
@@ -961,6 +964,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         timeline = timeline_original;
         timeline_original = 0;
         sliderValueChanged(scale_timeline);
+        repaint();
     }
 }
 
@@ -976,7 +980,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
     current_drag_x = x;
     current_drag_y = y;
 
-     if(!shouldDrawDragImageWhenOver())
+    if(!shouldDrawDragImageWhenOver() || getCurrentDragDescription().startsWith("i"))
     {
         if(timeline_original)
             delete timeline;
@@ -991,18 +995,16 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
         {
 
             Timeline::Interval *current_interval = timeline_original->intervals[getCurrentDragDescription().substring(1).getIntValue()];
-            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,GetPositionSecond(current_drag_x));
+            double pos = (shouldDrawDragImageWhenOver())?-2.0:GetPositionSecond(current_drag_x);
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,pos);
         }
 
     }
     else if(timeline_original)
     {
-        //if(getCurrentDragDescription().startsWith("m"))
-        {
-            delete timeline;
-            timeline = timeline_original;
-            timeline_original = 0;
-        }
+        delete timeline;
+        timeline = timeline_original;
+        timeline_original = 0;
     }
 
     repaintSlider();

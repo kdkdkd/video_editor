@@ -233,8 +233,7 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
     int size = this->intervals.size();
     for(int i=0; i<size; ++i)
     {
-        Interval * cur = this->intervals.back();
-        delete cur;
+        delete intervals.back();
         this->intervals.pop_back();
     }
     for(vector<Timeline::Interval*>::iterator it = timeline_preview->intervals.begin(); it!=timeline_preview->intervals.end(); it++)
@@ -243,14 +242,59 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
         this->intervals.push_back(*it);
     }
     this->current_interval = timeline_preview->current_interval;
+
+    RecalculateDuration();
+    if(!current_interval)
+    {
+        current = timeline_preview->current;
+        GotoSecondAndRead(current);
+    }
+    else
+        RecalculateCurrent();
+
     timeline_preview->disposeIntervals = false;
     delete timeline_preview;
-    RecalculateDuration();
-    RecalculateCurrent();
 }
 
 Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double insert_position)
 {
+    // -2 - remove interval
+    if(insert_position<-1.5)
+    {
+        Timeline *res_prepare = new Timeline();
+        res_prepare->disposeIntervals = false;
+        res_prepare->disposeMovies = false;
+        for(vector<Interval*>::iterator it = intervals.begin(); it != intervals.end(); it++)
+        {
+            if(*it != interval)
+            {
+                Interval * new_interval = new Interval(*it);
+                res_prepare->intervals.push_back(new_interval);
+                if(*it == current_interval)
+                {
+                    if(current_interval == interval)
+                    {
+                        res_prepare->current_interval = 0;
+                    }
+                    else
+                    {
+                        res_prepare->current_interval = new_interval;
+                    }
+                }
+            }
+
+        }
+        res_prepare->loaded = true;
+        res_prepare->current = current;
+        res_prepare->RecalculateDuration();
+
+        copy(movies.begin(),movies.end(),back_inserter(res_prepare->movies));
+        copy(movies_internal.begin(),movies_internal.end(),back_inserter(res_prepare->movies_internal));
+
+        return res_prepare;
+    }
+
+    // >0 - move interval to insert_position, interval must be from existing timeline
     if(insert_position>=0.0)
     {
         Timeline *res_prepare = new Timeline();
@@ -273,14 +317,14 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
         }
         copy(movies.begin(),movies.end(),back_inserter(res_prepare->movies));
         copy(movies_internal.begin(),movies_internal.end(),back_inserter(res_prepare->movies_internal));
-
+        res_prepare->current = current;
         Timeline *res = res_prepare->PreviewInsertIntervalIn(new_interval,-1.0);
 
         delete res_prepare;
         return res;
     }
 
-
+    // -1 - insert interval at interval->absolute_position, interval must be new
     interval->color=Timeline::Interval::selected;
     Timeline *timeline_preview = new Timeline;
     timeline_preview->disposeMovies = false;
@@ -360,7 +404,10 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
         timeline_preview->intervals.push_back(new_interval);
         it++;
     }
-
+    if(!current_interval)
+    {
+       timeline_preview->current = current;
+    }else
     timeline_preview->RecalculateCurrent();
     timeline_preview->RecalculateDuration();
     timeline_preview->loaded = true;
