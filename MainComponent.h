@@ -125,6 +125,7 @@ public:
 
     double GetPositionSecond(int arrow_position);
     void mouseDrag (const MouseEvent& e);
+    void mouseExit(const MouseEvent& e);
 
 
 };

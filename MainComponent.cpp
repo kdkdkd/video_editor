@@ -1030,3 +1030,9 @@ void MainComponent::mouseDrag (const MouseEvent& e)
     }
 }
 
+void MainComponent::mouseExit(const MouseEvent& e)
+{
+    if(current_drag_x>0)
+        itemDropped(String(""),0,e.x, e.y);
+}
+
