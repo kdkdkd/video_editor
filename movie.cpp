@@ -177,6 +177,22 @@ bool Movie::Load(String &filename)
     return loaded;
 
 }
+
+Image * Movie::GeneratePreview(double second)
+{
+    double current_prev = current;
+    GotoSecondAndRead(second,true);
+
+    Image * res = new Image();
+    int preview_width = 128;
+    int preview_height = 96;
+
+    *res = image->rescaled(preview_width,preview_height);
+
+    GotoSecondAndRead(current_prev,true);
+    return res;
+}
+
 int Movie::ToInternalTime(double seconds)
 {
     return (int)(seconds * ratio_to_internal);
@@ -216,7 +232,7 @@ void Movie::Dispose()
     }
     delete image;
 
-    delete image_preview;
+    //delete image_preview;
 
     delete bitmapData;
 

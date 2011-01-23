@@ -3,9 +3,11 @@
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
 #include <math.h>
+#define VIDEO_TIMELINE_SIZE 98
+#define AUDIO_TIMELINE_SIZE 30
 
+#define TIMELINE_OFFSET 84
 
-#define TIMELINE_OFFSET 26
 
 void MainComponent::changeFileName(String new_filename)
 {
@@ -342,17 +344,18 @@ void MainComponent::paint (Graphics& g)
 
         g.setColour(Colour::fromRGB(70,70,70));
 
-        g.drawRect(40,height_current-75 - 30- TIMELINE_OFFSET,width_current-65,50,1);
-        g.drawRect(40,height_current-75 - 30+49- TIMELINE_OFFSET,width_current-65,20,1);
+        g.drawRect(40,height_current-75 - 30- TIMELINE_OFFSET,width_current-65,VIDEO_TIMELINE_SIZE,1);
+        g.drawRect(40,height_current-75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,width_current-65,AUDIO_TIMELINE_SIZE,1);
 
-        g.drawVerticalLine(10,height_current-125 - 30 - TIMELINE_OFFSET,height_current-25-30 + 19- TIMELINE_OFFSET);
+        g.drawVerticalLine(10,height_current-125 - 30 - TIMELINE_OFFSET ,height_current-25-30 + 19- TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
 
         g.drawHorizontalLine(height_current-125 - 30- TIMELINE_OFFSET,10,width_current-120);
 
-        g.drawHorizontalLine(height_current-37- TIMELINE_OFFSET,10,40);
+        g.drawHorizontalLine(height_current-37- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,10,40);
 
         g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125-30 - TIMELINE_OFFSET,400,20,Justification::centredRight,true);
 
+        // Draw movie list
         Font f = g.getCurrentFont();
         Font f_copy = f;
         f.setItalic(true);
@@ -368,7 +371,7 @@ void MainComponent::paint (Graphics& g)
         g.drawVerticalLine(10,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
         g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
         g.setFont(f_copy);
-
+        //~Draw movie list
 
         //List of intervals
         double timeline_duration = (double)(width_current-65-1)/second_to_pixel;
@@ -388,14 +391,14 @@ void MainComponent::paint (Graphics& g)
 
                 g.setColour(Colour::fromRGB(70,70,70));
 
-                g.drawRect(start_position_interval + 40,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,50,1);
+                g.drawRect(start_position_interval + 40,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,VIDEO_TIMELINE_SIZE,1);
 
                 if((*it)->color != Timeline::Interval::selected)
                     g.setColour(Colour::fromRGB(200,200,250));
                 else
                     g.setColour(Colour::fromRGB(100,100,150));
 
-                g.fillRect(start_position_interval+40+1,height_current-74-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,24);
+                g.fillRect(start_position_interval+40+1,height_current-74-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
 
                 if((*it)->color != Timeline::Interval::selected)
                     g.setColour(Colour::fromRGB(180,180,230));
@@ -403,13 +406,22 @@ void MainComponent::paint (Graphics& g)
                     g.setColour(Colour::fromRGB(80,80,130));
 
 
-                g.fillRect(start_position_interval+40+1,height_current-50-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,24);
+                g.fillRect(start_position_interval+40+1,height_current-50-30- TIMELINE_OFFSET + (VIDEO_TIMELINE_SIZE-50)/2,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
 
                 String label = (*it)->movie->filename;
                 File f(label);
                 label = f.getFileName();
                 g.setColour(Colour::fromRGB(50,50,50));
-                g.drawText(label,start_position_interval + 50,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 20,50,Justification::centredLeft,true);
+                int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
+                if(took_space>end_position_interval - start_position_interval)
+                {
+                    took_space = 0;
+                }
+                if(took_space)
+                    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
+                //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
+                g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50 + took_space,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 20 - took_space,VIDEO_TIMELINE_SIZE,Justification::centredLeft,6);
+
             }
         }
         //~List of intervals
@@ -445,10 +457,10 @@ void MainComponent::paint (Graphics& g)
 
             if(label_time<timeline_position+timeline_duration)
             {
-                g.drawVerticalLine(40 + label_position,height_current-36 - TIMELINE_OFFSET,height_current-36 + 26 - TIMELINE_OFFSET);
+                g.drawVerticalLine(40 + label_position,height_current-36 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,height_current-36 + 26 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
                 String label = toolbox::format_duration_small(label_time);
                 if(g.getCurrentFont().getStringWidth(label) + 43+label_position < width_current)
-                    g.drawText(label,43+label_position,height_current-36 + 16 - TIMELINE_OFFSET,100,10,Justification::centredLeft,true);
+                    g.drawText(label,43+label_position,height_current-36 + 16 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,100,10,Justification::centredLeft,true);
             }
 
             if(label_time <timeline_position+timeline_duration + display_interval)
@@ -460,7 +472,7 @@ void MainComponent::paint (Graphics& g)
                     if(current_position_line<0)
                         break;
                     if(current_position_line<width_current - 65 - 1)
-                        g.drawVerticalLine(40 + current_position_line,height_current-36 - TIMELINE_OFFSET,height_current-36 + 10 - TIMELINE_OFFSET);
+                        g.drawVerticalLine(40 + current_position_line,height_current-36 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,height_current-36 + 10 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
                     current_position_line += line_interval;
                 }
             }
@@ -475,9 +487,9 @@ void MainComponent::paint (Graphics& g)
         //~TimeLine
 
         g.setColour(Colour::fromRGB(220,220,220));
-        g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET,width_current-52-15,9);
+        g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
         g.setColour(Colour::fromRGB(210,210,210));
-        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET,width_current-52-15,9);
+        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50 + (AUDIO_TIMELINE_SIZE-20)/2,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
 
 
         if(NeedDrawArrow())
@@ -538,10 +550,8 @@ void MainComponent::DrawSlider(Graphics& g)
     if(position<0)
         return;
     int height_current = getHeight();
-    g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET+2,6,60+19-4,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-80-30 - TIMELINE_OFFSET+2,6,60+19-4,4,1.5);
+    g.drawLine(position,height_current - 75 - 30 - TIMELINE_OFFSET - 6,position,height_current - 75 - 30 - TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE + AUDIO_TIMELINE_SIZE + 6,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)
@@ -576,6 +586,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
 
 
         timeline->GotoSecondAndRead(GetPositionSecond(position));
+        ResizeViewport();
         repaint();
         return;
     }
@@ -948,7 +959,8 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
 
         if(description.startsWith("m"))
         {
-            Timeline::Interval *current_interval = current_interval = new Timeline::Interval(timeline_original->movies[index],pos);
+            Movie * movie = timeline_original->movies[index];
+            Timeline::Interval *current_interval = current_interval = new Timeline::Interval(movie,pos,movie->image_preview);
             timeline_original->InsertIntervalIn(current_interval);
         }
         else if(description.startsWith("i"))
@@ -964,14 +976,16 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         timeline = timeline_original;
         timeline_original = 0;
         sliderValueChanged(scale_timeline);
+        ResizeViewport();
         repaint();
     }
+
 }
 
 
 bool MainComponent::shouldDrawDragImageWhenOver()
 {
-    bool res = !(current_drag_y<=getHeight()-5-30  - TIMELINE_OFFSET &&current_drag_y>=getHeight()-75-30 - TIMELINE_OFFSET);
+    bool res = !(current_drag_y<= getHeight()-75 - 30- TIMELINE_OFFSET+VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET);
     return res;
 }
 
@@ -988,7 +1002,8 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
             timeline_original = timeline;
         if(getCurrentDragDescription().startsWith("m"))
         {
-            Timeline::Interval *current_interval = new Timeline::Interval(timeline_original->movies[getCurrentDragDescription().substring(1).getIntValue()],GetPositionSecond(current_drag_x));
+            Movie * movie = timeline_original->movies[getCurrentDragDescription().substring(1).getIntValue()];
+            Timeline::Interval *current_interval = new Timeline::Interval(movie,GetPositionSecond(current_drag_x),movie->image_preview);
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval);
         }
         else if(getCurrentDragDescription().startsWith("i"))

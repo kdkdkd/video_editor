@@ -2,6 +2,7 @@
 #include "movie.h"
 #include "localization.h"
 #include "toolbox.h"
+#include <algorithm>
 using namespace localization;
 
 Image black_image(Image::RGB,4,3,true);
@@ -29,7 +30,7 @@ Movie* Timeline::Load(String &filename)
 
         if(!loaded)
         {
-            Interval * new_timeline = new Interval(movie,0);
+            Interval * new_timeline = new Interval(movie,0,movie->image_preview);
             intervals.push_back(new_timeline);
             current_interval = new_timeline;
             duration = movie->duration;
@@ -68,16 +69,28 @@ void Timeline::Dispose()
 {
     if(loaded)
     {
+
+        vector<Image *> images;
+        for(vector<Movie*>::iterator it = movies_internal.begin(); it!=movies_internal.end(); it++)
+        {
+            images.push_back((*it)->image_preview);
+            if(disposeMovies)
+                delete *it;
+        }
+
+        for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+        {
+            images.push_back((*it)->preview);
+            if(disposeIntervals)
+                delete *it;
+        }
         if(disposeMovies)
-            for(vector<Movie*>::iterator it = movies_internal.begin(); it!=movies_internal.end(); it++)
-            {
-                delete *it;
-            }
-        if(disposeIntervals)
-            for(vector<Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
-            {
-                delete *it;
-            }
+        {
+             sort(images.begin(), images.end());
+             vector<Image *> ::iterator end = unique(images.begin(), images.end());
+             for(vector<Image *> ::iterator it = images.begin(); it!=end; it++)
+                    delete *it;
+        }
     }
 
     loaded = false;
@@ -374,7 +387,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
             timeline_preview->current_interval = interval;
         timeline_preview->intervals.push_back(interval);
         diff = - interval_current->absolute_start + interval->GetAbsoluteEnd();
-        Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff);
+        Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff,interval_current->preview);
         if(interval_current == current_interval)
             timeline_preview->current_interval = new_interval;
         timeline_preview->intervals.push_back(new_interval);
@@ -398,7 +411,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
     while(it!=intervals.end())
     {
         interval_current = *it;
-        Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff);
+        Interval * new_interval = new Interval(interval_current->movie,interval_current->start,interval_current->end,interval_current->absolute_start + diff,interval_current->preview);
         if(interval_current == current_interval)
             timeline_preview->current_interval = new_interval;
         timeline_preview->intervals.push_back(new_interval);
@@ -406,9 +419,10 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
     }
     if(!current_interval)
     {
-       timeline_preview->current = current;
-    }else
-    timeline_preview->RecalculateCurrent();
+        timeline_preview->current = current;
+    }
+    else
+        timeline_preview->RecalculateCurrent();
     timeline_preview->RecalculateDuration();
     timeline_preview->loaded = true;
 

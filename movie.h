@@ -72,6 +72,7 @@ public:
     bool GotoSecondAndRead(double dest,bool decode = true, bool accurate = true);
     bool GoBack(int frames);
     String GetMovieInfo();
+    Image * GeneratePreview(double second);
 };
 
 
