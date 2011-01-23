@@ -189,12 +189,16 @@ void MainComponent::scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newR
 
 void MainComponent::sliderValueChanged(Slider* slider)
 {
+    double second_to_pixel_prev = second_to_pixel;
     second_to_pixel = slider->getValue()*(0.14620516440220848680255318407494) + 0.31622776601683793319988935444327;
     second_to_pixel*=second_to_pixel;
     second_to_pixel*=second_to_pixel;
 
-
-
+    double width = (double)(getWidth()-65);
+    if(timeline_position>0.0)
+    timeline_position -= (width/second_to_pixel - width/second_to_pixel_prev)/2.0;
+    if(timeline_position<0.0)
+        timeline_position = 0.0;
     timeline_scrollbar->setRangeLimits(0.0,1.3*timeline->duration);
     timeline_scrollbar->setCurrentRange(timeline_position,(double)(getWidth()-65)/second_to_pixel);
 
@@ -767,6 +771,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandRemoveSpaces:
         {
             timeline->RemoveSpaces();
+            sliderValueChanged(scale_timeline);
             repaint();
         }
     break;
