@@ -13,5 +13,6 @@ void DrawableButtonAndDrag::mouseDrag (const MouseEvent& e)
     int index = box->getIndexOfChildComponent(this->getParentComponent());
     Movie*movie = timeline->movies[index];
     main->startDragging(String("m") + String(index),this,*movie->image_preview);
+    main->timeline->ResetIntervalColor();
     main->StopVideo();
 }

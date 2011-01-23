@@ -127,6 +127,7 @@ public:
     void mouseDrag (const MouseEvent& e);
     void mouseExit(const MouseEvent& e);
 
+    void mouseMoveReaction();
 
 };
 

@@ -393,17 +393,41 @@ void MainComponent::paint (Graphics& g)
 
                 g.drawRect(start_position_interval + 40,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,VIDEO_TIMELINE_SIZE,1);
 
-                if((*it)->color != Timeline::Interval::selected)
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
                     g.setColour(Colour::fromRGB(200,200,250));
-                else
+                    break;
+                /*case Timeline::Interval::dragg:
                     g.setColour(Colour::fromRGB(100,100,150));
+                    break;*/
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(200,200,100));
+                    break;
+                case Timeline::Interval::select: case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(180,70,70));
+                    break;
+                }
 
                 g.fillRect(start_position_interval+40+1,height_current-74-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
 
-                if((*it)->color != Timeline::Interval::selected)
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
                     g.setColour(Colour::fromRGB(180,180,230));
-                else
+                    break;
+                /*case Timeline::Interval::dragg:
                     g.setColour(Colour::fromRGB(80,80,130));
+                    break;*/
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(180,180,80));
+                    break;
+                case Timeline::Interval::select: case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(160,50,50));
+                    break;
+                }
+
+
 
 
                 g.fillRect(start_position_interval+40+1,height_current-50-30- TIMELINE_OFFSET + (VIDEO_TIMELINE_SIZE-50)/2,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
@@ -573,6 +597,30 @@ void MainComponent::mouseMove (const MouseEvent& e)
     mouse_x = e.x;
     mouse_y = e.y;
 
+    mouseMoveReaction();
+
+}
+
+void MainComponent::mouseMoveReaction()
+{
+    if(!timeline_original)
+    {
+        Timeline::Interval *interval = 0;
+        current_drag_x = mouse_x;
+        current_drag_y = mouse_y;
+        if(!shouldDrawDragImageWhenOver())
+            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+        current_drag_x = -1;
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it != timeline->intervals.end(); it++)
+        {
+            if((*it)->selected)
+                (*it)->color = Timeline::Interval::select;
+            else
+                (*it)->color = Timeline::Interval::usual;
+        }
+        if(interval && !interval->selected)
+            interval->color = Timeline::Interval::over;
+    }
     repaintSlider();
 }
 
@@ -583,12 +631,34 @@ void MainComponent::mouseDown (const MouseEvent& e)
     if(NeedDrawArrow())
     {
         int position = GetArrowPosition();
-
-
         timeline->GotoSecondAndRead(GetPositionSecond(position));
         ResizeViewport();
         repaint();
-        return;
+
+    }
+    if(!timeline_original)
+    {
+
+        Timeline::Interval *interval = 0;
+        current_drag_x = mouse_x;
+        current_drag_y = mouse_y;
+        if(!shouldDrawDragImageWhenOver())
+            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+        if(interval && interval->selected)
+        {
+            interval->selected = false;
+            interval->color = Timeline::Interval::over;
+            current_drag_x = -1;
+            repaintSlider();
+            return;
+        }
+        timeline->ResetIntervalColor();
+        current_drag_x = -1;
+        if(interval)
+        {
+            interval->color = Timeline::Interval::select;
+            interval->selected = true;
+        }
     }
     repaintSlider();
 }
@@ -976,6 +1046,9 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         timeline = timeline_original;
         timeline_original = 0;
         sliderValueChanged(scale_timeline);
+        mouse_x = x;
+        mouse_y = y;
+        mouseMoveReaction();
         ResizeViewport();
         repaint();
     }
@@ -985,7 +1058,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
 
 bool MainComponent::shouldDrawDragImageWhenOver()
 {
-    bool res = !(current_drag_y<= getHeight()-75 - 30- TIMELINE_OFFSET+VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET);
+    bool res = !(current_drag_y<= getHeight()-75 - 30- TIMELINE_OFFSET+VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET && current_drag_x>10 && current_drag_x<getWidth()-10);
     return res;
 }
 
@@ -1047,7 +1120,7 @@ void MainComponent::mouseDrag (const MouseEvent& e)
 
 void MainComponent::mouseExit(const MouseEvent& e)
 {
-    if(current_drag_x>0)
+    if(timeline_original)
         itemDropped(String(""),0,e.x, e.y);
 }
 

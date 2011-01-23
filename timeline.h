@@ -45,9 +45,9 @@ public:
     class Interval
     {
         public:
-        Interval(Movie*movie,double absolute_start, Image* preview){this->preview = preview; color = usual; this->movie = movie; this->start = 0.0; this->end = movie->duration; this->absolute_start = absolute_start;}
-        Interval(Movie*movie,double start,double end,double absolute_start, Image* preview){this->preview = preview;color = usual; this->movie = movie; this->start = start; this->end = end; this->absolute_start = absolute_start;}
-        Interval(Interval *interval){this->preview = interval->preview;color = usual; this->movie = interval->movie; this->start = interval->start; this->end = interval->end; this->absolute_start = interval->absolute_start;}
+        Interval(Movie*movie,double absolute_start, Image* preview){selected = false;this->preview = preview; color = usual; this->movie = movie; this->start = 0.0; this->end = movie->duration; this->absolute_start = absolute_start;}
+        Interval(Movie*movie,double start,double end,double absolute_start, Image* preview){selected = false;this->preview = preview;color = usual; this->movie = movie; this->start = start; this->end = end; this->absolute_start = absolute_start;}
+        Interval(Interval *interval){selected = false;this->preview = interval->preview;color = usual; this->movie = interval->movie; this->start = interval->start; this->end = interval->end; this->absolute_start = interval->absolute_start;}
         double GetDuration(){return end - start;};
         double GetAbsoluteEnd(){return end - start + absolute_start;};
         double start,end,absolute_start;
@@ -55,10 +55,13 @@ public:
         enum IntervalColor
         {
             usual = 0,
-            selected = 1
+            dragg = 1,
+            select = 2,
+            over = 3
 
         }color;
         Movie*movie;
+        bool selected;
     };
 
     int FindNumberIntervalBySecond(double second);
@@ -78,6 +81,8 @@ public:
     void InsertIntervalIn(Timeline::Interval* insert_interval, double insert_position = -1.0);
 
     Interval  * FindIntervalBySecond(double second);
+
+    void ResetIntervalColor();
 
 };
 

@@ -86,10 +86,10 @@ void Timeline::Dispose()
         }
         if(disposeMovies)
         {
-             sort(images.begin(), images.end());
-             vector<Image *> ::iterator end = unique(images.begin(), images.end());
-             for(vector<Image *> ::iterator it = images.begin(); it!=end; it++)
-                    delete *it;
+            sort(images.begin(), images.end());
+            vector<Image *> ::iterator end = unique(images.begin(), images.end());
+            for(vector<Image *> ::iterator it = images.begin(); it!=end; it++)
+                delete *it;
         }
     }
 
@@ -242,6 +242,7 @@ void Timeline::DecodeFrame()
 
 void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double insert_position)
 {
+
     Timeline* timeline_preview = PreviewInsertIntervalIn(insert_interval, insert_position);
     int size = this->intervals.size();
     for(int i=0; i<size; ++i)
@@ -251,7 +252,7 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
     }
     for(vector<Timeline::Interval*>::iterator it = timeline_preview->intervals.begin(); it!=timeline_preview->intervals.end(); it++)
     {
-        (*it)->color = Timeline::Interval::usual;
+       (*it)->color = Timeline::Interval::usual;
         this->intervals.push_back(*it);
     }
     this->current_interval = timeline_preview->current_interval;
@@ -322,6 +323,8 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
 
         }
         Interval* new_interval = new Interval(interval);
+        new_interval->color = Timeline::Interval::select;
+        new_interval->selected = true;
         new_interval->absolute_start = insert_position;
         res_prepare->current_interval = current_interval;
         if(current_interval == interval)
@@ -338,7 +341,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
     }
 
     // -1 - insert interval at interval->absolute_position, interval must be new
-    interval->color=Timeline::Interval::selected;
+    interval->color=Timeline::Interval::dragg;
     Timeline *timeline_preview = new Timeline;
     timeline_preview->disposeMovies = false;
     double diff = 0.0d;
@@ -448,5 +451,14 @@ void Timeline::RecalculateDuration()
 void Timeline::RecalculateCurrent()
 {
     current = current_interval->movie->current + current_interval->absolute_start;
+}
+
+void Timeline::ResetIntervalColor()
+{
+    for(vector<Interval*>::iterator it = intervals.begin(); it != intervals.end(); it++)
+    {
+        (*it)->color = Timeline::Interval::usual;
+        (*it)->selected = false;
+    }
 }
 
