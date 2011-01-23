@@ -54,7 +54,11 @@ public:
         commandNext5Frame           = 0x200A,
         commandPrev5Frame           = 0x200B,
         commandNextSecond           = 0x200C,
-        commandPrevSecond           = 0x200D
+        commandPrevSecond           = 0x200D,
+        commandRemoveMovie          = 0x200E,
+        commandSplit                = 0x200F,
+        commandRemoveSpaces         = 0x2010
+
 
     };
 
@@ -128,6 +132,8 @@ public:
     void mouseExit(const MouseEvent& e);
 
     void mouseMoveReaction();
+
+    void cleanAfterDrag();
 
 };
 

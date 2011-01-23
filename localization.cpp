@@ -78,8 +78,14 @@ String LABEL_SUBTITLES = T("Субтитры");
 
 String LABEL_MOVIES = T("Ролики");
 
-String LABEL_DELETE = T("Удалить");
-
 String LABEL_SCALE = T("Масштаб");
+
+String MENU_VIDEO_PART = T("Фрагмент");
+String LABEL_DELETE = T("Удалить");
+String LABEL_DELETE_VIDEO_PART = T("Удалить фрагмент");
+String LABEL_SPLIT = T("Разделить");
+String LABEL_REMOVE_SPACES = T("Убрать пробелы");
+
+
 
 }

@@ -164,11 +164,7 @@ bool Movie::Load(String &filename)
     //Generate preview
     GotoRatioAndRead(.1,true,false);
 
-    int preview_width = 128;
-    int preview_height = 96;
-
-
-    *image_preview = image->rescaled(preview_width,preview_height);
+    image_preview = GeneratePreview();
 
     GotoSecondAndRead(.0);
     //~Generate preview
@@ -178,18 +174,12 @@ bool Movie::Load(String &filename)
 
 }
 
-Image * Movie::GeneratePreview(double second)
+Image * Movie::GeneratePreview()
 {
-    double current_prev = current;
-    GotoSecondAndRead(second,true);
-
     Image * res = new Image();
     int preview_width = 128;
     int preview_height = 96;
-
     *res = image->rescaled(preview_width,preview_height);
-
-    GotoSecondAndRead(current_prev,true);
     return res;
 }
 

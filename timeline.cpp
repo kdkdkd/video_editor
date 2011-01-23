@@ -140,7 +140,7 @@ bool Timeline::GotoSecondAndRead(double dest,bool decode)
         current = dest;
         return false;
     }
-    bool res = current_interval->movie->GotoSecondAndRead(dest-current_interval->absolute_start,decode);
+    bool res = current_interval->movie->GotoSecondAndRead(dest-current_interval->absolute_start + current_interval->start,decode);
     RecalculateCurrent();
     return res;
 }
@@ -153,17 +153,19 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
         current_interval = FindIntervalBySecond(current);
         if(current_interval)
         {
-            current_interval->movie->GotoSecondAndRead(0.0,decode);
+            current_interval->movie->GotoSecondAndRead(current_interval->start,decode);
             current = current_interval->absolute_start;
         }
         return true;
     }
-    bool res;
-
-    if(decode)
-        res = current_interval->movie->ReadAndDecodeFrame();
-    else
-        res = current_interval->movie->SkipFrame();
+    bool res = false;
+    if(current + 1.0/GetFps() - current_interval->absolute_start + current_interval->start <= current_interval->end)
+    {
+        if(decode)
+            res = current_interval->movie->ReadAndDecodeFrame();
+        else
+            res = current_interval->movie->SkipFrame();
+    }
 
     if(res)
     {
@@ -186,7 +188,7 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
             if(it != intervals.end() && (*it)->absolute_start - current_interval->GetAbsoluteEnd()<eps)
             {
                 current_interval = *it;
-                current_interval->movie->GotoSecondAndRead(0.0);
+                current_interval->movie->GotoSecondAndRead(current_interval->start);
                 RecalculateCurrent();
                 return true;
             }
@@ -270,6 +272,35 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
     delete timeline_preview;
 }
 
+void Timeline::RemoveSpaces()
+{
+    double prev_end = 0.0;
+    for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+       (*it)->absolute_start = prev_end;
+        prev_end = (*it)->GetAbsoluteEnd();
+    }
+    RecalculateDuration();
+    if(current_interval)
+        RecalculateCurrent();
+    else
+        GotoSecondAndRead(current);
+
+}
+bool Timeline::IsNearMovieBoundary()
+{
+    return current - current_interval->absolute_start<0.1 || -current + current_interval->GetAbsoluteEnd()<0.1;
+}
+
+void Timeline::Split()
+{
+    if(!current_interval || IsNearMovieBoundary())return;
+    Interval * insert_interval = new Interval(current_interval->movie,current - current_interval->absolute_start + current_interval->start,current_interval->end,current,current_interval->movie->GeneratePreview());
+    current_interval->end = current - current_interval->absolute_start + current_interval->start;
+    //current_interval = insert_interval;
+    intervals.insert(find(intervals.begin(), intervals.end(), current_interval)+1,insert_interval);
+}
+
 Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double insert_position)
 {
     // -2 - remove interval
@@ -323,8 +354,8 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
 
         }
         Interval* new_interval = new Interval(interval);
-        new_interval->color = Timeline::Interval::select;
-        new_interval->selected = true;
+        /*new_interval->color = Timeline::Interval::select;
+        new_interval->selected = true;*/
         new_interval->absolute_start = insert_position;
         res_prepare->current_interval = current_interval;
         if(current_interval == interval)
@@ -450,7 +481,7 @@ void Timeline::RecalculateDuration()
 
 void Timeline::RecalculateCurrent()
 {
-    current = current_interval->movie->current + current_interval->absolute_start;
+    current = current_interval->movie->current - current_interval->start + current_interval->absolute_start;
 }
 
 void Timeline::ResetIntervalColor()
@@ -461,4 +492,28 @@ void Timeline::ResetIntervalColor()
         (*it)->selected = false;
     }
 }
+
+Timeline::Interval* Timeline::FindSelected()
+{
+    for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        if((*it)->selected)
+            return *it;
+    }
+    return 0;
+}
+
+Timeline::Interval* Timeline::FindSelectedOrOver()
+{
+    Timeline::Interval * over = 0;
+    for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        if((*it)->color==Timeline::Interval::over)
+            over = *it;
+        if((*it)->selected)
+            return *it;
+    }
+    return over;
+}
+
 

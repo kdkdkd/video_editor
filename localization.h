@@ -83,6 +83,13 @@ extern String LABEL_MOVIES;
 extern String LABEL_DELETE;
 extern String LABEL_SCALE;
 
+
+extern String MENU_VIDEO_PART;
+extern String LABEL_DELETE;
+extern String LABEL_DELETE_VIDEO_PART;
+extern String LABEL_SPLIT;
+extern String LABEL_REMOVE_SPACES;
+
 }
 
 

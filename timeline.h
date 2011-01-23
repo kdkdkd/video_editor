@@ -83,6 +83,12 @@ public:
     Interval  * FindIntervalBySecond(double second);
 
     void ResetIntervalColor();
+    Interval* FindSelected();
+    Interval* FindSelectedOrOver();
+
+    void RemoveSpaces();
+    void Split();
+    bool IsNearMovieBoundary();
 
 };
 

@@ -90,7 +90,11 @@ void  MainComponent::timerCallback()
 {
     stopTimer();
 
+    int width_prev = timeline->GetImage()->getWidth();
+    int height_prev = timeline->GetImage()->getHeight();
     timeline->ReadAndDecodeFrame();
+    if(timeline->GetImage()->getWidth()!=width_prev || timeline->GetImage()->getHeight() != height_prev)
+        ResizeViewport();
     repaint();
 
     int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
@@ -669,10 +673,15 @@ void MainComponent::mouseDown (const MouseEvent& e)
             }
         }
 
-    }else if(e.mods.isRightButtonDown())
+    }
+    else if(e.mods.isRightButtonDown())
     {
-
-
+        PopupMenu context_menu;
+        ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+        context_menu.addCommandItem(commandManager,commandSplit);
+        context_menu.addCommandItem(commandManager,commandRemoveMovie,LABEL_DELETE_VIDEO_PART);
+        context_menu.addCommandItem(commandManager,commandRemoveSpaces);
+        context_menu.show();
     }
 
     repaintSlider();
@@ -680,7 +689,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
 
 const StringArray MainComponent::getMenuBarNames()
 {
-    const tchar* const names[] = { MENU_FILE,MENU_FRAME, 0 };
+    const tchar* const names[] = { MENU_FILE,MENU_FRAME,MENU_VIDEO_PART, 0 };
 
     return StringArray ((const tchar**) names);
 }
@@ -705,11 +714,14 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addCommandItem(commandManager,commandPause);
         menu.addCommandItem(commandManager,commandStop);
         menu.addSeparator();
+        menu.addCommandItem(commandManager,commandRemoveSpaces);
+        menu.addSeparator();
         menu.addCommandItem (commandManager, StandardApplicationCommandIDs::quit,MENU_QUIT);
     }
     break;
     case 1:
     {
+        menu.addCommandItem(commandManager,commandSplit);
         menu.addCommandItem(commandManager,commandSaveFrame);
         PopupMenu sub_menu;
         sub_menu.addCommandItem(commandManager,commandNextSecond);
@@ -720,6 +732,11 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         sub_menu.addCommandItem(commandManager,commandPrev5Frame);
         sub_menu.addCommandItem(commandManager,commandPrevSecond);
         menu.addSubMenu(MENU_JUMP,sub_menu);
+    }
+    break;
+    case 2:
+    {
+        menu.addCommandItem(commandManager,commandRemoveMovie);
     }
     break;
     }
@@ -736,6 +753,31 @@ bool MainComponent::perform (const InvocationInfo& info)
 {
     switch (info.commandID)
     {
+    case commandRemoveMovie:
+    {
+        Timeline::Interval * interval = timeline->FindSelectedOrOver();
+        if(interval)
+        {
+            StopVideo();
+            timeline->InsertIntervalIn(interval,-2.0);
+            repaint();
+        }
+    }
+    break;
+    case commandRemoveSpaces:
+        {
+            timeline->RemoveSpaces();
+            repaint();
+        }
+    break;
+
+    case commandSplit:
+    {
+        timeline->Split();
+        repaintSlider();
+    }
+    break;
+
     case commandOpen:
     {
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
@@ -934,7 +976,10 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandNext5Frame,
                               commandPrev5Frame,
                               commandNextSecond,
-                              commandPrevSecond
+                              commandPrevSecond,
+                              commandRemoveMovie,
+                              commandSplit,
+                              commandRemoveSpaces
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -963,6 +1008,18 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
 
     switch (commandID)
     {
+    case commandRemoveMovie:
+        result.setInfo (LABEL_DELETE, LABEL_DELETE, MENU_VIDEO_PART, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady() && timeline->FindSelectedOrOver());
+        break;
+    case commandSplit:
+        result.setInfo (LABEL_SPLIT, LABEL_SPLIT, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady() && timeline->current_interval && !timeline->IsNearMovieBoundary());
+        break;
+    case commandRemoveSpaces:
+        result.setInfo (LABEL_REMOVE_SPACES, LABEL_REMOVE_SPACES, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady());
+        break;
     case commandOpen:
         result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('O'), ModifierKeys::commandModifier);
@@ -1055,7 +1112,6 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
                 pos = -2.0;
             timeline_original->InsertIntervalIn(current_interval,pos);
         }
-
         current_drag_x = -1;
         delete timeline;
         timeline = timeline_original;
@@ -1116,6 +1172,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
 
 void MainComponent::mouseDrag (const MouseEvent& e)
 {
+    if(!e.mods.isLeftButtonDown())return;
     if(!timeline_original)
     {
         current_drag_x = e.x;
