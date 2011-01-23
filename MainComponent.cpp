@@ -1110,6 +1110,13 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
             Timeline::Interval *current_interval = timeline_original->intervals[index];
             if(shouldDrawDragImageWhenOver())
                 pos = -2.0;
+
+            if(pos>0.0)
+            {
+                pos -= dragIntervalOffset;
+                if(pos<timeline_position)
+                    pos = timeline_position;
+            }
             timeline_original->InsertIntervalIn(current_interval,pos);
         }
         current_drag_x = -1;
@@ -1137,24 +1144,35 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
 {
     current_drag_x = x;
     current_drag_y = y;
-
-    if(!shouldDrawDragImageWhenOver() || getCurrentDragDescription().startsWith("i"))
+    String desc = getCurrentDragDescription();
+    if(!shouldDrawDragImageWhenOver() || desc.startsWith("i"))
     {
+        int value = desc.substring(1).getIntValue();
         if(timeline_original)
+        {
             delete timeline;
+            timeline = 0;
+        }
         else
             timeline_original = timeline;
-        if(getCurrentDragDescription().startsWith("m"))
+        if(desc.startsWith("m"))
         {
-            Movie * movie = timeline_original->movies[getCurrentDragDescription().substring(1).getIntValue()];
+            Movie * movie = timeline_original->movies[value];
             Timeline::Interval *current_interval = new Timeline::Interval(movie,GetPositionSecond(current_drag_x),movie->image_preview);
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval);
         }
-        else if(getCurrentDragDescription().startsWith("i"))
+        else if(desc.startsWith("i"))
         {
-
-            Timeline::Interval *current_interval = timeline_original->intervals[getCurrentDragDescription().substring(1).getIntValue()];
+            Timeline::Interval *current_interval = timeline_original->intervals[value];
+            if(timeline)
+                dragIntervalOffset = (GetPositionSecond(current_drag_x) - current_interval->absolute_start);
             double pos = (shouldDrawDragImageWhenOver())?-2.0:GetPositionSecond(current_drag_x);
+            if(pos>0.0)
+            {
+                pos -= dragIntervalOffset;
+                if(pos<timeline_position)
+                    pos = timeline_position;
+            }
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval,pos);
         }
 

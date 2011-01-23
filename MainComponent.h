@@ -135,6 +135,8 @@ public:
 
     void cleanAfterDrag();
 
+    int dragIntervalOffset;
+
 };
 
 #endif//_MAINCOMPONENT_H_
