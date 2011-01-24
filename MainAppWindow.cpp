@@ -18,7 +18,7 @@ MainAppWindow::MainAppWindow()
     commandManager = new ApplicationCommandManager();
 
 
-    setResizeLimits (500, 400, 8192, 8192);
+    setResizeLimits (800, 600, 8192, 8192);
 
     setResizable (true, false);
 

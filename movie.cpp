@@ -1,11 +1,13 @@
 #include "movie.h"
-#include <list>
-using namespace std;
+#include "localization.h"
+#include "toolbox.h"
+using namespace localization;
 Movie::Movie()
 {
     loaded = false;
-    image = new Image(Image::RGB,1,1,true);
-    bitmapData = new Image::BitmapData(*image,0,0,1,1,true);
+    image = new Image();
+    bitmapData = 0;
+    image_preview=new Image();
 };
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
@@ -42,6 +44,10 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
 
 bool Movie::Load(String &filename)
 {
+    File f(filename);
+    if(!f.exists())
+        return false;
+
     pDataBuffer = new unsigned char[lSize];
 
     probeData = new AVProbeData();
@@ -49,7 +55,6 @@ bool Movie::Load(String &filename)
     probeData->buf_size = lSize;
     probeData->filename = "";
 
-    File f(filename);
     this->filename = filename;
     fs = f.createInputStream();
     fs->read(pDataBuffer,lSize);
@@ -77,7 +82,7 @@ bool Movie::Load(String &filename)
     if(av_find_stream_info(pFormatCtx)<0)
         return false;
 
-    dump_format(pFormatCtx, 0, filename.toCString(), false);
+    //dump_format(pFormatCtx, 0, filename.toCString(), false);
 
     // Find the first video stream
     videoStream=-1;
@@ -134,7 +139,6 @@ bool Movie::Load(String &filename)
 
     int fps_num = pStream->r_frame_rate.num;
     int fps_denum = pStream->r_frame_rate.den;
-
     fps = ((double)fps_num / (double)fps_denum);
 
     if(fps<=0.0||fps>=1000.0)
@@ -152,11 +156,33 @@ bool Movie::Load(String &filename)
         duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
     }
 
-    loaded = true;
 
+
+    width = pCodecCtx->width;
+    height = pCodecCtx->height;
+
+    //Generate preview
+    GotoRatioAndRead(.1,true,false);
+
+    image_preview = GeneratePreview();
+
+    GotoSecondAndRead(.0);
+    //~Generate preview
+
+    loaded = true;
     return loaded;
 
 }
+
+Image * Movie::GeneratePreview()
+{
+    Image * res = new Image();
+    int preview_width = 128;
+    int preview_height = 96;
+    *res = image->rescaled(preview_width,preview_height);
+    return res;
+}
+
 int Movie::ToInternalTime(double seconds)
 {
     return (int)(seconds * ratio_to_internal);
@@ -176,6 +202,9 @@ void Movie::Dispose()
         delete [] buffer;
         av_free(pFrameRGB);
 
+        delete []pDataBuffer;
+
+
         // Free the YUV frame
         av_free(pFrame);
 
@@ -193,6 +222,8 @@ void Movie::Dispose()
     }
     delete image;
 
+    //delete image_preview;
+
     delete bitmapData;
 
     loaded = false;
@@ -206,8 +237,6 @@ Movie::~Movie()
 bool Movie::SeekToInternal(int frame)
 {
     int dest = ToSeconds(frame);
-    //int flags =AVSEEK_FLAG_FRAME;
-    //if(dest<current)
     int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME;
 
     int res = av_seek_frame( pFormatCtx, videoStream, frame, flags);
@@ -220,7 +249,7 @@ bool Movie::SeekToInternal(int frame)
     return false;
 }
 
-int Movie::FindKeyFrame(double back, double dest)
+int Movie::FindKeyFrame(double back, double dest, bool accurate)
 {
     int keyframe = -1;
 
@@ -245,6 +274,8 @@ int Movie::FindKeyFrame(double back, double dest)
             delete packet;
             if(timestamp_new>=timestamp)
             {
+                if(!accurate)
+                    return keyframe;
                 break;
             }
             if(pFrame->key_frame || timestamp_new==0)
@@ -262,13 +293,13 @@ int Movie::FindKeyFrame(double back, double dest)
 
 }
 
-bool Movie::GotoRatioAndRead(double ratio,bool decode)
+bool Movie::GotoRatioAndRead(double ratio,bool decode, bool accurate)
 {
-    return GotoSecondAndRead(ratio * duration,decode);
+    return GotoSecondAndRead(ratio * duration,decode,accurate);
 }
 
 
-bool Movie::GotoSecondAndRead(double dest,bool decode)
+bool Movie::GotoSecondAndRead(double dest,bool decode, bool accurate)
 {
     if(dest == current)return true;
     if(dest>duration)
@@ -291,10 +322,10 @@ bool Movie::GotoSecondAndRead(double dest,bool decode)
         if(back>dest)
         {
             back = dest;
-            found = FindKeyFrame(back,dest);
+            found = FindKeyFrame(back,dest,accurate);
             break;
         }
-        found = FindKeyFrame(back,dest);
+        found = FindKeyFrame(back,dest,accurate);
         if(back==0.0)
             back = 0.5;
         else
@@ -339,7 +370,7 @@ AVPacket* Movie::ReadFrame()
     return 0;
 }
 
-void Movie::ReadAndDecodeFrame()
+bool Movie::ReadAndDecodeFrame()
 {
     AVPacket* packet = ReadFrame();
     if(packet)
@@ -347,16 +378,20 @@ void Movie::ReadAndDecodeFrame()
         av_free_packet(packet);
         delete packet;
         DecodeFrame();
+        return true;
     }
+    return false;
 }
-void Movie::SkipFrame()
+bool Movie::SkipFrame()
 {
     AVPacket* packet = ReadFrame();
     if(packet)
     {
         av_free_packet(packet);
         delete packet;
+        return true;
     }
+    return false;
 }
 
 bool Movie::GoBack(int frames)
@@ -364,7 +399,10 @@ bool Movie::GoBack(int frames)
     double frame = 1.0d / fps;
     double eps = frame/5.0d;
     double desired = current - ((double)frames) * frame;
-    GotoSecondAndRead(desired - 3.0d*frame,false);
+    double guess = desired - 3.0d*frame;
+    if(guess<0.0)
+        guess = 0.0;
+    GotoSecondAndRead(guess,false);
     while(desired - current > eps )
     {
         SkipFrame();
@@ -386,6 +424,81 @@ void Movie::DecodeFrame()
 
     sws_scale (img_convert_ctx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height,&bitmapData->data,pFrameRGB->linesize);
 
+
+}
+
+
+String Movie::GetMovieInfo()
+{
+    String text;
+
+    File f(filename);
+    text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
+    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(duration)<<"\n";
+    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(fs->getFile().getSize())<<"\n";
+    String bit_rate;
+    int bit_rate_int = pFormatCtx->bit_rate / 1000;
+    if(bit_rate_int)
+    {
+        bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
+    }
+    else
+    {
+        bit_rate = LABEL_NOT_AVIABLE;
+    }
+    text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
+    text<<"["<<LABEL_FORMAT<<"] "<<pFormatCtx->iformat->long_name<<"\n\n";
+
+    int display_index = 1;
+    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    {
+        AVStream * stream = pFormatCtx->streams[i];
+        bool displayed = false;
+        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
+            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+            text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
+            text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
+            if(stream->codec->bit_rate)
+                text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
+
+            displayed = true;
+            display_index++;
+        }
+
+        else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
+            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+
+            text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<stream->codec->sample_rate<<" Hz"<<"\n";
+            text<<"   ["<<LABEL_CHANNELS<<"] "<<stream->codec->channels<<"\n";
+
+            displayed = true;
+            display_index++;
+        }
+        else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
+        {
+            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
+            displayed = true;
+            display_index++;
+        }
+        if(displayed)
+        {
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
+
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
+            text<<"\n";
+
+        }
+
+    }
+    return text;
 
 }
 

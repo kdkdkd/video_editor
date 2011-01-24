@@ -2,13 +2,13 @@
 #define	MOVIE_H
 
 extern "C" {
-    #include <libavcodec/avcodec.h>
-    #include <libavformat/avformat.h>
-    #include <libswscale/swscale.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
 
 }
 
-#include <juce.h>
+#include "juce/juce.h"
 
 class Movie
 {
@@ -26,7 +26,7 @@ private:
 
     int videoStream;
 
-    int FindKeyFrame(double back, double dest);
+    int FindKeyFrame(double back, double dest, bool accurate = true);
     double ratio_to_internal;
     double ratio_to_seconds;
     bool SeekToInternal(int frame);
@@ -39,11 +39,16 @@ public:
     AVFormatContext *pFormatCtx;
     bool loaded;
     Image *image;
+
+    Image *image_preview;
     Image::BitmapData *bitmapData;
 
     double duration;
     double current;
     double fps;
+
+    int width;
+    int height;
 
     String filename;
 
@@ -60,12 +65,14 @@ public:
     void Dispose();
     ~Movie();
     AVPacket* ReadFrame();
-    void SkipFrame();
+    bool SkipFrame();
     void DecodeFrame();
-    void ReadAndDecodeFrame();
-    bool GotoRatioAndRead(double ratio,bool decode = true);
-    bool GotoSecondAndRead(double dest,bool decode = true);
+    bool ReadAndDecodeFrame();
+    bool GotoRatioAndRead(double ratio,bool decode = true, bool accurate = true);
+    bool GotoSecondAndRead(double dest,bool decode = true, bool accurate = true);
     bool GoBack(int frames);
+    String GetMovieInfo();
+    Image * GeneratePreview();
 };
 
 

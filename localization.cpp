@@ -1,6 +1,7 @@
 ﻿#include "localization.h"
 
-namespace localization{
+namespace localization
+{
 String LABEL_PROGRAMM_CAPTION = T("Редактор Видео");
 String MENU_FILE = T("Файл");
 String MENU_FILE_OPEN = T("Открыть");
@@ -61,6 +62,8 @@ String LABEL_FORMAT = T("формат");
 String LABEL_CODEC = T("кодек");
 String LABEL_RESOLUTION = T("разрешение");
 String LABEL_FPS = T("част. кадров");
+String LABEL_SAMPLE_RATE = T("част. дискетизации");
+String LABEL_CHANNELS = T("каналы");
 String LABEL_LANG = T("язык");
 String LABEL_COMMENT = T("коммент");
 
@@ -73,7 +76,15 @@ String LABEL_VIDEO = T("Видео");
 String LABEL_AUDIO = T("Аудио");
 String LABEL_SUBTITLES = T("Субтитры");
 
+String LABEL_MOVIES = T("Ролики");
 
+String LABEL_SCALE = T("Масштаб");
+
+String MENU_VIDEO_PART = T("Фрагмент");
+String LABEL_DELETE = T("Удалить");
+String LABEL_DELETE_VIDEO_PART = T("Удалить фрагмент");
+String LABEL_SPLIT = T("Разделить");
+String LABEL_REMOVE_SPACES = T("Убрать пробелы");
 
 
 

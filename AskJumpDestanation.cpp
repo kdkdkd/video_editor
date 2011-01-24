@@ -2,13 +2,13 @@
 #include "MainComponent.h"
 #include "localization.h"
 #include "toolbox.h"
-AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(LABEL_CHOOSE_JUMP,LABEL_TOTAL_TIME + "  " + toolbox::format_duration(mainWindow_->movie->duration),AlertWindow::QuestionIcon)
+AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(LABEL_CHOOSE_JUMP,LABEL_TOTAL_TIME + "  " + toolbox::format_duration(mainWindow_->timeline->duration),AlertWindow::QuestionIcon)
 {
-	mainWindow = mainWindow_;
-	centreAroundComponent(mainWindow,0,0);
+    mainWindow = mainWindow_;
+    centreAroundComponent(mainWindow,0,0);
 
     toolbox::TimeVideo tv;
-    tv.fromDouble(mainWindow_->movie->current);
+    tv.fromDouble(mainWindow_->timeline->current);
 
     String letters = T("0123456789");
 
@@ -46,12 +46,12 @@ AskJumpDestanation::AskJumpDestanation(MainComponent* mainWindow_):AlertWindow(L
 
     okButton = new TextButton(LABEL_OK);
     okButton->setBounds(100,150,90,30);
-    okButton->addButtonListener(this);
+    okButton->addListener(this);
     addAndMakeVisible(okButton);
 
     cancelButton = new TextButton(LABEL_CANCEL);
     cancelButton->setBounds(210,150,90,30);
-    cancelButton->addButtonListener(this);
+    cancelButton->addListener(this);
     addAndMakeVisible(cancelButton);
 
 
@@ -78,7 +78,7 @@ void AskJumpDestanation::paint (Graphics& g)
 
 AskJumpDestanation::~AskJumpDestanation()
 {
-	deleteAllChildren();
+    deleteAllChildren();
 
 }
 
@@ -86,12 +86,12 @@ void AskJumpDestanation::buttonClicked (Button* button)
 {
     if(button==okButton)
     {
-       double input = (double)(input_hours->getText().getIntValue())*3600.0d + (double)(input_minutes->getText().getIntValue())*60.0d + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0d;
-       if(fabs(mainWindow->movie->current - input) > 0.01d)
-       {
-           mainWindow->movie->GotoSecondAndRead(input);
-           mainWindow->repaint();
-       }
+        double input = (double)(input_hours->getText().getIntValue())*3600.0d + (double)(input_minutes->getText().getIntValue())*60.0d + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0d;
+        if(fabs(mainWindow->timeline->current - input) > 0.01d)
+        {
+            mainWindow->timeline->GotoSecondAndRead(input);
+            mainWindow->repaint();
+        }
     }
     exitModalState(0);
     removeFromDesktop();

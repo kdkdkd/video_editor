@@ -1,43 +1,91 @@
 #include "MainComponent.h"
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
+#include "DrawableButtonAndDrag.h"
+#include <math.h>
+#define VIDEO_TIMELINE_SIZE 98
+#define AUDIO_TIMELINE_SIZE 30
+
+#define TIMELINE_OFFSET 84
+
 
 void MainComponent::changeFileName(String new_filename)
 {
-    new_filename_cur = new_filename;
-    movie_new = new Movie();
     bool loaded_local = false;
 
-    loaded_local = movie_new->Load(new_filename_cur);
+    Movie * movie = timeline->Load(new_filename);
+    loaded_local = movie;
     if(loaded_local)
     {
-        delete movie;
-        movie = movie_new;
-        filename = new_filename_cur;
-        file_choosed = true;
-
-        filename_label->setText(new_filename_cur,true);
-        filename_label->setTooltip(new_filename_cur);
-        filename_label->setVisible(true);
-        movie->ReadAndDecodeFrame();
         SetVisibleButtons(true);
+        AddMovieToList(movie);
+        sliderValueChanged(scale_timeline);
+        ResizeViewport();
         repaint();
-
     }
     else
     {
-        delete movie_new;
-        AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename_cur);
+        AlertWindow::showMessageBox (AlertWindow::WarningIcon,CANT_LOAD_FILE,new_filename);
     }
+}
+
+void MainComponent::AddMovieToList(Movie*movie)
+{
+    Component *preview = new Component();
+    preview->setSize(124,96+42);
+
+
+    DrawableButtonAndDrag *button_preview = new DrawableButtonAndDrag("",DrawableButton::ImageFitted,timeline,movies_list,this);
+
+    button_preview->addListener(this);
+    DrawableImage normal,over;
+
+    normal.setImage(*movie->image_preview);
+    normal.setOpacity(0.9);
+    over.setImage(*movie->image_preview);
+
+    button_preview->setImages (&normal, &over, &over);
+    button_preview->addListener(this);
+    button_preview->setBounds(0,0,124,96);
+    preview->addAndMakeVisible(button_preview);
+    File f(movie->filename);
+    String file_name = f.getFileName();
+    Label *caption = new Label(file_name,file_name);
+    caption->setTooltip(movie->filename);
+
+    Font font = caption->getFont();
+    font.setHeight(14);
+    caption->setFont(font);
+    caption->setBounds(0,96,124,42);
+    caption->setJustificationType(Justification::centredTop);
+    preview->addAndMakeVisible(caption);
+    movies_list->addAndMakeVisible(preview);
+
 }
 
 void MainComponent::SetVisibleButtons(bool visible)
 {
     playButton->setVisible(visible);
     pauseButton->setVisible(visible);
+    zoomInButton->setVisible(visible);
+    zoomOutButton->setVisible(visible);
+
     prevFrameButton->setVisible(visible);
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
+    movies_list->setVisible(visible);
+    scale_timeline->setVisible(visible);
+}
+
+void MainComponent::ResizeViewport()
+{
+    int height_current = getHeight();
+    int movies_border = 300;
+    if(isVideoReady())
+    {
+        movies_border = GetMoviesBorder();
+    }
+    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 230 - 10 - 18 - 1 - TIMELINE_OFFSET);
 
 }
 
@@ -45,13 +93,17 @@ void  MainComponent::timerCallback()
 {
     stopTimer();
 
-    movie->ReadAndDecodeFrame();
+    int width_prev = timeline->GetImage()->getWidth();
+    int height_prev = timeline->GetImage()->getHeight();
+    timeline->ReadAndDecodeFrame();
+    if(timeline->GetImage()->getWidth()!=width_prev || timeline->GetImage()->getHeight() != height_prev)
+        ResizeViewport();
     repaint();
 
     int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
     if(miliseconds_start<0)
         spend = 0;
-    int need = 1000.0d / movie->fps;
+    int need = 1000.0d / timeline->GetFps();
 
     int timer = need - spend;
 
@@ -65,7 +117,25 @@ void  MainComponent::timerCallback()
 
 void MainComponent::buttonClicked (Button* button)
 {
+
+
     ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+    if(button==zoomOutButton)
+        {
+            double value = scale_timeline->getValue();
+            value+=0.5;
+            if(value>10.0)
+                value = 10.0;
+            scale_timeline->setValue(value);
+        }else
+    if(button==zoomInButton)
+        {
+            double value = scale_timeline->getValue();
+            value-=0.5;
+            if(value<0.0)
+                value = 0.0;
+            scale_timeline->setValue(value);
+        }else
     if(button==playButton)
         commandManager->invokeDirectly(commandPlay,false);
     else if(button == pauseButton)
@@ -76,6 +146,44 @@ void MainComponent::buttonClicked (Button* button)
         commandManager->invokeDirectly(commandNextFrame,false);
     else if(button == stopButton)
         commandManager->invokeDirectly(commandStop,false);
+    else
+    {
+        int index = movies_list->getIndexOfChildComponent(button->getParentComponent());
+        Movie*movie = timeline->movies[index];
+
+
+        {
+            PopupMenu context_menu;
+            context_menu.addItem(1000, LABEL_INFO, true, false);
+            context_menu.addItem(1001, LABEL_DELETE, true, false);
+            Rectangle<int> area=button->getScreenBounds();
+            area.setHeight(0);
+            int result = context_menu.showAt(area);
+            switch(result)
+            {
+            case 1000:
+                toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this);
+                break;
+            case 1001:
+                Component *viewed = button->getParentComponent();
+                int num = viewed->getNumChildComponents();
+                for(int i = 0; i<num; ++i)
+                {
+                    Component *child = viewed->getChildComponent(0);
+                    viewed->removeChildComponent(child);
+                    delete child;
+                }
+                movies_list->getViewedComponent()->removeChildComponent(button->getParentComponent());
+                delete viewed;
+
+                movies_list->resized();
+                timeline->movies.erase(timeline->movies.begin()+index);
+                break;
+            }
+
+        }
+
+    }
 
 
 }
@@ -83,24 +191,50 @@ void MainComponent::initImageButton(String pic_name,DrawableButton*& button)
 {
     button = new DrawableButton("",DrawableButton::ImageFitted);
     DrawableImage normal,over;
-    Image* image = ImageCache::getFromFile(pic_name);
-    normal.setImage (image, true);
+    Image image = ImageCache::getFromFile(pic_name);
+    normal.setImage (image);
     normal.setOpacity(0.8);
-    over.setImage (image, true);
+    over.setImage (image);
     button->setImages (&normal, &over, &normal);
-    button->addButtonListener(this);
+    button->addListener(this);
     addChildComponent(button);
 }
 
+void MainComponent::scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newRangeStart)
+{
+    timeline_position = newRangeStart;
+    repaintSlider();
+}
+
+void MainComponent::sliderValueChanged(Slider* slider)
+{
+    double second_to_pixel_prev = second_to_pixel;
+    second_to_pixel = slider->getValue()*(0.14620516440220848680255318407494) + 0.31622776601683793319988935444327;
+    second_to_pixel*=second_to_pixel;
+    second_to_pixel*=second_to_pixel;
+
+    double width = (double)(getWidth()-65);
+    if(timeline_position>0.0)
+    timeline_position -= (width/second_to_pixel - width/second_to_pixel_prev)/2.0;
+    if(timeline_position<0.0)
+        timeline_position = 0.0;
+    timeline_scrollbar->setRangeLimits(0.0,1.3*timeline->duration);
+    timeline_scrollbar->setCurrentRange(timeline_position,(double)(getWidth()-65)/second_to_pixel);
+
+
+
+    repaintSlider();
+}
+
+
 MainComponent::MainComponent (MainAppWindow* mainWindow_)
 {
-    file_choosed = false;
     mainWindow = mainWindow_;
 
-    filename_label = new Label ("","");
-    addChildComponent(filename_label);
     av_register_all();
 
+    initImageButton(String("pic\\zoomin.png"),zoomInButton);
+    initImageButton(String("pic\\zoomout.png"),zoomOutButton);
 
     initImageButton(String("pic\\play.png"),playButton);
     initImageButton(String("pic\\pause.png"),pauseButton);
@@ -109,23 +243,66 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     initImageButton(String("pic\\next.png"),nextFrameButton);
     initImageButton(String("pic\\stop.png"),stopButton);
 
-    movie = new Movie();
+    timeline = new Timeline();
+
+    movies_list = new ContainerBox("movies_list");
+    addChildComponent(movies_list);
+
+
+
+    timeline_scrollbar = new ScrollBar(false,true);
+    timeline_scrollbar->addListener(this);
+    addChildComponent(timeline_scrollbar);
+
+
+    second_to_pixel = 2.0;
+    timeline_position = 0.0;
+    scale_timeline = new Slider("scale_timeline");
+    scale_timeline->setSliderStyle(Slider::LinearHorizontal);
+    scale_timeline->setTextBoxStyle(Slider::NoTextBox,true,0,0);
+    scale_timeline->addListener(this);
+    scale_timeline->setValue(second_to_pixel);
+    scale_timeline->setTooltip(LABEL_SCALE);
+    addChildComponent(scale_timeline);
 
     ask_jump_target = 0;
 
     video_playing = false;
     miliseconds_start = -1;
+
+    current_drag_x = -1;
+    timeline_original = 0;
+
 }
 
 MainComponent::~MainComponent ()
 {
     StopVideo();
-    delete movie;
+
+
+    Component *container = movies_list->getViewedComponent();
+    int container_num = container->getNumChildComponents();
+    for(int i=0; i<container_num; ++i)
+    {
+        Component *viewed = container->getChildComponent(0);
+        int num = viewed->getNumChildComponents();
+        for(int i = 0; i<num; ++i)
+        {
+            Component *child = viewed->getChildComponent(0);
+            viewed->removeChildComponent(child);
+            delete child;
+        }
+        movies_list->getViewedComponent()->removeChildComponent(viewed);
+        delete viewed;
+    }
+
+    delete timeline;
     if(ask_jump_target)
     {
         delete ask_jump_target;
         ask_jump_target = 0;
     }
+
     deleteAllChildren();
 
 }
@@ -135,12 +312,38 @@ void MainComponent::resized ()
 {
     int width_current = getWidth();
     int height_current = getHeight();
-    filename_label->setBounds (0, height_current-20, width_current, 20);
-    playButton->setBounds (10, height_current-195, 60, 65);
-    pauseButton->setBounds (70, height_current-195, 60, 65);
-    stopButton->setBounds (130, height_current-195, 60, 65);
-    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195, 60, 65);
-    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195, 60, 65);
+    zoomOutButton->setBounds (width_current - 10 - 120 - 40 + 10 , height_current-195-25-TIMELINE_OFFSET + 15, 30, 30);
+    zoomInButton->setBounds (width_current - 10 - 120 - 100 - 40 - 30, height_current-195-25-TIMELINE_OFFSET + 15, 30, 30);
+
+    playButton->setBounds (10, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    pauseButton->setBounds (70, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    stopButton->setBounds (130, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
+    scale_timeline->setBounds (width_current - 10 - 120 - 100 - 40, height_current-195-30-TIMELINE_OFFSET+3, 110, 65);
+
+    timeline_scrollbar->setBounds ( 40, height_current-25, width_current - 65, 18);
+    ResizeViewport();
+
+
+}
+
+int MainComponent::GetMoviesBorder()
+{
+    int width_current = getWidth();
+    int height_current = getHeight();
+
+    int width_image = timeline->GetImage()->getWidth();
+    int height_image = timeline->GetImage()->getHeight();
+
+    int res = 300;
+    float scalex = (float)(width_current-310.0f)/(float)width_image;
+    float scaley = (height_current-230.0f - TIMELINE_OFFSET)/(float)height_image;
+    if(scaley<scalex)
+    {
+        res += width_current - 310  - (int)(width_image*scaley)-10;
+    }
+    return res;
 }
 
 void MainComponent::paint (Graphics& g)
@@ -152,41 +355,203 @@ void MainComponent::paint (Graphics& g)
         int width_current = getWidth();
         int height_current = getHeight();
 
-        int width_image = movie->image->getWidth();
-        int height_image = movie->image->getHeight();
+        int width_image = timeline->GetImage()->getWidth();
+        int height_image = timeline->GetImage()->getHeight();
 
-        float scalex = width_current/(float)width_image;
-        float scaley = (height_current-210.0f)/(float)height_image;
+        float scalex = (width_current-310.0f )/(float)width_image;
+        float scaley = (height_current-230.0f - TIMELINE_OFFSET)/(float)height_image;
         float scale = scalex;
-        float deltax = 0.0f;
+        float deltax = 305.0f;
         float deltay = 0.0f;
         if(scaley<scalex)
         {
             scale = scaley;
-            deltax = ((float)width_current - (float)width_image*scale)/2.0f;
+            deltax += ((float)width_current - 310.0f  - (float)width_image*scale) - 5.0f;
         }
         else
         {
-            deltay = ((float)height_current - 210.0f - (float)height_image*scale)/2.0f;
+            deltay += ((float)height_current - 230.0f - TIMELINE_OFFSET - (float)height_image*scale)/2.0f;
         }
-        g.drawImageWithin(movie->image,deltax,deltay,width_image * scale,height_image * scale ,RectanglePlacement::centred,false);
+
+        g.drawImageWithin(*(timeline->GetImage()),deltax,deltay,(width_image * scale),(height_image * scale) ,RectanglePlacement::centred,false);
 
         g.setColour(Colour::fromRGB(70,70,70));
-        g.drawRect(25,height_current-75,width_current-50,50,1);
 
-        g.drawVerticalLine(10,height_current-125,height_current-25);
+        g.drawRect(40,height_current-75 - 30- TIMELINE_OFFSET,width_current-65,VIDEO_TIMELINE_SIZE,1);
+        g.drawRect(40,height_current-75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,width_current-65,AUDIO_TIMELINE_SIZE,1);
 
-        g.drawHorizontalLine(height_current-125,10,width_current-120);
+        g.drawVerticalLine(10,height_current-125 - 30 - TIMELINE_OFFSET ,height_current-25-30 + 19- TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
 
-        g.drawHorizontalLine(height_current-26,10,25);
+        g.drawHorizontalLine(height_current-125 - 30- TIMELINE_OFFSET,10,width_current-120);
 
-        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(movie->current) + String(" / ") + toolbox::format_duration(movie->duration),width_current-520,height_current-125,400,20,Justification::centredRight,true);
+        g.drawHorizontalLine(height_current-37- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,10,40);
 
-        g.setColour(Colour::fromRGB(200,200,250));
-        g.fillRect(26,height_current-74,width_current-52,24);
+        g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125-30 - TIMELINE_OFFSET,400,20,Justification::centredRight,true);
 
-        g.setColour(Colour::fromRGB(180,180,230));
-        g.fillRect(26,height_current-50,width_current-52,24);
+        // Draw movie list
+        Font f = g.getCurrentFont();
+        Font f_copy = f;
+        f.setItalic(true);
+        f.setHeight(18);
+        g.setFont(f);
+        int text_height = f.getHeight();
+        int text_width = f.getStringWidth(LABEL_MOVIES);
+        g.drawText(LABEL_MOVIES,30,10,text_width,text_height,Justification::centred,true);
+        int end_height = GetMoviesBorder();
+        g.drawHorizontalLine(10 + text_height/2,30 + text_width + 3,end_height);
+        g.drawHorizontalLine(10 + text_height/2,10,27);
+        g.drawHorizontalLine(height_current - 230 - TIMELINE_OFFSET,10,end_height);
+        g.drawVerticalLine(10,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
+        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
+        g.setFont(f_copy);
+        //~Draw movie list
+
+        double timeline_duration = (double)(width_current-65-1)/second_to_pixel;
+        //TimeLine
+        int number_of_lines = 0;
+        double display_interval = 120.0 / second_to_pixel ;
+        if(display_interval<60.0)
+        {
+            display_interval = ((int)display_interval/10) * 10.0d;
+            number_of_lines = 5;
+        }
+        else if(display_interval<600.0)
+        {
+            display_interval = ((int)display_interval/60) * 60.0d;
+            number_of_lines = 4;
+        }
+        else
+        {
+            display_interval = ((int)display_interval/600) * 600.0d;
+            number_of_lines = 3;
+        }
+
+        int x = (int)ceilf(timeline_position / display_interval);
+
+        double label_time = (display_interval * (double)x);
+        int label_position = (label_time - timeline_position)*second_to_pixel;
+        int safe_space = g.getCurrentFont().getStringWidth("99:99:99")/second_to_pixel;
+
+        g.setColour(Colour::fromRGB(70,70,70));
+        for(;;)
+        {
+
+            if(label_time<timeline_position+timeline_duration)
+            {
+                g.drawVerticalLine(40 + label_position,height_current-36 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,height_current-36 + 26 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
+                String label = toolbox::format_duration_small(label_time);
+                if(g.getCurrentFont().getStringWidth(label) + 43+label_position < width_current)
+                    g.drawText(label,43+label_position,height_current-36 + 16 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,100,10,Justification::centredLeft,true);
+            }
+
+            if(label_time <timeline_position+timeline_duration + display_interval)
+            {
+                double line_interval = -display_interval * second_to_pixel/(double)(number_of_lines + 1);
+                double current_position_line = label_position + line_interval;
+                for(int i=0; i<number_of_lines; ++i)
+                {
+                    if(current_position_line<0)
+                        break;
+                    if(current_position_line<width_current - 65 - 1)
+                        g.drawVerticalLine(40 + current_position_line,height_current-36 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,height_current-36 + 10 - TIMELINE_OFFSET+ VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20);
+                    current_position_line += line_interval;
+                }
+            }
+            else
+                break;
+            label_time += display_interval;
+            label_position = (label_time - timeline_position)*second_to_pixel;
+
+
+        }
+
+        //~TimeLine
+
+
+        //List of intervals
+
+
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
+        {
+            double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
+            if(start1<=end&&end1>=start)
+            {
+                int start_position_interval = (-timeline_position + (*it)->absolute_start) * second_to_pixel;
+                if(start_position_interval<0)
+                    start_position_interval = 0;
+
+                int end_position_interval = (-timeline_position + (*it)->GetAbsoluteEnd()) * second_to_pixel;
+                if(end_position_interval>width_current-65-1)
+                    end_position_interval = width_current-65-1;
+
+                g.setColour(Colour::fromRGB(70,70,70));
+
+                g.drawRect(start_position_interval + 40,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,VIDEO_TIMELINE_SIZE,1);
+
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
+                    g.setColour(Colour::fromRGB(200,200,250));
+                    break;
+                    /*case Timeline::Interval::dragg:
+                        g.setColour(Colour::fromRGB(100,100,150));
+                        break;*/
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(200,200,100));
+                    break;
+                case Timeline::Interval::select:
+                case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(180,70,70));
+                    break;
+                }
+
+                g.fillRect(start_position_interval+40+1,height_current-74-30- TIMELINE_OFFSET,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
+
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
+                    g.setColour(Colour::fromRGB(180,180,230));
+                    break;
+                    /*case Timeline::Interval::dragg:
+                        g.setColour(Colour::fromRGB(80,80,130));
+                        break;*/
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(180,180,80));
+                    break;
+                case Timeline::Interval::select:
+                case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(160,50,50));
+                    break;
+                }
+
+
+
+
+                g.fillRect(start_position_interval+40+1,height_current-50-30- TIMELINE_OFFSET + (VIDEO_TIMELINE_SIZE-50)/2,end_position_interval - start_position_interval - 1,VIDEO_TIMELINE_SIZE/2-1);
+
+                String label = (*it)->movie->filename;
+                File f(label);
+                label = f.getFileName();
+                g.setColour(Colour::fromRGB(50,50,50));
+                int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
+                if(took_space>end_position_interval - start_position_interval)
+                {
+                    took_space = 0;
+                }
+                if(took_space)
+                    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
+                //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
+                g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50 + took_space,height_current - 75 - 30 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 20 - took_space,VIDEO_TIMELINE_SIZE,Justification::centredLeft,6);
+
+            }
+        }
+        //~List of intervals
+
+
+        g.setColour(Colour::fromRGB(220,220,220));
+        g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
+        g.setColour(Colour::fromRGB(210,210,210));
+        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50 + (AUDIO_TIMELINE_SIZE-20)/2,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
 
 
         if(NeedDrawArrow())
@@ -197,36 +562,58 @@ void MainComponent::paint (Graphics& g)
 
 
 }
-int MainComponent::GetArrowPosition()
+int MainComponent::GetArrowPosition(int arrow_position = -1)
 {
-    if(mouse_x<25)
-        return 25;
+    if(arrow_position<0)
+        arrow_position = mouse_x;
+    if(arrow_position<40)
+        return 40;
     int max_y = getWidth()-25;
-    if(mouse_x>max_y)
+    if(arrow_position>max_y)
         return max_y;
 
 
-    return mouse_x;
+    return arrow_position;
 
 }
 bool MainComponent::NeedDrawArrow()
 {
-    return (mouse_y>=getHeight()-125&&mouse_y<=getHeight()-75);
+    return (mouse_y>=getHeight()-125-30 - TIMELINE_OFFSET &&mouse_y<=getHeight()-75-30 - TIMELINE_OFFSET);
 }
 
 int MainComponent::GetCurrentPosition()
 {
-    return (int)round((double(getWidth()-50))*movie->current/(double)(movie->duration))+25;
+    if(timeline->current<timeline_position)
+    {
+        if(timeline_position==0)
+            return 40;
+        return -1;
+    }
+    double timeline_duration = (double)(getWidth()-65-1)/second_to_pixel;
+    if(timeline->current>timeline_position + timeline_duration)
+        return -1;
+
+
+    return (int)round((double(getWidth()-65))*(timeline->current - timeline_position)/timeline_duration)+40;
+}
+
+double MainComponent::GetPositionSecond(int arrow_position = -1)
+{
+    if(arrow_position<0)
+        arrow_position = mouse_x;
+
+    double pos = GetArrowPosition(arrow_position) - 40;
+    return pos / second_to_pixel + timeline_position;
 }
 
 void MainComponent::DrawSlider(Graphics& g)
 {
     int position = GetCurrentPosition();
+    if(position<0)
+        return;
     int height_current = getHeight();
-    g.setColour(Colour::fromRGB(255,255,255));
-    g.fillRoundedRectangle(position-3,height_current-80,6,60,4);
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawRoundedRectangle(position-3,height_current-80,6,60,4,1.5);
+    g.drawLine(position,height_current - 75 - 30 - TIMELINE_OFFSET - 6,position,height_current - 75 - 30 - TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE + AUDIO_TIMELINE_SIZE + 6,1.5);
 }
 
 void MainComponent::DrawArrow(Graphics& g)
@@ -234,18 +621,44 @@ void MainComponent::DrawArrow(Graphics& g)
     int position = GetArrowPosition();
     int height_current = getHeight();
     g.setColour(Colour::fromRGB(150,100,100));
-    g.drawArrow(position,height_current - 110,position,height_current - 79,1,4,20);
+    Line<float> line(position,height_current - 110-30- TIMELINE_OFFSET,position,height_current - 79-30 - TIMELINE_OFFSET);
+    g.drawArrow(line,1,4,20);
 }
 
 void MainComponent::repaintSlider()
 {
-    repaint(0,getHeight()-170.0f,getWidth(),170.0f);
+    repaint(0,getHeight()-200.0f - TIMELINE_OFFSET,getWidth(),200.0f + TIMELINE_OFFSET - 25.0f);
 }
 
 void MainComponent::mouseMove (const MouseEvent& e)
 {
     mouse_x = e.x;
     mouse_y = e.y;
+
+    mouseMoveReaction();
+
+}
+
+void MainComponent::mouseMoveReaction()
+{
+    if(!timeline_original)
+    {
+        Timeline::Interval *interval = 0;
+        current_drag_x = mouse_x;
+        current_drag_y = mouse_y;
+        if(!shouldDrawDragImageWhenOver())
+            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+        current_drag_x = -1;
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it != timeline->intervals.end(); it++)
+        {
+            if((*it)->selected)
+                (*it)->color = Timeline::Interval::select;
+            else
+                (*it)->color = Timeline::Interval::usual;
+        }
+        if(interval && !interval->selected)
+            interval->color = Timeline::Interval::over;
+    }
     repaintSlider();
 }
 
@@ -253,21 +666,59 @@ void MainComponent::mouseDown (const MouseEvent& e)
 {
     mouse_x = e.x;
     mouse_y = e.y;
-    if(NeedDrawArrow())
-    {
-        int position = GetArrowPosition();
-        double ratio = (double)(position-25)/(double)(getWidth()-50);
 
-        movie->GotoRatioAndRead(ratio);
-        repaint();
-        return;
+    if(e.mods.isLeftButtonDown())
+    {
+        if(NeedDrawArrow())
+        {
+            int position = GetArrowPosition();
+            timeline->GotoSecondAndRead(GetPositionSecond(position));
+            ResizeViewport();
+            repaint();
+
+        }
+        if(!timeline_original)
+        {
+
+            Timeline::Interval *interval = 0;
+            current_drag_x = mouse_x;
+            current_drag_y = mouse_y;
+            if(!shouldDrawDragImageWhenOver())
+                interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+            if(interval && interval->selected)
+            {
+                interval->selected = false;
+                interval->color = Timeline::Interval::over;
+                current_drag_x = -1;
+                repaintSlider();
+                return;
+            }
+            timeline->ResetIntervalColor();
+            current_drag_x = -1;
+            if(interval)
+            {
+                interval->color = Timeline::Interval::select;
+                interval->selected = true;
+            }
+        }
+
     }
+    else if(e.mods.isRightButtonDown())
+    {
+        PopupMenu context_menu;
+        ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+        context_menu.addCommandItem(commandManager,commandSplit);
+        context_menu.addCommandItem(commandManager,commandRemoveMovie,LABEL_DELETE_VIDEO_PART);
+        context_menu.addCommandItem(commandManager,commandRemoveSpaces);
+        context_menu.show();
+    }
+
     repaintSlider();
 }
 
 const StringArray MainComponent::getMenuBarNames()
 {
-    const tchar* const names[] = { MENU_FILE,MENU_FRAME, 0 };
+    const tchar* const names[] = { MENU_FILE,MENU_FRAME,MENU_VIDEO_PART, 0 };
 
     return StringArray ((const tchar**) names);
 }
@@ -288,17 +739,18 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addCommandItem(commandManager,commandSave);
         menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
-        menu.addCommandItem(commandManager,commandInfo);
-        menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
         menu.addCommandItem(commandManager,commandStop);
+        menu.addSeparator();
+        menu.addCommandItem(commandManager,commandRemoveSpaces);
         menu.addSeparator();
         menu.addCommandItem (commandManager, StandardApplicationCommandIDs::quit,MENU_QUIT);
     }
     break;
     case 1:
     {
+        menu.addCommandItem(commandManager,commandSplit);
         menu.addCommandItem(commandManager,commandSaveFrame);
         PopupMenu sub_menu;
         sub_menu.addCommandItem(commandManager,commandNextSecond);
@@ -309,6 +761,11 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         sub_menu.addCommandItem(commandManager,commandPrev5Frame);
         sub_menu.addCommandItem(commandManager,commandPrevSecond);
         menu.addSubMenu(MENU_JUMP,sub_menu);
+    }
+    break;
+    case 2:
+    {
+        menu.addCommandItem(commandManager,commandRemoveMovie);
     }
     break;
     }
@@ -325,6 +782,32 @@ bool MainComponent::perform (const InvocationInfo& info)
 {
     switch (info.commandID)
     {
+    case commandRemoveMovie:
+    {
+        Timeline::Interval * interval = timeline->FindSelectedOrOver();
+        if(interval)
+        {
+            StopVideo();
+            timeline->InsertIntervalIn(interval,-2.0);
+            repaint();
+        }
+    }
+    break;
+    case commandRemoveSpaces:
+        {
+            timeline->RemoveSpaces();
+            sliderValueChanged(scale_timeline);
+            repaint();
+        }
+    break;
+
+    case commandSplit:
+    {
+        timeline->Split();
+        repaintSlider();
+    }
+    break;
+
     case commandOpen:
     {
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
@@ -352,7 +835,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandStop:
     {
         StopVideo();
-        movie->GotoSecondAndRead(0.0);
+        timeline->GotoSecondAndRead(0.0);
         repaint();
     }
     break;
@@ -360,7 +843,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextFrame:
     {
         StopVideo();
-        movie->ReadAndDecodeFrame();
+        timeline->ReadAndDecodeFrame();
         repaint();
     }
     break;
@@ -369,8 +852,8 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         StopVideo();
 
-        movie->GoBack(1);
-        movie->DecodeFrame();
+        timeline->GoBack(1);
+        timeline->DecodeFrame();
         repaint();
     }
     break;
@@ -380,9 +863,9 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
         for(int i = 0; i<5; ++i)
         {
-            movie->SkipFrame();
+            timeline->SkipFrame();
         }
-        movie->DecodeFrame();
+        timeline->DecodeFrame();
         repaint();
 
     }
@@ -392,8 +875,8 @@ bool MainComponent::perform (const InvocationInfo& info)
     {
         StopVideo();
 
-        movie->GoBack(5);
-        movie->DecodeFrame();
+        timeline->GoBack(5);
+        timeline->DecodeFrame();
         repaint();
     }
     break;
@@ -401,7 +884,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextSecond:
     {
         StopVideo();
-        movie->GotoSecondAndRead(movie->current+1.0d);
+        timeline->GotoSecondAndRead(timeline->current+1.0d);
         repaint();
 
     }
@@ -410,7 +893,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandPrevSecond:
     {
         StopVideo();
-        movie->GotoSecondAndRead(movie->current-1.0d);
+        timeline->GotoSecondAndRead(timeline->current-1.0d);
         repaint();
 
     }
@@ -421,122 +904,6 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
     }
 
-    case commandInfo:
-    {
-        TextEditor *te = new TextEditor();
-        te->setReadOnly(true);
-        String text;
-
-        File f(movie->filename);
-        text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
-        text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(movie->duration)<<"\n";
-        text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(movie->fs->getFile().getSize())<<"\n";
-        String bit_rate;
-        int bit_rate_int = movie->pFormatCtx->bit_rate / 1000;
-        if(bit_rate_int)
-        {
-            bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
-        }else
-        {
-            bit_rate = LABEL_NOT_AVIABLE;
-        }
-        text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
-        text<<"["<<LABEL_FORMAT<<"] "<<movie->pFormatCtx->iformat->long_name<<"\n\n";
-
-        int display_index = 1;
-        for(unsigned int i=0; i<movie->pFormatCtx->nb_streams; i++)
-        {
-            AVStream * stream = movie->pFormatCtx->streams[i];
-            if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
-            {
-                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
-                text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
-                text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
-                text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
-                if(stream->codec->bit_rate)
-                    text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
-
-                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
-                if(lang)
-                    text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
-
-                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
-                if(title)
-                    text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
-                text<<"\n";
-                display_index++;
-            }
-
-            else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
-            {
-                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
-                text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
-
-                text<<"   "<<"[sample rate] "<<stream->codec->sample_rate<<" Hz"<<"\n";
-                text<<"   "<<"[channels] "<<stream->codec->channels<<"\n";
-
-                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
-                if(lang)
-                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
-
-                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
-                if(title)
-                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
-                text<<"\n";
-                display_index++;
-            }
-            else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
-            {
-                text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
-                //text<<"   "<<"[codec] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
-                AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
-                if(lang)
-                    text<<"   "<<"[lang] "<<String::fromUTF8(lang->value)<<"\n";
-
-                AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
-                if(title)
-                    text<<"   "<<"[title] "<<String::fromUTF8(title->value)<<"\n";
-                text<<"\n";
-                display_index++;
-            }
-
-        }
-
-        Font font = te->getFont();
-        font.setHeight(16);
-        te->setFont(font);
-        te->setText(text);
-
-        int width_text_editor = te->getTextWidth()+20;
-        int height_text_editor = te->getTextHeight()+50;
-        if(width_text_editor<200)
-            width_text_editor = 200;
-        if(width_text_editor>600)
-           width_text_editor = 600;
-
-
-        if(height_text_editor>600)
-           height_text_editor = 600;
-
-
-        te->setBounds(0,0,width_text_editor,height_text_editor);
-        te->setMultiLine(true,false);
-        te->setSelectAllWhenFocused(true);
-        te->setPopupMenuEnabled(false);
-
-
-        PopupWindow *doc = new PopupWindow(LABEL_INFO,Colours::whitesmoke,DocumentWindow::closeButton,true);
-        doc->setResizable(false, false);
-        doc->centreAroundComponent(this,width_text_editor,height_text_editor);
-
-        doc->setSize(width_text_editor,height_text_editor);
-        doc->setContentComponent(te);
-
-        doc->setVisible(true);
-        doc->addToDesktop(0);
-
-        te->grabKeyboardFocus();
-    }
 
     break;
 
@@ -549,9 +916,10 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSaveFrame:
     {
         StopVideo();
-        if(isVideoReady())
+        if(isVideoReady() && timeline->GetCurrentInterval())
         {
-            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,filename + ".jpg","*.jpg",true);
+
+            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,timeline->GetCurrentInterval()->movie->filename + ".jpg","*.jpg",true);
             if (fc.browseForFileToSave(true))
             {
                 File chosenFile = fc.getResult();
@@ -579,7 +947,7 @@ bool MainComponent::perform (const InvocationInfo& info)
                             File file_with_jpg_ext(chosenFile.getFullPathName() + ".jpg");
                             stream = file_with_jpg_ext.createOutputStream();
                         }
-                        jpeg_format->writeImageToStream(*movie->image,*stream);
+                        jpeg_format->writeImageToStream(*timeline->GetImage(),*stream);
                         if(stream)delete stream;
                         delete jpeg_format;
                     }
@@ -639,7 +1007,9 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandPrev5Frame,
                               commandNextSecond,
                               commandPrevSecond,
-                              commandInfo
+                              commandRemoveMovie,
+                              commandSplit,
+                              commandRemoveSpaces
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -647,7 +1017,7 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 
 bool MainComponent::isVideoReady ()
 {
-    return movie && movie->loaded ;
+    return timeline->loaded;
 }
 
 void MainComponent::StopVideo()
@@ -668,6 +1038,18 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
 
     switch (commandID)
     {
+    case commandRemoveMovie:
+        result.setInfo (LABEL_DELETE, LABEL_DELETE, MENU_VIDEO_PART, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady() && timeline->FindSelectedOrOver());
+        break;
+    case commandSplit:
+        result.setInfo (LABEL_SPLIT, LABEL_SPLIT, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady() && timeline->current_interval && !timeline->IsNearMovieBoundary());
+        break;
+    case commandRemoveSpaces:
+        result.setInfo (LABEL_REMOVE_SPACES, LABEL_REMOVE_SPACES, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady());
+        break;
     case commandOpen:
         result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('O'), ModifierKeys::commandModifier);
@@ -677,11 +1059,6 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
         result.setActive(false);
         break;
-    case commandInfo:
-        result.setInfo (LABEL_INFO, LABEL_INFO, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.addDefaultKeypress (T('I'), ModifierKeys::commandModifier);
-        result.setActive(isVideoReady());
-        break;
     case commandEncode:
         result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('E'), ModifierKeys::commandModifier);
@@ -689,7 +1066,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         break;
     case commandSaveFrame:
         result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.setActive(isVideoReady());
+        result.setActive(isVideoReady() && timeline->GetCurrentInterval());
         break;
     case commandJump:
         result.setInfo (LABEL_SPECIFIC_TIME, LABEL_SPECIFIC_TIME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
@@ -735,6 +1112,135 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setActive(isVideoReady());
         break;
     }
+
+
 }
 
+bool MainComponent::isInterestedInDragSource (const String& sourceDescription,Component* sourceComponent)
+{
+    return true;
+}
+
+void MainComponent::itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y)
+{
+    if((!shouldDrawDragImageWhenOver() || getCurrentDragDescription().startsWith("i")) && timeline_original)
+    {
+        String description = getCurrentDragDescription();
+        double pos = GetPositionSecond(x);
+        int index = description.substring(1).getIntValue();
+
+        if(description.startsWith("m"))
+        {
+            Movie * movie = timeline_original->movies[index];
+            Timeline::Interval *current_interval = current_interval = new Timeline::Interval(movie,pos,movie->image_preview);
+            timeline_original->InsertIntervalIn(current_interval);
+        }
+        else if(description.startsWith("i"))
+        {
+            Timeline::Interval *current_interval = timeline_original->intervals[index];
+            if(shouldDrawDragImageWhenOver())
+                pos = -2.0;
+
+            if(pos>0.0)
+            {
+                pos -= dragIntervalOffset;
+                if(pos<timeline_position)
+                    pos = timeline_position;
+            }
+            timeline_original->InsertIntervalIn(current_interval,pos);
+        }
+        current_drag_x = -1;
+        delete timeline;
+        timeline = timeline_original;
+        timeline_original = 0;
+        sliderValueChanged(scale_timeline);
+        mouse_x = x;
+        mouse_y = y;
+        mouseMoveReaction();
+        ResizeViewport();
+        repaint();
+    }
+
+}
+
+
+bool MainComponent::shouldDrawDragImageWhenOver()
+{
+    bool res = !(current_drag_y<= getHeight()-75 - 30- TIMELINE_OFFSET+VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET && current_drag_x>10 && current_drag_x<getWidth()-10);
+    return res;
+}
+
+void MainComponent::itemDragMove (const String& sourceDescription,Component* sourceComponent,int x, int y)
+{
+    current_drag_x = x;
+    current_drag_y = y;
+    String desc = getCurrentDragDescription();
+    if(!shouldDrawDragImageWhenOver() || desc.startsWith("i"))
+    {
+        int value = desc.substring(1).getIntValue();
+        if(timeline_original)
+        {
+            delete timeline;
+            timeline = 0;
+        }
+        else
+            timeline_original = timeline;
+        if(desc.startsWith("m"))
+        {
+            Movie * movie = timeline_original->movies[value];
+            Timeline::Interval *current_interval = new Timeline::Interval(movie,GetPositionSecond(current_drag_x),movie->image_preview);
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval);
+        }
+        else if(desc.startsWith("i"))
+        {
+            Timeline::Interval *current_interval = timeline_original->intervals[value];
+            if(timeline)
+                dragIntervalOffset = (GetPositionSecond(current_drag_x) - current_interval->absolute_start);
+            double pos = (shouldDrawDragImageWhenOver())?-2.0:GetPositionSecond(current_drag_x);
+            if(pos>0.0)
+            {
+                pos -= dragIntervalOffset;
+                if(pos<timeline_position)
+                    pos = timeline_position;
+            }
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,pos);
+        }
+
+    }
+    else if(timeline_original)
+    {
+        delete timeline;
+        timeline = timeline_original;
+        timeline_original = 0;
+    }
+
+    repaintSlider();
+}
+
+
+void MainComponent::mouseDrag (const MouseEvent& e)
+{
+    if(!e.mods.isLeftButtonDown())return;
+    if(!timeline_original)
+    {
+        current_drag_x = e.x;
+        current_drag_y = e.y;
+        if(!shouldDrawDragImageWhenOver())
+        {
+            double second = GetPositionSecond();
+            int number = timeline->FindNumberIntervalBySecond(second);
+            if(number>=0)
+            {
+                startDragging(String("i") + String(number),this,*timeline->intervals[number]->movie->image_preview);
+                StopVideo();
+            }
+        }
+    }
+}
+
+void MainComponent::mouseExit(const MouseEvent& e)
+{
+    if(timeline_original)
+        itemDropped(String(""),0,e.x, e.y);
+}
 

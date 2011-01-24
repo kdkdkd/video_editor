@@ -28,7 +28,7 @@
 #define _MainAppWindow_H__
 
 
-#include <juce.h>
+#include "juce/juce.h"
 
 //==============================================================================
 class MainAppWindow  : public DocumentWindow

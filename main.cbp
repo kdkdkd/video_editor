@@ -37,38 +37,35 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
+			<Add option="-march=i486" />
 		</Compiler>
 		<Linker>
-			<Add library="gdi32" />
-			<Add library="user32" />
-			<Add library="kernel32" />
-			<Add library="libjuce.a" />
-			<Add library="libshell32.a" />
-			<Add library="libole32.a" />
-			<Add library="libvfw32.a" />
-			<Add library="libwinmm.a" />
-			<Add library="libwininet.a" />
-			<Add library="libws2_32.a" />
-			<Add library="libdsound.a" />
+			<Add library="juce\bin\Release\libjuce.a" />
+			<Add library="libimm32.a" />
 			<Add library="libwsock32.a" />
-			<Add library="libwldap32.a" />
-			<Add library="libopengl32.a" />
-			<Add library="libglu32.a" />
+			<Add library="libole32.a" />
+			<Add library="libwinmm.a" />
+			<Add library="libversion.a" />
 			<Add library="libuuid.a" />
-			<Add library="librpcrt4.a" />
+			<Add library="libopengl32.a" />
+			<Add library="libwininet.a" />
+			<Add library="libvfw32.a" />
+			<Add library="liboleaut32.a" />
 			<Add library="libgdi32.a" />
 			<Add library="libcomdlg32.a" />
-			<Add library="libversion.a" />
-			<Add library="libavformat.a" />
-			<Add library="libavcodec.a" />
-			<Add library="libswscale.a" />
-			<Add library="libavdevice.a" />
-			<Add library="libavutil.a" />
+			<Add library="lib\libavcodec.dll.a" />
+			<Add library="lib\libavdevice.dll.a" />
+			<Add library="lib\libavformat.dll.a" />
+			<Add library="lib\libavutil.dll.a" />
+			<Add library="lib\libswscale.dll.a" />
 		</Linker>
 		<Unit filename="ApplicationStartup.cpp" />
 		<Unit filename="AskJumpDestanation.cpp" />
 		<Unit filename="AskJumpDestanation.h" />
+		<Unit filename="ContainerBox.cpp" />
+		<Unit filename="ContainerBox.h" />
+		<Unit filename="DrawableButtonAndDrag.cpp" />
+		<Unit filename="DrawableButtonAndDrag.h" />
 		<Unit filename="MainAppWindow.cpp" />
 		<Unit filename="MainAppWindow.h" />
 		<Unit filename="MainComponent.cpp" />
@@ -79,6 +76,8 @@
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />
 		<Unit filename="movie.h" />
+		<Unit filename="timeline.cpp" />
+		<Unit filename="timeline.h" />
 		<Unit filename="toolbox.cpp" />
 		<Unit filename="toolbox.h" />
 		<Extensions>

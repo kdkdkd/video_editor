@@ -3,41 +3,42 @@
 
 
 #include "MainAppWindow.h"
-#include <juce.h>
-#include "movie.h"
+#include "juce/juce.h"
+#include "timeline.h"
 #include "localization.h"
 #include "toolbox.h"
+#include "ContainerBox.h"
 
 class AskJumpDestanation;
 
 using namespace localization;
 
-class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener
+class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener, public DragAndDropTarget
 {
 public:
-    String filename;
-    bool file_choosed;
-
     int mouse_x;
     int mouse_y;
-    Movie *movie_new;
-    String new_filename_cur;
+
+
+
+
     AskJumpDestanation *ask_jump_target;
 
     void changeFileName(String new_filename);
+
     TooltipWindow tooltipWindow;
+
     DrawableButton* playButton;
     DrawableButton* pauseButton;
     DrawableButton* stopButton;
     DrawableButton* nextFrameButton;
     DrawableButton* prevFrameButton;
+    DrawableButton* zoomInButton;
+    DrawableButton* zoomOutButton;
 
     void initImageButton(String pic_name,DrawableButton*& button);
 
     void SetVisibleButtons(bool visible);
-
-    Label* filename_label;
-
 
 
     enum CommandIDs
@@ -56,15 +57,18 @@ public:
         commandPrev5Frame           = 0x200B,
         commandNextSecond           = 0x200C,
         commandPrevSecond           = 0x200D,
-        commandInfo                 = 0x200E
+        commandRemoveMovie          = 0x200E,
+        commandSplit                = 0x200F,
+        commandRemoveSpaces         = 0x2010
+
 
     };
 
-
     MainAppWindow* mainWindow;
 
-    Movie *movie;
-    void buttonClicked (Button* button);
+    Timeline *timeline;
+    Timeline *timeline_original;
+    void buttonClicked (Button* button) ;
     MainComponent (MainAppWindow* mainWindow_);
 
     ~MainComponent ();
@@ -72,8 +76,9 @@ public:
     void resized ();
 
     void paint (Graphics& g);
-    int GetArrowPosition();
+    int GetArrowPosition(int arrow_position);
     int GetCurrentPosition();
+    double GetSecond(int mouse);
     bool NeedDrawArrow();
     void timerCallback();
     void DrawSlider(Graphics& g);
@@ -100,6 +105,40 @@ public:
     bool video_playing;
     void StopVideo();
     void StartVideo();
+
+    int GetMoviesBorder();
+
+    ContainerBox * movies_list;
+
+    void ResizeViewport();
+    void AddMovieToList(Movie*movie);
+
+    ScrollBar * timeline_scrollbar;
+
+    double second_to_pixel;
+    double timeline_position;
+    Slider *scale_timeline;
+    void sliderValueChanged(Slider* slider);
+    void scrollBarMoved (ScrollBar* scrollBarThatHasMoved,double newRangeStart);
+    bool isInterestedInDragSource (const String& sourceDescription,Component* sourceComponent);
+    void itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y);
+    void itemDragMove (const String& sourceDescription,Component* sourceComponent,int x, int y);
+
+    bool shouldDrawDragImageWhenOver();
+    int current_drag_x;
+    int current_drag_y;
+
+
+    double GetPositionSecond(int arrow_position);
+    void mouseDrag (const MouseEvent& e);
+    void mouseExit(const MouseEvent& e);
+
+    void mouseMoveReaction();
+
+    void cleanAfterDrag();
+
+    int dragIntervalOffset;
+
 };
 
 #endif//_MAINCOMPONENT_H_
