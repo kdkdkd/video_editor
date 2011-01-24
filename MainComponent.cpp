@@ -67,6 +67,9 @@ void MainComponent::SetVisibleButtons(bool visible)
 {
     playButton->setVisible(visible);
     pauseButton->setVisible(visible);
+    zoomInButton->setVisible(visible);
+    zoomOutButton->setVisible(visible);
+
     prevFrameButton->setVisible(visible);
     nextFrameButton->setVisible(visible);
     stopButton->setVisible(visible);
@@ -117,6 +120,22 @@ void MainComponent::buttonClicked (Button* button)
 
 
     ApplicationCommandManager* const commandManager = mainWindow->commandManager;
+    if(button==zoomOutButton)
+        {
+            double value = scale_timeline->getValue();
+            value+=0.5;
+            if(value>10.0)
+                value = 10.0;
+            scale_timeline->setValue(value);
+        }else
+    if(button==zoomInButton)
+        {
+            double value = scale_timeline->getValue();
+            value-=0.5;
+            if(value<0.0)
+                value = 0.0;
+            scale_timeline->setValue(value);
+        }else
     if(button==playButton)
         commandManager->invokeDirectly(commandPlay,false);
     else if(button == pauseButton)
@@ -214,6 +233,9 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     av_register_all();
 
+    initImageButton(String("pic\\zoomin.png"),zoomInButton);
+    initImageButton(String("pic\\zoomout.png"),zoomOutButton);
+
     initImageButton(String("pic\\play.png"),playButton);
     initImageButton(String("pic\\pause.png"),pauseButton);
 
@@ -290,12 +312,15 @@ void MainComponent::resized ()
 {
     int width_current = getWidth();
     int height_current = getHeight();
+    zoomOutButton->setBounds (width_current - 10 - 120 - 40 + 10 , height_current-195-25-TIMELINE_OFFSET + 15, 30, 30);
+    zoomInButton->setBounds (width_current - 10 - 120 - 100 - 40 - 30, height_current-195-25-TIMELINE_OFFSET + 15, 30, 30);
+
     playButton->setBounds (10, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     pauseButton->setBounds (70, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     stopButton->setBounds (130, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     prevFrameButton->setBounds (width_current - 10 - 60 -60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
     nextFrameButton->setBounds (width_current - 10 - 60, height_current-195-25-TIMELINE_OFFSET, 60, 65);
-    scale_timeline->setBounds (width_current - 10 - 120 - 100, height_current-195-30-TIMELINE_OFFSET, 100, 65);
+    scale_timeline->setBounds (width_current - 10 - 120 - 100 - 40, height_current-195-30-TIMELINE_OFFSET+3, 110, 65);
 
     timeline_scrollbar->setBounds ( 40, height_current-25, width_current - 65, 18);
     ResizeViewport();

@@ -33,6 +33,8 @@ public:
     DrawableButton* stopButton;
     DrawableButton* nextFrameButton;
     DrawableButton* prevFrameButton;
+    DrawableButton* zoomInButton;
+    DrawableButton* zoomOutButton;
 
     void initImageButton(String pic_name,DrawableButton*& button);
 
