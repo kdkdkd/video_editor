@@ -147,7 +147,7 @@ public:
         // Here we can give a 'version' indicator, to distinguish one build from
         // another. If you update your program, it's a good idea to also update
         // the string returned here.
-        return T("0.0");
+        return T("0.2");
     }
 
     bool moreThanOneInstanceAllowed()
