@@ -11,7 +11,7 @@ encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_V
     encodeVideoComponent* contentComponent = new encodeVideoComponent (mainWindow);
 
     setContentComponent(contentComponent);
-    centreAroundComponent(mainWindow, 470, 570 + upDetailed);
+    centreAroundComponent(mainWindow, 800, 370 + upDetailed);
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
@@ -50,11 +50,17 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     format->setTextWhenNothingSelected (String::empty);
     format->addListener (this);
 
-    addAndMakeVisible (path = new ComboBox ());
-    path->setEditableText (false);
-    path->setJustificationType (Justification::centredLeft);
-    path->setTextWhenNothingSelected (String::empty);
-    path->addListener (this);
+
+    String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y_%m_%d_%H_%M_%S.avi");
+    addAndMakeVisible (path = new FilenameComponent(String::empty,
+                                     File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename),
+                                     true,
+                                     false,
+                                     true,
+                                     T("*.*"),
+                                     String::empty,
+                                     String::empty));
+
 
     addAndMakeVisible (groupComponent = new GroupComponent (T("g1"),
                                                             LABEL_VIDEO));
@@ -149,7 +155,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     this->mainWindow = mainWindow;
 
 
-    setSize (470, 550 + upDetailed);
+    setSize (800, 350 + upDetailed);
 
     setVisible(true);
 }
@@ -179,68 +185,69 @@ void encodeVideoComponent::paint (Graphics& g)
 {
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_PATH,
-                12, 4 + upDetailed, 200, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_PATH,
+                12, 4 + upDetailed, 200, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_FORMAT,
-                12, 44+ upDetailed, 200, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_FORMAT,
+                12, 44+ upDetailed, 200, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_CODEC,
-                28, 204+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_BITRATE,
+                0, 204+ upDetailed, 148-20, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_RESOLUTION,
-                28, 164+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_RESOLUTION,
+                0, 164+ upDetailed, 148-20, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_BITRATE,
-                28, 124+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_CODEC,
+                0, 124+ upDetailed, 148-20, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_VIDEO_SAVE_FPS,
-                28, 244+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_VIDEO_SAVE_FPS,
+                0, 244+ upDetailed, 148-20, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
     g.drawText (T("X"),
-                300, 164+ upDetailed, 32, 30,
+                300-28, 164+ upDetailed, 32, 30,
                 Justification::centred, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_AUDIO_SAVE_CODEC,
-                20, 324+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_AUDIO_SAVE_CODEC,
+                420, 124+ upDetailed, 108, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_AUDIO_SAVE_BITRATE,
-                20, 364+ upDetailed, 148, 30,
-                Justification::centredRight, true);
-
-    g.setColour (Colours::black);
-    g.setFont (Font (14.3000f, Font::plain));
-    g.drawText (LABEL_AUDIO_SAVE_SAMPLE_RATE,
-                20, 404+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_AUDIO_SAVE_BITRATE,
+                420, 164+ upDetailed, 108, 30,2,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (LABEL_AUDIO_SAVE_CHANNELS,
-                20, 444+ upDetailed, 148, 30,
+    g.drawFittedText (LABEL_AUDIO_SAVE_SAMPLE_RATE,
+                420, 204+ upDetailed, 108, 30,2,
+                Justification::centredRight, true);
+
+
+    g.setColour (Colours::black);
+    g.setFont (Font (15.0000f, Font::plain));
+    g.drawFittedText (LABEL_AUDIO_SAVE_CHANNELS,
+                420, 244+ upDetailed, 108, 30,2,
                 Justification::centredRight, true);
 
 
@@ -266,30 +273,26 @@ void encodeVideoComponent::paint (Graphics& g)
 
 void encodeVideoComponent::resized()
 {
-    format->setBounds (232, 48+ upDetailed, 150, 24);
-    path->setBounds (232, 8+ upDetailed, 150, 24);
-    groupComponent->setBounds (16, 104+ upDetailed, 432, 184);
-    videoCodec->setBounds (200, 128+ upDetailed, 232, 24);
-    videoWidth->setBounds (200, 168+ upDetailed, 88, 24);
-    videoHeight->setBounds (344, 168+ upDetailed, 88, 24);
-    videoBitrate->setBounds (200, 208+ upDetailed, 232, 24);
-    fps->setBounds (200, 248+ upDetailed, 232, 24);
-    groupComponent2->setBounds (16, 304+ upDetailed, 432, 184);
-    audioCodec->setBounds (200, 328+ upDetailed, 232, 24);
-    audioBitrate->setBounds (200, 368+ upDetailed, 232, 24);
-    audioSampleRate->setBounds (200, 408+ upDetailed, 232, 24);
-    channels->setBounds (200, 448+ upDetailed, 232, 24);
-    ok->setBounds (72, 504 + upDetailed, 150, 24);
-    cancel->setBounds (248, 504 + upDetailed, 150, 24);
+    format->setBounds (232, 48+ upDetailed, 540, 24);
+    path->setBounds (232, 8+ upDetailed, 540, 24);
+    groupComponent->setBounds (16, 104+ upDetailed, 380, 184);
+    videoCodec->setBounds (200-48, 128+ upDetailed, 232, 24);
+    videoWidth->setBounds (200-48, 168+ upDetailed, 88, 24);
+    videoHeight->setBounds (344-48, 168+ upDetailed, 88, 24);
+    videoBitrate->setBounds (200-48, 208+ upDetailed, 232, 24);
+    fps->setBounds (200-48, 248+ upDetailed, 232, 24);
+    groupComponent2->setBounds (400, 104+ upDetailed, 380, 184);
+    audioCodec->setBounds (535, 128+ upDetailed, 232, 24);
+    audioBitrate->setBounds (535, 168+ upDetailed, 232, 24);
+    audioSampleRate->setBounds (535, 208+ upDetailed, 232, 24);
+    channels->setBounds (535, 248+ upDetailed, 232, 24);
+    ok->setBounds (72+380, 300 + upDetailed, 150, 24);
+    cancel->setBounds (248+380, 300 + upDetailed, 150, 24);
 }
 
 void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 {
     if (comboBoxThatHasChanged == format)
-    {
-
-    }
-    else if (comboBoxThatHasChanged == path)
     {
 
     }

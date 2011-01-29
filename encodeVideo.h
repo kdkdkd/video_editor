@@ -37,7 +37,8 @@ private:
 
 
     ComboBox* format;
-    ComboBox* path;
+    FilenameComponent* path;
+
     GroupComponent* groupComponent;
     ComboBox* videoCodec;
     TextEditor* videoWidth;
