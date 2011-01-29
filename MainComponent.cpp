@@ -2,6 +2,7 @@
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
+#include "encodeVideo.h"
 #include <math.h>
 #define VIDEO_TIMELINE_SIZE 98
 #define AUDIO_TIMELINE_SIZE 30
@@ -272,6 +273,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     current_drag_x = -1;
     timeline_original = 0;
+    encodeVideoWindow = 0;
 
 }
 
@@ -301,6 +303,12 @@ MainComponent::~MainComponent ()
     {
         delete ask_jump_target;
         ask_jump_target = 0;
+    }
+
+    if(encodeVideoWindow)
+    {
+        delete encodeVideoWindow;
+        encodeVideoWindow = 0;
     }
 
     deleteAllChildren();
@@ -902,6 +910,13 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSave:
     {
         StopVideo();
+        if(encodeVideoWindow)
+        {
+            delete encodeVideoWindow;
+            encodeVideoWindow = 0;
+        }
+        encodeVideoWindow = new encodeVideo(this);
+
     }
 
 
@@ -1057,7 +1072,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     case commandSave:
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
-        result.setActive(false);
+        result.setActive(isVideoReady() && !timeline->IsEmpty());
         break;
     case commandEncode:
         result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);

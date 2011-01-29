@@ -72,6 +72,9 @@
 		<Unit filename="MainComponent.h" />
 		<Unit filename="PopupWindow.cpp" />
 		<Unit filename="PopupWindow.h" />
+		<Unit filename="RenderVideo.cpp" />
+		<Unit filename="encodeVideo.cpp" />
+		<Unit filename="encodeVideo.h" />
 		<Unit filename="localization.cpp" />
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />

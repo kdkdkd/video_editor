@@ -254,7 +254,7 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
     }
     for(vector<Timeline::Interval*>::iterator it = timeline_preview->intervals.begin(); it!=timeline_preview->intervals.end(); it++)
     {
-       (*it)->color = Timeline::Interval::usual;
+        (*it)->color = Timeline::Interval::usual;
         this->intervals.push_back(*it);
     }
     this->current_interval = timeline_preview->current_interval;
@@ -277,7 +277,7 @@ void Timeline::RemoveSpaces()
     double prev_end = 0.0;
     for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
     {
-       (*it)->absolute_start = prev_end;
+        (*it)->absolute_start = prev_end;
         prev_end = (*it)->GetAbsoluteEnd();
     }
     RecalculateDuration();
@@ -514,6 +514,11 @@ Timeline::Interval* Timeline::FindSelectedOrOver()
             return *it;
     }
     return over;
+}
+
+bool Timeline::IsEmpty()
+{
+    return intervals.size()==0;
 }
 
 

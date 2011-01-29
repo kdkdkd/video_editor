@@ -90,6 +90,8 @@ public:
     void Split();
     bool IsNearMovieBoundary();
 
+    bool Render(String filename);
+    bool IsEmpty();
 };
 
 

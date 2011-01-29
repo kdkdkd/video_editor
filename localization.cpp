@@ -86,6 +86,22 @@ String LABEL_DELETE_VIDEO_PART = T("Удалить фрагмент");
 String LABEL_SPLIT = T("Разделить");
 String LABEL_REMOVE_SPACES = T("Убрать пробелы");
 
+String LABEL_SAVE_VIDEO = T("Сохранить видео");
+String LABEL_SAVE = T("Сохранить");
+
+
+String LABEL_VIDEO_SAVE_PATH = T("Путь");
+String LABEL_VIDEO_SAVE_FORMAT = T("Формат");
+
+String LABEL_VIDEO_SAVE_CODEC = T("Кодек");
+String LABEL_VIDEO_SAVE_BITRATE = T("Битрейт");
+String LABEL_VIDEO_SAVE_FPS = T("Частота кадров");
+String LABEL_VIDEO_SAVE_RESOLUTION = T("Разрешение");
+
+String LABEL_AUDIO_SAVE_CODEC = T("Кодек");
+String LABEL_AUDIO_SAVE_BITRATE = T("Битрейт");
+String LABEL_AUDIO_SAVE_SAMPLE_RATE = T("Частота дискретизации");
+String LABEL_AUDIO_SAVE_CHANNELS = T("Каналы");
 
 
 }

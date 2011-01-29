@@ -90,6 +90,26 @@ extern String LABEL_DELETE_VIDEO_PART;
 extern String LABEL_SPLIT;
 extern String LABEL_REMOVE_SPACES;
 
+
+extern String LABEL_SAVE_VIDEO;
+extern String LABEL_SAVE;
+
+
+extern String LABEL_VIDEO_SAVE_PATH;
+extern String LABEL_VIDEO_SAVE_FORMAT;
+
+extern String LABEL_VIDEO_SAVE_CODEC;
+extern String LABEL_VIDEO_SAVE_BITRATE;
+extern String LABEL_VIDEO_SAVE_FPS;
+extern String LABEL_VIDEO_SAVE_RESOLUTION;
+
+extern String LABEL_AUDIO_SAVE_CODEC;
+extern String LABEL_AUDIO_SAVE_BITRATE;
+extern String LABEL_AUDIO_SAVE_SAMPLE_RATE;
+extern String LABEL_AUDIO_SAVE_CHANNELS;
+
+
+
 }
 
 

@@ -8,8 +8,10 @@
 #include "localization.h"
 #include "toolbox.h"
 #include "ContainerBox.h"
+#include "encodeVideo.h"
 
 class AskJumpDestanation;
+class encodeVideo;
 
 using namespace localization;
 
@@ -138,6 +140,8 @@ public:
     void cleanAfterDrag();
 
     int dragIntervalOffset;
+
+    encodeVideo * encodeVideoWindow;
 
 };
 
