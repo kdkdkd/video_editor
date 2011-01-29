@@ -180,13 +180,13 @@ void encodeVideoComponent::paint (Graphics& g)
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
     g.drawText (LABEL_VIDEO_SAVE_PATH,
-                4, 4 + upDetailed, 200, 30,
+                12, 4 + upDetailed, 200, 30,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
     g.drawText (LABEL_VIDEO_SAVE_FORMAT,
-                4, 44+ upDetailed, 200, 30,
+                12, 44+ upDetailed, 200, 30,
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
@@ -259,8 +259,7 @@ void encodeVideoComponent::paint (Graphics& g)
         g.setTiledImageFill (backgroundFill, 0, 0, 1.0f);
         g.fillAll();
     }
-    Image yes = ImageCache::getFromFile(String("pic\\yes.png"));
-    g.drawImageWithin(yes,30,10,100,100 ,RectanglePlacement::centred,false);
+    g.drawImageWithin(*(mainWindow->timeline->intervals[0]->preview),20,10,128,96 ,RectanglePlacement::centred,false);
 
 
 }
