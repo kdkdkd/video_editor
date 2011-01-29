@@ -4,6 +4,8 @@
 
 #include "MainComponent.h"
 #include "juce/juce.h"
+#include <vector>
+using namespace std;
 class MainComponent;
 
 class encodeVideo  : DocumentWindow
@@ -28,6 +30,7 @@ public:
     void resized();
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
     void buttonClicked (Button* buttonThatWasClicked);
+    void selectByMovieInfo(Movie::Info * info);
 
 
 
@@ -52,6 +55,9 @@ private:
     TextEditor* channels;
     TextButton* ok;
     TextButton* cancel;
+    vector<String> formats;
+    vector<String> audio_codecs;
+    vector<String> video_codecs;
 
 
     encodeVideoComponent (const encodeVideo&);

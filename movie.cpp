@@ -8,6 +8,7 @@ Movie::Movie()
     image = new Image();
     bitmapData = 0;
     image_preview=new Image();
+    info = 0;
 };
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
@@ -219,7 +220,12 @@ void Movie::Dispose()
         delete fs;
 
         delete ByteIOCtx;
+        if(info)
+            delete info;
     }
+
+
+
     delete image;
 
     //delete image_preview;
@@ -426,18 +432,97 @@ void Movie::DecodeFrame()
 
 
 }
-
-
-String Movie::GetMovieInfo()
+Movie::Info* Movie::GetMovieInfo()
 {
+    if(!loaded)return 0;
+    if(info)return info;
+
+    Movie::Info * res = new Movie::Info;
+    File f(filename);
+    res->filename = f.getFileName();
+    res->duration = duration;
+    res->size = fs->getFile().getSize();
+    res->bit_rate = pFormatCtx->bit_rate / 1000;
+    res->format_long = pFormatCtx->iformat->long_name;
+    res->format_short = pFormatCtx->iformat->name;
+
+    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    {
+        AVStream * stream = pFormatCtx->streams[i];
+        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
+        {
+            VideoInfo video_info;
+            AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
+            video_info.codec_long = codec->long_name;
+            video_info.codec_short = codec->name;
+            video_info.width = stream->codec->width;
+            video_info.height = stream->codec->height;
+            video_info.bit_rate = stream->codec->bit_rate/1000;
+            video_info.fps = ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den);
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+
+            if(lang)
+                video_info.language = String::fromUTF8(lang->value);
+            else
+                video_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                video_info.title = String::fromUTF8(title->value);
+            else
+                video_info.language = String::empty;
+            res->videos.push_back(video_info);
+        }else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
+        {
+            AudioInfo audio_info;
+            AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
+            audio_info.codec_long = codec->long_name;
+            audio_info.codec_short = codec->name;
+            audio_info.bit_rate = -1;
+            audio_info.sample_rate = stream->codec->sample_rate;
+            audio_info.channels = stream->codec->channels;
+
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                audio_info.language = String::fromUTF8(lang->value);
+            else
+                audio_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                audio_info.title = String::fromUTF8(title->value);
+            else
+                audio_info.language = String::empty;
+
+            res->audios.push_back(audio_info);
+        }else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
+        {
+            SubInfo sub_info;
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                sub_info.language = String::fromUTF8(lang->value);
+            else
+                sub_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                sub_info.title = String::fromUTF8(title->value);
+            else
+                sub_info.language = String::empty;
+            res->subs.push_back(sub_info);
+        }
+    }
+    return res;
+}
+
+String Movie::PrintMovieInfo()
+{
+    Info * inf = GetMovieInfo();
+
     String text;
 
-    File f(filename);
-    text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
-    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(duration)<<"\n";
-    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(fs->getFile().getSize())<<"\n";
+    text<<"["<<LABEL_FILE<<"] "<<inf->filename<<"\n";
+    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(inf->duration)<<"\n";
+    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(inf->size)<<"\n";
     String bit_rate;
-    int bit_rate_int = pFormatCtx->bit_rate / 1000;
+    int bit_rate_int = inf->bit_rate;
     if(bit_rate_int)
     {
         bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
@@ -447,56 +532,52 @@ String Movie::GetMovieInfo()
         bit_rate = LABEL_NOT_AVIABLE;
     }
     text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
-    text<<"["<<LABEL_FORMAT<<"] "<<pFormatCtx->iformat->long_name<<"\n\n";
+    text<<"["<<LABEL_FORMAT<<"] "<<inf->format_short<<","<<inf->format_long<<"\n\n";
 
     int display_index = 1;
-    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    for(vector<VideoInfo>::iterator it = inf->videos.begin();it!=inf->videos.end();it++)
     {
-        AVStream * stream = pFormatCtx->streams[i];
-        bool displayed = false;
-        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
-            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
-            text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
-            text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
-            if(stream->codec->bit_rate)
-                text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
+        text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_VIDEO<<")"<<"\n";
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short<<","<<it->codec_long<<"\n";
+        text<<"   ["<<LABEL_RESOLUTION<<"] "<<it->width<<"x"<<it->height<<"\n";
+        text<<"   ["<<LABEL_FPS<<"] "<<it->fps<<"\n";
+        if(it->bit_rate)
+            text<<"   ["<<LABEL_BITRATE<<"] "<<it->bit_rate<<" "<<LABEL_KB_PER_SECOND<<"\n";
 
-            displayed = true;
-            display_index++;
-        }
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
 
-        else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
-            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
 
-            text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<stream->codec->sample_rate<<" Hz"<<"\n";
-            text<<"   ["<<LABEL_CHANNELS<<"] "<<stream->codec->channels<<"\n";
+        text<<"\n";
+    }
 
-            displayed = true;
-            display_index++;
-        }
-        else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
-            displayed = true;
-            display_index++;
-        }
-        if(displayed)
-        {
-            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
-            if(lang)
-                text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
+    for(vector<AudioInfo>::iterator it = inf->audios.begin();it!=inf->audios.end();it++)
+    {
+        text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_AUDIO<<")"<<"\n";
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short<<","<<it->codec_long<<"\n";
+        text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<it->sample_rate<<" Hz"<<"\n";
+        text<<"   ["<<LABEL_CHANNELS<<"] "<<it->channels<<"\n";
 
-            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
-            if(title)
-                text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
-            text<<"\n";
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
 
-        }
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
 
+        text<<"\n";
+    }
+
+    for(vector<SubInfo>::iterator it = inf->subs.begin();it!=inf->subs.end();it++)
+    {
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
+
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
+
+        text<<"\n";
     }
     return text;
 

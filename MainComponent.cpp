@@ -163,7 +163,7 @@ void MainComponent::buttonClicked (Button* button)
             switch(result)
             {
             case 1000:
-                toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this);
+                toolbox::show_info_popup(LABEL_INFO,movie->PrintMovieInfo(),this);
                 break;
             case 1001:
                 Component *viewed = button->getParentComponent();
