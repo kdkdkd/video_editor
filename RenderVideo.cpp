@@ -66,7 +66,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
         fps = codec->supported_framerates[av_find_nearest_q_idx(fps, codec->supported_framerates)];
     swapVariables(fps.num,fps.den);
     c->time_base = fps;
-    c->gop_size = 50; /* emit one intra frame every twelve frames at most */
+    c->gop_size = info.videos[0].gop; /* emit one intra frame every twelve frames at most */
     //c->max_b_frames = 2;
     //c->flags |= CODEC_FLAG_QSCALE;
     c->pix_fmt = PIX_FMT_YUV420P;

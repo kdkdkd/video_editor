@@ -44,6 +44,11 @@ private:
 
     GroupComponent* groupComponent;
     ComboBox* videoCodec;
+    ComboBox* resolutionList;
+    ComboBox* passList;
+    ComboBox* qualityList;
+    ToggleButton* advancedMode;
+    bool isAdvancedMode;
     TextEditor* videoWidth;
     TextEditor* videoHeight;
     TextEditor* videoBitrate;
@@ -55,6 +60,7 @@ private:
     TextEditor* channels;
     TextButton* ok;
     TextButton* cancel;
+    TextEditor* gop;
 
     Movie::Info GetMovieInfo();
 

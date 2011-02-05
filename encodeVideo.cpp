@@ -11,7 +11,7 @@ encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_V
     encodeVideoComponent* contentComponent = new encodeVideoComponent (mainWindow);
 
     setContentComponent(contentComponent);
-    centreAroundComponent(mainWindow, 800, 370 + upDetailed);
+    centreAroundComponent(mainWindow, 800, 370 + upDetailed+120+40);
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
@@ -70,6 +70,32 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoCodec->setTextWhenNothingSelected (String::empty);
     videoCodec->addListener (this);
 
+    addAndMakeVisible (resolutionList = new ComboBox ());
+    resolutionList->setEditableText (false);
+    resolutionList->setJustificationType (Justification::centredLeft);
+    resolutionList->setTextWhenNothingSelected (String::empty);
+    resolutionList->addListener (this);
+
+
+    addAndMakeVisible (passList = new ComboBox ());
+    passList->setEditableText (false);
+    passList->setJustificationType (Justification::centredLeft);
+    passList->setTextWhenNothingSelected (String::empty);
+    passList->addListener (this);
+
+
+    addAndMakeVisible (qualityList = new ComboBox ());
+    qualityList->setEditableText (false);
+    qualityList->setJustificationType (Justification::centredLeft);
+    qualityList->setTextWhenNothingSelected (String::empty);
+    qualityList->addListener (this);
+
+    addAndMakeVisible (advancedMode= new ToggleButton (LABEL_VIDEO_SAVE_ADVANCED_MODE));
+    advancedMode->setToggleState (true, false);
+    advancedMode->addListener (this);
+    isAdvancedMode = true;
+
+
     addAndMakeVisible (videoWidth = new TextEditor ());
     videoWidth->setMultiLine (false);
     videoWidth->setReturnKeyStartsNewLine (false);
@@ -78,6 +104,15 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setCaretVisible (true);
     videoWidth->setPopupMenuEnabled (true);
     videoWidth->setText (String::empty);
+
+    addAndMakeVisible (gop = new TextEditor ());
+    gop->setMultiLine (false);
+    gop->setReturnKeyStartsNewLine (false);
+    gop->setReadOnly (false);
+    gop->setScrollbarsShown (true);
+    gop->setCaretVisible (true);
+    gop->setPopupMenuEnabled (true);
+    gop->setText (String::empty);
 
     addAndMakeVisible (videoHeight = new TextEditor ());
     videoHeight->setMultiLine (false);
@@ -153,7 +188,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
 
     this->mainWindow = mainWindow;
 
-    setSize (800, 350 + upDetailed);
+    setSize (800, 350 + upDetailed+120+40);
 
     /* display all formats and codecs */
 
@@ -175,6 +210,9 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     {
         audioCodec->addItem(it->display_id + "," + String(it->description),++id);
     }
+
+    passList->addItem(LABEL_VIDEO_SAVE_PASS_ONE,1);
+    passList->addItem(LABEL_VIDEO_SAVE_PASS_TWO,2);
 
     /* ~display all formats and codecs */
     Movie::Info *movie_info = mainWindow->timeline->intervals.front()->movie->GetMovieInfo();
@@ -272,7 +310,9 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
     if(bit_rate<=0)
         bit_rate = 200;
     videoBitrate->setText(String(bit_rate));
+    gop->setText(String(12));
     fps->setText(String(video_info.fps));
+    passList->setSelectedItemIndex(0);
 
     /* ~select video codec */
     /* select audio codec */
@@ -346,6 +386,7 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.width = videoWidth->getText().getIntValue();
         video_info.height = videoHeight->getText().getIntValue();
         video_info.fps = fps->getText().getDoubleValue();
+        video_info.gop = gop->getText().getIntValue();
         video_info.bit_rate = videoBitrate->getText().getIntValue();
         res.videos.push_back(video_info);
     }
@@ -365,6 +406,10 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
 encodeVideoComponent::~encodeVideoComponent()
 {
     deleteAndZero (format);
+    deleteAndZero (advancedMode);
+    deleteAndZero (resolutionList);
+    deleteAndZero (passList);
+    deleteAndZero (qualityList);
     deleteAndZero (path);
     deleteAndZero (groupComponent);
     deleteAndZero (videoCodec);
@@ -372,6 +417,7 @@ encodeVideoComponent::~encodeVideoComponent()
     deleteAndZero (videoHeight);
     deleteAndZero (videoBitrate);
     deleteAndZero (fps);
+    deleteAndZero (gop);
     deleteAndZero (groupComponent2);
     deleteAndZero (audioCodec);
     deleteAndZero (audioBitrate);
@@ -391,69 +437,82 @@ void encodeVideoComponent::paint (Graphics& g)
                       12, 4 + upDetailed, 200, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_VIDEO_SAVE_FORMAT,
                       12, 44+ upDetailed, 200, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+    if(isAdvancedMode)
     g.drawFittedText (LABEL_VIDEO_SAVE_BITRATE,
-                      0, 204+ upDetailed, 148-20, 30,2,
+                      0, 204+ upDetailed+120, 148-20, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+    if(isAdvancedMode)
     g.drawFittedText (LABEL_VIDEO_SAVE_RESOLUTION,
-                      0, 164+ upDetailed, 148-20, 30,2,
+                      0, 164+ upDetailed+120, 148-20, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_VIDEO_SAVE_CODEC,
                       0, 124+ upDetailed, 148-20, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
-    g.drawFittedText (LABEL_VIDEO_SAVE_FPS,
-                      0, 244+ upDetailed, 148-20, 30,2,
+
+    g.drawFittedText (LABEL_VIDEO_SAVE_SIZE,
+                      0, 164+ upDetailed, 148-20, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
+    g.drawFittedText (LABEL_VIDEO_SAVE_QUALITY,
+                      0, 204+ upDetailed, 148-20, 30,2,
+                      Justification::centredRight, true);
+
+
+    if(isAdvancedMode)
+    g.drawFittedText (LABEL_VIDEO_SAVE_FPS,
+                      0, 244+ upDetailed+120, 148-20, 30,2,
+                      Justification::centredRight, true);
+
+
+    if(isAdvancedMode)
+    g.drawFittedText (LABEL_VIDEO_GOP,
+                      0, 284+ upDetailed+120, 148-20, 30,2,
+                      Justification::centredRight, true);
+
+    if(isAdvancedMode)
+    g.drawFittedText (LABEL_VIDEO_SAVE_PASS,
+                      0, 324+ upDetailed+120, 148-20, 30,2,
+                      Justification::centredRight, true);
+
+    if(isAdvancedMode)
     g.drawText (T("X"),
-                300-28-20, 164+ upDetailed, 32, 30,
+                300-28-20, 164+ upDetailed+120, 32, 30,
                 Justification::centred, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_AUDIO_SAVE_CODEC,
                       420-20, 124+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_AUDIO_SAVE_BITRATE,
                       420-20, 164+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_AUDIO_SAVE_SAMPLE_RATE,
                       420-20, 204+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
 
 
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
+
     g.drawFittedText (LABEL_AUDIO_SAVE_CHANNELS,
                       420-20, 244+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
 
+    if(isAdvancedMode)
     g.drawFittedText (LABEL_KB_PER_SECOND,
-                      200-48 + 187, 208+ upDetailed, 45, 24,2,
+                      200-48 + 187, 208+ upDetailed+120, 45, 24,2,
                       Justification::centred, true);
 
     g.drawFittedText (LABEL_KB_PER_SECOND,
@@ -491,12 +550,22 @@ void encodeVideoComponent::resized()
 {
     format->setBounds (232, 48+ upDetailed, 540, 24);
     path->setBounds (232, 8+ upDetailed, 540, 24);
-    groupComponent->setBounds (16, 104+ upDetailed, 380, 184);
+    int group_height = 224+120+40;
+    if(!isAdvancedMode)
+    {
+        group_height -= 200;
+    }
+    groupComponent->setBounds (16, 104+ upDetailed, 380, group_height);
     videoCodec->setBounds (200-48, 128+ upDetailed, 232, 24);
-    videoWidth->setBounds (200-48, 168+ upDetailed, 88, 24);
-    videoHeight->setBounds (344-48, 168+ upDetailed, 88, 24);
-    videoBitrate->setBounds (200-48, 208+ upDetailed, 182, 24);
-    fps->setBounds (200-48, 248+ upDetailed, 232, 24);
+    videoWidth->setBounds (200-48, 168+ upDetailed+120, 88, 24);
+    videoHeight->setBounds (344-48, 168+ upDetailed+120, 88, 24);
+    videoBitrate->setBounds (200-48, 208+ upDetailed+120, 182, 24);
+    fps->setBounds (200-48, 248+ upDetailed+120, 232, 24);
+    gop->setBounds (200-48, 288+ upDetailed+120, 232, 24);
+    resolutionList->setBounds (200-48, 128+ upDetailed+40, 232, 24);
+    qualityList->setBounds (200-48, 128+ upDetailed+80, 232, 24);
+    advancedMode->setBounds (200-48, 128+ upDetailed+120, 232, 24);
+    passList->setBounds (200-48, 288+ upDetailed+120+40, 232, 24);
     groupComponent2->setBounds (400, 104+ upDetailed, 380, 184);
     audioCodec->setBounds (535-20, 128+ upDetailed, 252, 24);
     audioBitrate->setBounds (535-20, 168+ upDetailed, 202, 24);
@@ -546,6 +615,30 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == cancel)
     {
         getParentComponent()->removeFromDesktop();
+    }
+    else if (buttonThatWasClicked == advancedMode)
+    {
+        isAdvancedMode = !isAdvancedMode;
+        gop->setVisible(isAdvancedMode);
+        fps->setVisible(isAdvancedMode);
+        videoWidth->setVisible(isAdvancedMode);
+        videoHeight->setVisible(isAdvancedMode);
+        passList->setVisible(isAdvancedMode);
+        videoBitrate->setVisible(isAdvancedMode);
+        int new_height = getHeight();
+        int new_height_parent = getParentComponent()->getHeight();
+        if(isAdvancedMode)
+        {
+            new_height+=160;
+            new_height_parent+=160;
+        }
+        else
+        {
+            new_height-=160;
+            new_height_parent-=160;
+        }
+        setSize(getWidth(),new_height);
+        getParentComponent()->setSize(getParentComponent()->getWidth(),new_height_parent);
     }
 
 

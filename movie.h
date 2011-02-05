@@ -86,10 +86,12 @@ public:
         String language;
         String title;
         PixelFormat pix_fmt;
+        int gop;
         VideoInfo(){}
         VideoInfo(const VideoInfo& copy_info)
         {
             this->bit_rate = copy_info.bit_rate;
+            this->gop = copy_info.gop;
             this->codec_tag = copy_info.codec_tag;
             this->codec_short = copy_info.codec_short;
             this->codec_long = copy_info.codec_long;
