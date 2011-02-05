@@ -432,6 +432,7 @@ void Movie::DecodeFrame()
 
 
 }
+
 Movie::Info* Movie::GetMovieInfo()
 {
     if(!loaded)return 0;
@@ -455,10 +456,18 @@ Movie::Info* Movie::GetMovieInfo()
             AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
             video_info.codec_long = codec->long_name;
             video_info.codec_short = codec->name;
+
+            char * buf = new char[12];
+            av_get_codec_tag_string(buf,12,stream->codec->codec_tag);
+            video_info.codec_tag = String(buf);
+            if(video_info.codec_tag.indexOf("[")>=0)
+                video_info.codec_tag = String::empty;
+            delete []buf;
             video_info.width = stream->codec->width;
             video_info.height = stream->codec->height;
             video_info.bit_rate = stream->codec->bit_rate/1000;
             video_info.fps = ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den);
+            video_info.pix_fmt = stream->codec->pix_fmt;
             AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
 
             if(lang)
@@ -475,8 +484,17 @@ Movie::Info* Movie::GetMovieInfo()
         {
             AudioInfo audio_info;
             AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
+
             audio_info.codec_long = codec->long_name;
             audio_info.codec_short = codec->name;
+
+            char * buf = new char[12];
+            av_get_codec_tag_string(buf,12,stream->codec->codec_tag);
+            audio_info.codec_tag = String(buf);
+            if(audio_info.codec_tag.indexOf("[")>=0)
+                audio_info.codec_tag = String::empty;
+            delete []buf;
+
             audio_info.bit_rate = -1;
             audio_info.sample_rate = stream->codec->sample_rate;
             audio_info.channels = stream->codec->channels;
@@ -538,7 +556,11 @@ String Movie::PrintMovieInfo()
     for(vector<VideoInfo>::iterator it = inf->videos.begin();it!=inf->videos.end();it++)
     {
         text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_VIDEO<<")"<<"\n";
-        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short<<","<<it->codec_long<<"\n";
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short;
+        if(it->codec_tag!=String::empty)
+            text<<" ("<<it->codec_tag<<") ";
+        text<<","<<it->codec_long<<"\n";
+
         text<<"   ["<<LABEL_RESOLUTION<<"] "<<it->width<<"x"<<it->height<<"\n";
         text<<"   ["<<LABEL_FPS<<"] "<<it->fps<<"\n";
         if(it->bit_rate)
@@ -555,8 +577,14 @@ String Movie::PrintMovieInfo()
 
     for(vector<AudioInfo>::iterator it = inf->audios.begin();it!=inf->audios.end();it++)
     {
+
         text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_AUDIO<<")"<<"\n";
-        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short<<","<<it->codec_long<<"\n";
+
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short;
+        if(it->codec_tag!=String::empty)
+            text<<" ("<<it->codec_tag<<") ";
+        text<<","<<it->codec_long<<"\n";
+
         text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<it->sample_rate<<" Hz"<<"\n";
         text<<"   ["<<LABEL_CHANNELS<<"] "<<it->channels<<"\n";
 

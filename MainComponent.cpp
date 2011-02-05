@@ -3,6 +3,7 @@
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
 #include "encodeVideo.h"
+#include "capabilities.h"
 #include <math.h>
 #define VIDEO_TIMELINE_SIZE 98
 #define AUDIO_TIMELINE_SIZE 30
@@ -233,6 +234,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     mainWindow = mainWindow_;
 
     av_register_all();
+
+    capabilities::InitFormats();
 
     initImageButton(String("pic\\zoomin.png"),zoomInButton);
     initImageButton(String("pic\\zoomout.png"),zoomOutButton);

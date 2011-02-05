@@ -55,9 +55,8 @@ private:
     TextEditor* channels;
     TextButton* ok;
     TextButton* cancel;
-    vector<String> formats;
-    vector<String> audio_codecs;
-    vector<String> video_codecs;
+
+    Movie::Info GetMovieInfo();
 
 
     encodeVideoComponent (const encodeVideo&);

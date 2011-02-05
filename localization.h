@@ -109,7 +109,11 @@ extern String LABEL_AUDIO_SAVE_SAMPLE_RATE;
 extern String LABEL_AUDIO_SAVE_CHANNELS;
 
 
-
+extern String MENU_HEADER_PC;
+extern String MENU_HEADER_WEB;
+extern String MENU_HEADER_CELL_PHONE;
+extern String MENU_HEADER_AUDIO;
+extern String MENU_HEADER_IPOD;
 }
 
 

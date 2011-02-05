@@ -1,6 +1,6 @@
 #include "localization.h"
 #define upDetailed 10
-
+#include "capabilities.h"
 
 #include "encodeVideo.h"
 encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_VIDEO,Colours::whitesmoke,DocumentWindow::closeButton)
@@ -32,7 +32,6 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoCodec (0),
     videoWidth (0),
     videoHeight (0),
-    videoBitrate (0),
     fps (0),
     groupComponent2 (0),
     audioCodec (0),
@@ -157,42 +156,28 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     setSize (800, 350 + upDetailed);
 
     /* display all formats and codecs */
-    AVOutputFormat *ofmt=NULL;
+
     int id = 0;
-    Movie::Info *movie_info = mainWindow->timeline->intervals.front()->movie->GetMovieInfo();
-    while((ofmt = av_oformat_next(ofmt)))
+
+    for(vector<capabilities::Format>::iterator it=capabilities::formats.begin();it!=capabilities::formats.end();++it)
     {
-        String id_string = ofmt->name;
-        formats.push_back(id_string);
-        format->addItem(id_string + "," + String(ofmt->long_name),id++);
+        if(it->header!=String::empty)format->addSectionHeading(it->header);
+        format->addItem(it->display_id + "," + String(it->description),++id);
+
     }
-    AVCodec *p=NULL;
-    int video_index = 0;
-    int audio_index = 0;
-    while((p = av_codec_next(p)))
+    id = 0;
+    for(vector<capabilities::FFMpegUnit>::iterator it=capabilities::video_codecs.begin();it!=capabilities::video_codecs.end();++it)
     {
-        if(p->encode)
-        {
-            switch(p->type)
-            {
-            case AVMEDIA_TYPE_VIDEO:
-            {
-                String id_string = p->name;
-                videoCodec->addItem(id_string + "," + String(p->long_name),video_index++);
-                video_codecs.push_back(id_string);
-            }
-            break;
-            case AVMEDIA_TYPE_AUDIO:
-            {
-                String id_string = p->name;
-                audioCodec->addItem(id_string + "," + String(p->long_name),audio_index++);
-                audio_codecs.push_back(id_string);
-            }
-            break;
-            }
-        }
+        videoCodec->addItem(it->display_id + "," + String(it->description),++id);
     }
+    id = 0;
+    for(vector<capabilities::FFMpegUnit>::iterator it=capabilities::audio_codecs.begin();it!=capabilities::audio_codecs.end();++it)
+    {
+        audioCodec->addItem(it->display_id + "," + String(it->description),++id);
+    }
+
     /* ~display all formats and codecs */
+    Movie::Info *movie_info = mainWindow->timeline->intervals.front()->movie->GetMovieInfo();
     selectByMovieInfo(movie_info);
 
     setVisible(true);
@@ -200,7 +185,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
 void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
 {
     /* select format */
-    int avi_index = -1;
+    /*int avi_index = -1;
     String format_short = info->format_short;
     int index_comma = -1;
     if((index_comma = format_short.indexOf(","))>=0)
@@ -223,12 +208,23 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
         }
     }
     if(!selected_format)
-        format->setSelectedItemIndex(avi_index);
+        format->setSelectedItemIndex(avi_index);*/
 
+    int index = -1;
+    for(int i = 0; i<format->getNumItems(); ++i)
+    {
+        if(capabilities::formats[format->getItemId(i)-1].display_id == "mkv")
+        {
+            index = i;
+            break;
+        }
+    }
+
+    format->setSelectedItemIndex(index);
     /* ~select format */
 
     /* select video codec */
-    if(info->videos.size()>0)
+    /*if(info->videos.size()>0)
     {
         bool selected_video_codec = false;
         Movie::VideoInfo video_info = info->videos[0];
@@ -257,12 +253,25 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
         else
             videoBitrate->setText(String("400"));
         fps->setText(String(video_info.fps));
+    }*/
+    Movie::VideoInfo video_info = info->videos[0];
+    for(int i = 0; i<videoCodec->getNumItems(); ++i)
+    {
+        if(capabilities::video_codecs[videoCodec->getItemId(i)-1].display_id == "xvid")
+        {
+            index = i;
+            break;
+        }
     }
+    videoCodec->setSelectedItemIndex(index);
+    videoWidth->setText(String(video_info.width));
+    videoHeight->setText(String(video_info.height));
+    videoBitrate->setText(String(video_info.bit_rate));
+    fps->setText(String(video_info.fps));
+
     /* ~select video codec */
-
-
     /* select audio codec */
-    if(info->audios.size()>0)
+    /*if(info->audios.size()>0)
     {
         bool selected_audio_codec = false;
         Movie::AudioInfo audio_info = info->audios[0];
@@ -294,8 +303,57 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
         else
             audioBitrate->setText(String("64"));
         channels->setText(String(audio_info.channels));
+    }*/
+
+    Movie::AudioInfo audio_info = info->audios[0];
+    for(int i = 0; i<audioCodec->getNumItems(); ++i)
+    {
+        if(capabilities::audio_codecs[audioCodec->getItemId(i)-1].display_id == "ac3")
+        {
+            index = i;
+            break;
+        }
     }
+    audioCodec->setSelectedItemIndex(index);
+    if(audio_info.sample_rate>0)
+            audioSampleRate->setText(String(audio_info.sample_rate));
+        else
+            audioSampleRate->setText(String("441"));
+        if(audio_info.bit_rate>0)
+            audioBitrate->setText(String(audio_info.bit_rate));
+        else
+            audioBitrate->setText(String("64"));
+        channels->setText(String(audio_info.channels));
     /* ~select audio codec */
+}
+
+
+Movie::Info encodeVideoComponent::GetMovieInfo()
+{
+    Movie::Info res;
+   if(format->getSelectedId())
+        res.format_short = capabilities::formats[format->getSelectedId()-1].id;
+    res.filename = path->getCurrentFile().getFullPathName();
+    if(videoCodec->getSelectedId())
+    {
+        Movie::VideoInfo video_info;
+        video_info.codec_short = capabilities::video_codecs[videoCodec->getSelectedId()-1].id;
+        video_info.width = videoWidth->getText().getIntValue();
+        video_info.height = videoHeight->getText().getIntValue();
+        video_info.fps = fps->getText().getDoubleValue();
+        video_info.bit_rate = videoBitrate->getText().getIntValue();
+        res.videos.push_back(video_info);
+    }
+    if(audioCodec->getSelectedId())
+    {
+        Movie::AudioInfo audio_info;
+        audio_info.codec_short = capabilities::audio_codecs[audioCodec->getSelectedId()-1].id;
+        audio_info.bit_rate = audioBitrate->getText().getIntValue();
+        audio_info.sample_rate = audioSampleRate->getText().getIntValue();
+        audio_info.channels = channels->getText().getIntValue();
+        res.audios.push_back(audio_info);
+    }
+    return res;
 }
 
 
@@ -361,7 +419,7 @@ void encodeVideoComponent::paint (Graphics& g)
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
     g.drawText (T("X"),
-                300-28, 164+ upDetailed, 32, 30,
+                300-28-20, 164+ upDetailed, 32, 30,
                 Justification::centred, true);
 
     g.setColour (Colours::black);
@@ -447,7 +505,20 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 {
     if (comboBoxThatHasChanged == format)
     {
-
+        File temp(path->getCurrentFile());
+        String full_path = temp.getFullPathName();
+        int last_index_of_dot = full_path.lastIndexOf(".");
+        String new_file_with_ext;
+        if(last_index_of_dot>=0)
+        {
+            new_file_with_ext = full_path.substring(0,last_index_of_dot);
+        }
+        else
+        {
+            new_file_with_ext = full_path;
+        }
+        new_file_with_ext<<"."<<capabilities::formats.at(format->getSelectedId()-1).display_id;
+        path->setCurrentFile(File(new_file_with_ext),false,false);
     }
     else if (comboBoxThatHasChanged == videoCodec)
     {
@@ -464,6 +535,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
 {
     if (buttonThatWasClicked == ok)
     {
+        mainWindow->timeline->Render(GetMovieInfo());
         getParentComponent()->removeFromDesktop();
     }
     else if (buttonThatWasClicked == cancel)

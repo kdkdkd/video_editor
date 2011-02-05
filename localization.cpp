@@ -103,5 +103,9 @@ String LABEL_AUDIO_SAVE_BITRATE = T("Битрейт");
 String LABEL_AUDIO_SAVE_SAMPLE_RATE = T("Частота дискретизации");
 String LABEL_AUDIO_SAVE_CHANNELS = T("Каналы");
 
-
+String MENU_HEADER_PC = T("Пк");
+String MENU_HEADER_WEB = T("Веб");
+String MENU_HEADER_CELL_PHONE = T("Мобильный");
+String MENU_HEADER_AUDIO = T("Аудио");
+String MENU_HEADER_IPOD = T("Ipod");
 }

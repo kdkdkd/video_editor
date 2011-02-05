@@ -22,8 +22,6 @@ private:
 
     uint8_t         *buffer;
     SwsContext *img_convert_ctx;
-    AVFrame         *pFrame;
-    AVFrame         *pFrameRGB;
 
     int videoStream;
 
@@ -33,6 +31,8 @@ private:
     bool SeekToInternal(int frame);
 
 public:
+    AVFrame         *pFrame;
+    AVFrame         *pFrameRGB;
     AVCodecContext  *pCodecCtx;
     AVCodec         *pCodec;
     AVStream        *pStream;
@@ -78,16 +78,19 @@ public:
         public:
         int bit_rate;
         String codec_short;
+        String codec_tag;
         String codec_long;
         int width;
         int height;
         double fps;
         String language;
         String title;
+        PixelFormat pix_fmt;
         VideoInfo(){}
         VideoInfo(const VideoInfo& copy_info)
         {
             this->bit_rate = copy_info.bit_rate;
+            this->codec_tag = copy_info.codec_tag;
             this->codec_short = copy_info.codec_short;
             this->codec_long = copy_info.codec_long;
             this->width = copy_info.width;
@@ -95,6 +98,7 @@ public:
             this->fps = copy_info.fps;
             this->language = copy_info.language;
             this->title = copy_info.title;
+            this->pix_fmt = copy_info.pix_fmt;
         }
     };
     class AudioInfo
@@ -104,6 +108,7 @@ public:
         String codec_short;
         String codec_long;
         int sample_rate;
+        String codec_tag;
         int channels;
         String language;
         String title;
@@ -111,6 +116,7 @@ public:
         AudioInfo(const AudioInfo& copy_info)
         {
             this->bit_rate = copy_info.bit_rate;
+            this->codec_tag = copy_info.codec_tag;
             this->codec_short = copy_info.codec_short;
             this->codec_long = copy_info.codec_long;
             this->sample_rate = copy_info.sample_rate;
