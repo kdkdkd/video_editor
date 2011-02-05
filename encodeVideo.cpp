@@ -266,7 +266,12 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
     videoCodec->setSelectedItemIndex(index);
     videoWidth->setText(String(video_info.width));
     videoHeight->setText(String(video_info.height));
-    videoBitrate->setText(String(video_info.bit_rate));
+    int bit_rate = video_info.bit_rate;
+    if(bit_rate<=0)
+        bit_rate = info->bit_rate;
+    if(bit_rate<=0)
+        bit_rate = 200;
+    videoBitrate->setText(String(bit_rate));
     fps->setText(String(video_info.fps));
 
     /* ~select video codec */
