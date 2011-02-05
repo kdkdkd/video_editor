@@ -82,11 +82,6 @@ void InitFormats()
             header = MENU_HEADER_WEB;
             sort_number=70;
         }
-
-        else if(id_string == "webm")
-        {
-            sort_number=80;
-        }
         else if(id_string == "rm")
         {
             sort_number=90;
