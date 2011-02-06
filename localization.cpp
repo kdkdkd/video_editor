@@ -96,11 +96,25 @@ String LABEL_VIDEO_SAVE_FORMAT = T("Формат");
 String LABEL_VIDEO_SAVE_CODEC = T("Кодек");
 String LABEL_VIDEO_SAVE_SIZE = T("Размер");
 String LABEL_VIDEO_SAVE_QUALITY = T("Качество");
+
+
+String LABEL_VIDEO_SAVE_QUALITY_BEST = T("Лучшее");
+String LABEL_VIDEO_SAVE_QUALITY_BETTER = T("Очень хорошее");
+String LABEL_VIDEO_SAVE_QUALITY_GOOD = T("Хорошее");
+String LABEL_VIDEO_SAVE_QUALITY_NORMAL = T("Нормальное");
+String LABEL_VIDEO_SAVE_QUALITY_BAD = T("Плохое");
+String LABEL_VIDEO_SAVE_QUALITY_WORSE = T("Очень плохое");
+String LABEL_VIDEO_SAVE_QUALITY_WORST = T("Худшее");
+String LABEL_VIDEO_SAVE_QUALITY_OTHER = T("Другое");
+String LABEL_VIDEO_SAVE_SIZE_OTHER = T("Другой");
+
+
 String LABEL_VIDEO_SAVE_PASS = T("Количество проходов");
 String LABEL_VIDEO_SAVE_ADVANCED_MODE = T("Дополнительные настройки");
 String LABEL_VIDEO_SAVE_BITRATE = T("Битрейт");
 String LABEL_VIDEO_SAVE_FPS = T("Частота кадров");
 String LABEL_VIDEO_SAVE_RESOLUTION = T("Разрешение");
+String LABEL_VIDEO_SAVE_AUTO = T("Авто");
 String LABEL_VIDEO_GOP = T("gop");
 String LABEL_VIDEO_SAVE_PASS_ONE = T("1 - один");
 String LABEL_VIDEO_SAVE_PASS_TWO = T("2 - два");

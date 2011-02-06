@@ -12,7 +12,7 @@ namespace capabilities
 {
 using namespace localization;
 vector<Format> formats;
-vector<FFMpegUnit> video_codecs;
+vector<VideoCodec> video_codecs;
 vector<FFMpegUnit> audio_codecs;
 
 bool compareFormat(FFMpegUnit f1,FFMpegUnit f2)
@@ -29,6 +29,50 @@ Format::Format(String id,String description,String display_id,int sort_number,St
     this->header = header;
 }
 
+vector<VideoCodec*> Format::getCodecs()
+{
+    vector<VideoCodec*> res;
+    for(vector<VideoCodec>::iterator it = video_codecs.begin();it!=video_codecs.end();it++)
+    {
+        res.push_back(&*it);
+    }
+    return res;
+}
+
+VideoCodec::VideoCodec(String id,String description,String display_id,int sort_number):FFMpegUnit(id,description,display_id,sort_number)
+{
+}
+
+unsigned int ResolutionPreset::toInt32()
+{
+    unsigned int res = 0;
+    res |= width<<16;
+    res |= height;
+    return res;
+}
+void ResolutionPreset::fromInt32(unsigned int id)
+{
+    height = id&65535;
+    width = id>>16;
+}
+vector<ResolutionPreset> VideoCodec::getResolutions(Format &format)
+{
+    vector<ResolutionPreset> res;
+    ResolutionPreset r1;
+    r1.width = 1920;r1.height = 1080;r1.tag = String("Full HD"); res.push_back(r1);
+    r1.width = 1440;r1.height = 1080;r1.tag = String("Full HD");res.push_back(r1);
+    r1.width = 1280;r1.height = 720;r1.tag = String("HD");res.push_back(r1);
+    r1.width = 800;r1.height = 600;r1.tag = String("SVGA");res.push_back(r1);
+    r1.width = 720;r1.height = 540;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 720;r1.height = 480;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 640;r1.height = 480;r1.tag = String("VGA");res.push_back(r1);
+    r1.width = 352;r1.height = 288;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 352;r1.height = 240;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 320;r1.height = 200;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 240;r1.height = 180;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 128;r1.height = 96;r1.tag = String::empty;res.push_back(r1);
+    return res;
+}
 
 FFMpegUnit::FFMpegUnit(String id,String description,String display_id,int sort_number)
 {
@@ -187,7 +231,7 @@ void InitFormats()
                     sort_number=100;
                 }
                 if(sort_number>0)
-                video_codecs.push_back(FFMpegUnit(id_string,p->long_name,show_id,sort_number));
+                video_codecs.push_back(VideoCodec(id_string,p->long_name,show_id,sort_number));
             }
             break;
             case AVMEDIA_TYPE_AUDIO:
@@ -207,3 +251,4 @@ void InitFormats()
 
 
 }
+

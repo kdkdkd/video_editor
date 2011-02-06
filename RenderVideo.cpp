@@ -17,6 +17,11 @@ int audio_input_frame_size;
 
 static int sws_flags = SWS_BICUBIC;
 
+/*
+extern "C" {
+#include <libavutil/intreadwrite.h>
+}
+*/
 
 SwsContext *img_convert_ctx = NULL;
 
@@ -38,13 +43,13 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     AVCodec *codec = avcodec_find_encoder_by_name(info.videos[0].codec_short.toCString());
 
     c = st->codec;
+
     avcodec_get_context_defaults(c);
 
     c->codec_id = codec->id;
     c->codec_type = AVMEDIA_TYPE_VIDEO;
-
+    //c->codec_tag = AV_RL32("dx50");
     /* put sample parameters */
-
     c->bit_rate = info.videos[0].bit_rate * 1000;
     /* resolution must be a multiple of two */
     //c->width = 800;
@@ -71,21 +76,12 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     //c->flags |= CODEC_FLAG_QSCALE;
     c->pix_fmt = PIX_FMT_YUV420P;
 
-    if (c->codec_id == CODEC_ID_MPEG2VIDEO)
-    {
-        /* just for testing, we also add B frames */
-        c->max_b_frames = 2;
-    }
-    if (c->codec_id == CODEC_ID_MPEG1VIDEO)
-    {
-        /* Needed to avoid using macroblocks in which some coeffs overflow.
-           This does not happen with normal video, it just happens here as
-           the motion of the chroma plane does not match the luma plane. */
-        c->mb_decision=2;
-    }
     // some formats want stream headers to be separate
     if(oc->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    //c->flags |= CODEC_FLAG2_LOCAL_HEADER;
+
 
     avcodec_open(c, codec);
 
@@ -187,7 +183,6 @@ static AVFrame *alloc_picture(enum PixelFormat pix_fmt, int width, int height)
 
 static void open_video(AVFormatContext *oc, AVStream *st)
 {
-    AVCodec *codec;
     AVCodecContext *c;
 
     c = st->codec;
@@ -407,6 +402,7 @@ bool Timeline::Render(const Movie::Info & info)
 
         oc = avformat_alloc_context();
         oc->oformat = fmt;
+
         snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
         video_st = NULL;
         audio_st = NULL;
@@ -420,6 +416,7 @@ bool Timeline::Render(const Movie::Info & info)
             audio_st = add_audio_stream(oc, fmt->audio_codec,info);
         }
         av_set_parameters(oc, NULL);
+
         if (video_st)
         {
             open_video(oc, video_st);
