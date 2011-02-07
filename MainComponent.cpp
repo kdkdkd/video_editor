@@ -748,7 +748,6 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
     {
         menu.addCommandItem(commandManager,commandOpen);
         menu.addCommandItem(commandManager,commandSave);
-        menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
@@ -925,12 +924,6 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     break;
 
-    case commandEncode:
-    {
-        StopVideo();
-    }
-    break;
-
     case commandSaveFrame:
     {
         StopVideo();
@@ -1013,7 +1006,6 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 {
     const CommandID ids[] = { commandOpen,
                               commandSave,
-                              commandEncode,
                               commandSaveFrame,
                               commandJump,
                               commandPlay,
@@ -1076,11 +1068,6 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady() && !timeline->IsEmpty());
-        break;
-    case commandEncode:
-        result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.addDefaultKeypress (T('E'), ModifierKeys::commandModifier);
-        result.setActive(false);
         break;
     case commandSaveFrame:
         result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);

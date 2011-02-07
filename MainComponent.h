@@ -47,7 +47,6 @@ public:
     {
         commandOpen                 = 0x2000,
         commandSave                 = 0x2001,
-        commandEncode               = 0x2002,
         commandJump                 = 0x2003,
         commandSaveFrame            = 0x2004,
         commandPlay                 = 0x2005,

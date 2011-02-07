@@ -10,7 +10,6 @@ extern String LABEL_PROGRAMM_CAPTION;
 extern String MENU_FILE;
 extern String MENU_FILE_OPEN;
 extern String MENU_FILE_SAVE;
-extern String MENU_FILE_ENCODE;
 extern String MENU_QUIT;
 extern String MENU_FRAME;
 extern String MENU_JUMP;

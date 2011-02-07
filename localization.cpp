@@ -6,7 +6,6 @@ String LABEL_PROGRAMM_CAPTION = T("Редактор Видео");
 String MENU_FILE = T("Файл");
 String MENU_FILE_OPEN = T("Открыть");
 String MENU_FILE_SAVE = T("Сохранить");
-String MENU_FILE_ENCODE = T("Перекодировать");
 String MENU_QUIT = T("Выход");
 String MENU_FRAME = T("Кадр");
 String MENU_JUMP = T("Перейти к...");
