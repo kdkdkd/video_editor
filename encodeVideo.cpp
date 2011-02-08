@@ -767,9 +767,9 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 }
 void encodeVideoComponent::clearValidation()
 {
-    fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());
-    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());
-    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());
+    fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());fps->setTooltip("");
+    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());fps->setTooltip("");
+    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());fps->setTooltip("");
 
 }
 
@@ -781,6 +781,7 @@ bool encodeVideoComponent::Validate()
     if(fps_double>60.0 || fps_double<5.0)
     {
         fps->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        fps->setTooltip(VALIDATION_SAVE_FPS);
         fps->applyFontToAllText(fps->getFont());
         res = false;
     }
@@ -789,6 +790,7 @@ bool encodeVideoComponent::Validate()
     if(width_int<5)
     {
         videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoWidth->setTooltip(VALIDATION_SAVE_WIDTH);
         videoWidth->applyFontToAllText(videoWidth->getFont());
         res = false;
     }
@@ -797,6 +799,7 @@ bool encodeVideoComponent::Validate()
     if(height_int<5)
     {
         videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoHeight->setTooltip(VALIDATION_SAVE_HEIGHT);
         videoHeight->applyFontToAllText(videoHeight->getFont());
         res = false;
     }

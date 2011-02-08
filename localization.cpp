@@ -128,4 +128,8 @@ String MENU_HEADER_WEB = T("Веб");
 String MENU_HEADER_CELL_PHONE = T("Мобильный");
 String MENU_HEADER_AUDIO = T("Аудио");
 String MENU_HEADER_IPOD = T("Ipod");
+
+String VALIDATION_SAVE_FPS = T("Частота кадров может быть в пределах от 5 до 60");
+String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть не меньше 5");
+String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5");
 }

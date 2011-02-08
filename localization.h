@@ -133,6 +133,10 @@ extern String MENU_HEADER_WEB;
 extern String MENU_HEADER_CELL_PHONE;
 extern String MENU_HEADER_AUDIO;
 extern String MENU_HEADER_IPOD;
+
+extern String VALIDATION_SAVE_FPS;
+extern String VALIDATION_SAVE_WIDTH;
+extern String VALIDATION_SAVE_HEIGHT;
 }
 
 
