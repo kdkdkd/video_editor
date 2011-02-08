@@ -21,7 +21,7 @@ class encodeVideoComponent  : public ComboBoxListener,
                      public Component
 {
 public:
-
+    TooltipWindow tooltipWindow;
     encodeVideoComponent(MainComponent* mainWindow);
     ~encodeVideoComponent();
 
@@ -31,14 +31,13 @@ public:
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
     void buttonClicked (Button* buttonThatWasClicked);
     void selectByMovieInfo(Movie::Info * info);
+    void clearValidation();
+    bool Validate();
 
 
 
 private:
-
-        MainComponent* mainWindow;
-
-
+    MainComponent* mainWindow;
     ComboBox* format;
     FilenameComponent* path;
 

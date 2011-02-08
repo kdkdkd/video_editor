@@ -95,8 +95,11 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     advancedMode->addListener (this);
     isAdvancedMode = true;
 
+    String digits = T("0123456789");
+    String digits_and_dot = T("0123456789.");
 
     addAndMakeVisible (videoWidth = new TextEditor ());
+    videoWidth->setInputRestrictions(4,digits);
     videoWidth->setMultiLine (false);
     videoWidth->setReturnKeyStartsNewLine (false);
     videoWidth->setReadOnly (false);
@@ -106,6 +109,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setText (String::empty);
 
     addAndMakeVisible (gop = new TextEditor ());
+    gop->setInputRestrictions(4,digits);
     gop->setMultiLine (false);
     gop->setReturnKeyStartsNewLine (false);
     gop->setReadOnly (false);
@@ -115,6 +119,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     gop->setText (String::empty);
 
     addAndMakeVisible (videoHeight = new TextEditor ());
+    videoHeight->setInputRestrictions(0,digits);
     videoHeight->setMultiLine (false);
     videoHeight->setReturnKeyStartsNewLine (false);
     videoHeight->setReadOnly (false);
@@ -124,6 +129,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoHeight->setText (String::empty);
 
     addAndMakeVisible (videoBitrate = new TextEditor ());
+    videoBitrate->setInputRestrictions(0,digits);
     videoBitrate->setMultiLine (false);
     videoBitrate->setReturnKeyStartsNewLine (false);
     videoBitrate->setReadOnly (false);
@@ -133,6 +139,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoBitrate->setText (String::empty);
 
     addAndMakeVisible (fps = new TextEditor ());
+    fps->setInputRestrictions(0,digits_and_dot);
     fps->setMultiLine (false);
     fps->setReturnKeyStartsNewLine (false);
     fps->setReadOnly (false);
@@ -758,11 +765,55 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     }
 
 }
+void encodeVideoComponent::clearValidation()
+{
+    fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());
+    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());
+    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());
+
+}
+
+bool encodeVideoComponent::Validate()
+{
+    bool res = true;
+
+    double fps_double = fps->getText().getDoubleValue();
+    if(fps_double>60.0 || fps_double<5.0)
+    {
+        fps->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        fps->applyFontToAllText(fps->getFont());
+        res = false;
+    }
+
+    int width_int = videoWidth->getText().getIntValue();
+    if(width_int<5)
+    {
+        videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoWidth->applyFontToAllText(videoWidth->getFont());
+        res = false;
+    }
+
+    int height_int = videoHeight->getText().getIntValue();
+    if(height_int<5)
+    {
+        videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoHeight->applyFontToAllText(videoHeight->getFont());
+        res = false;
+    }
+
+
+
+    return res;
+}
 
 void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
 {
     if (buttonThatWasClicked == ok)
     {
+        clearValidation();
+        if(!Validate())
+            return;
+
         mainWindow->timeline->Render(GetMovieInfo());
         getParentComponent()->removeFromDesktop();
     }

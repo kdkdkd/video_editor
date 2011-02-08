@@ -237,6 +237,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
     if(!timeline->current_interval)
     {
         //Make black image
+        end_writing = !timeline->SkipFrame();
         return;
     }
     Movie * movie = timeline->current_interval->movie;
