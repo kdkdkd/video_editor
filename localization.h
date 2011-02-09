@@ -138,7 +138,7 @@ extern String VALIDATION_SAVE_FPS;
 extern String VALIDATION_SAVE_WIDTH;
 extern String VALIDATION_SAVE_HEIGHT;
 extern String VALIDATION_SAVE_BITRATE;
-extern String VALIDATION_SAVE_GOP;
+//extern String VALIDATION_SAVE_GOP;
 
 }
 

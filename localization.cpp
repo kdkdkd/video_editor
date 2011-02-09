@@ -133,5 +133,5 @@ String VALIDATION_SAVE_FPS = T("Частота кадров может быть 
 String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть не меньше 5");
 String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5");
 String VALIDATION_SAVE_BITRATE = T("Битрейт не должен быть нулевым");
-String VALIDATION_SAVE_GOP = T("Число кадров в группе не должно быть 0");
+//String VALIDATION_SAVE_GOP = T("Число кадров в группе не должно быть 0");
 }

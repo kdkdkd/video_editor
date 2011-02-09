@@ -770,7 +770,7 @@ void encodeVideoComponent::clearValidation()
     fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());fps->setTooltip("");
     videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());videoWidth->setTooltip("");
     videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());videoHeight->setTooltip("");
-    gop->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));gop->applyFontToAllText(gop->getFont());gop->setTooltip("");
+    //gop->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));gop->applyFontToAllText(gop->getFont());gop->setTooltip("");
     videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoBitrate->applyFontToAllText(videoBitrate->getFont());videoBitrate->setTooltip("");
 }
 
@@ -805,14 +805,14 @@ bool encodeVideoComponent::Validate()
         res = false;
     }
 
-    int gop_int = gop->getText().getIntValue();
+    /*int gop_int = gop->getText().getIntValue();
     if(gop_int==0)
     {
         gop->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         gop->setTooltip(VALIDATION_SAVE_GOP);
         gop->applyFontToAllText(gop->getFont());
         res = false;
-    }
+    }*/
 
 
     int video_bitrate_int = videoBitrate->getText().getIntValue();

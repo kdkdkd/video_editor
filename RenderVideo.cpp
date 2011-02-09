@@ -17,11 +17,11 @@ int audio_input_frame_size;
 
 static int sws_flags = SWS_BICUBIC;
 
-/*
+
 extern "C" {
 #include <libavutil/intreadwrite.h>
 }
-*/
+
 
 SwsContext *img_convert_ctx = NULL;
 
@@ -48,11 +48,15 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 
     c->codec_id = codec->id;
     c->codec_type = AVMEDIA_TYPE_VIDEO;
-    //c->codec_tag = AV_RL32("dx50");
+    if(info.videos[0].codec_short == "libxvid")
+        c->codec_tag = AV_RL32("xvid");
     /* put sample parameters */
     c->bit_rate = info.videos[0].bit_rate * 1000;
+
+    //c->flags |= CODEC_FLAG_QSCALE;
+    //c->global_quality = st->quality = FF_QP2LAMBDA * (float)info.videos[0].bit_rate;
+
     /* resolution must be a multiple of two */
-    //c->width = 800;
     c->width = info.videos[0].width;
     c->height = info.videos[0].height;
 
@@ -71,6 +75,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
         fps = codec->supported_framerates[av_find_nearest_q_idx(fps, codec->supported_framerates)];
     swapVariables(fps.num,fps.den);
     c->time_base = fps;
+
     c->gop_size = info.videos[0].gop; /* emit one intra frame every twelve frames at most */
     //c->max_b_frames = 2;
     //c->flags |= CODEC_FLAG_QSCALE;
@@ -293,7 +298,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     {
         return false;
     }
-
+    //picture->quality = info.videos[0].bit_rate;
 
     if (oc->oformat->flags & AVFMT_RAWPICTURE)
     {
