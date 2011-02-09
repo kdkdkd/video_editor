@@ -114,7 +114,7 @@ String LABEL_VIDEO_SAVE_BITRATE = T("Битрейт");
 String LABEL_VIDEO_SAVE_FPS = T("Частота кадров");
 String LABEL_VIDEO_SAVE_RESOLUTION = T("Разрешение");
 String LABEL_VIDEO_SAVE_AUTO = T("Авто");
-String LABEL_VIDEO_GOP = T("gop");
+String LABEL_VIDEO_GOP = T("Кадров в группе(gop)");
 String LABEL_VIDEO_SAVE_PASS_ONE = T("1 - один");
 String LABEL_VIDEO_SAVE_PASS_TWO = T("2 - два");
 
@@ -132,4 +132,6 @@ String MENU_HEADER_IPOD = T("Ipod");
 String VALIDATION_SAVE_FPS = T("Частота кадров может быть в пределах от 5 до 60");
 String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть не меньше 5");
 String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5");
+String VALIDATION_SAVE_BITRATE = T("Битрейт не должен быть нулевым");
+String VALIDATION_SAVE_GOP = T("Число кадров в группе не должно быть 0");
 }

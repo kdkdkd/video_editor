@@ -109,7 +109,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setText (String::empty);
 
     addAndMakeVisible (gop = new TextEditor ());
-    gop->setInputRestrictions(4,digits);
+    gop->setInputRestrictions(3,digits);
     gop->setMultiLine (false);
     gop->setReturnKeyStartsNewLine (false);
     gop->setReadOnly (false);
@@ -119,7 +119,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     gop->setText (String::empty);
 
     addAndMakeVisible (videoHeight = new TextEditor ());
-    videoHeight->setInputRestrictions(0,digits);
+    videoHeight->setInputRestrictions(4,digits);
     videoHeight->setMultiLine (false);
     videoHeight->setReturnKeyStartsNewLine (false);
     videoHeight->setReadOnly (false);
@@ -129,7 +129,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoHeight->setText (String::empty);
 
     addAndMakeVisible (videoBitrate = new TextEditor ());
-    videoBitrate->setInputRestrictions(0,digits);
+    videoBitrate->setInputRestrictions(5,digits);
     videoBitrate->setMultiLine (false);
     videoBitrate->setReturnKeyStartsNewLine (false);
     videoBitrate->setReadOnly (false);
@@ -768,9 +768,10 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 void encodeVideoComponent::clearValidation()
 {
     fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());fps->setTooltip("");
-    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());fps->setTooltip("");
-    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());fps->setTooltip("");
-
+    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());videoWidth->setTooltip("");
+    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());videoHeight->setTooltip("");
+    gop->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));gop->applyFontToAllText(gop->getFont());gop->setTooltip("");
+    videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoBitrate->applyFontToAllText(videoBitrate->getFont());videoBitrate->setTooltip("");
 }
 
 bool encodeVideoComponent::Validate()
@@ -780,7 +781,7 @@ bool encodeVideoComponent::Validate()
     double fps_double = fps->getText().getDoubleValue();
     if(fps_double>60.0 || fps_double<5.0)
     {
-        fps->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        fps->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         fps->setTooltip(VALIDATION_SAVE_FPS);
         fps->applyFontToAllText(fps->getFont());
         res = false;
@@ -789,7 +790,7 @@ bool encodeVideoComponent::Validate()
     int width_int = videoWidth->getText().getIntValue();
     if(width_int<5)
     {
-        videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         videoWidth->setTooltip(VALIDATION_SAVE_WIDTH);
         videoWidth->applyFontToAllText(videoWidth->getFont());
         res = false;
@@ -798,9 +799,28 @@ bool encodeVideoComponent::Validate()
     int height_int = videoHeight->getText().getIntValue();
     if(height_int<5)
     {
-        videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(220,20,20));
+        videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         videoHeight->setTooltip(VALIDATION_SAVE_HEIGHT);
         videoHeight->applyFontToAllText(videoHeight->getFont());
+        res = false;
+    }
+
+    int gop_int = gop->getText().getIntValue();
+    if(gop_int==0)
+    {
+        gop->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
+        gop->setTooltip(VALIDATION_SAVE_GOP);
+        gop->applyFontToAllText(gop->getFont());
+        res = false;
+    }
+
+
+    int video_bitrate_int = videoBitrate->getText().getIntValue();
+    if(video_bitrate_int==0)
+    {
+        videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
+        videoBitrate->setTooltip(VALIDATION_SAVE_BITRATE);
+        videoBitrate->applyFontToAllText(videoBitrate->getFont());
         res = false;
     }
 
@@ -815,7 +835,12 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         clearValidation();
         if(!Validate())
+        {
+            if(!isAdvancedMode)
+                advancedMode->setToggleState(true,true);
             return;
+        }
+
 
         mainWindow->timeline->Render(GetMovieInfo());
         getParentComponent()->removeFromDesktop();
