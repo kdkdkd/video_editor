@@ -48,8 +48,17 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 
     c->codec_id = codec->id;
     c->codec_type = AVMEDIA_TYPE_VIDEO;
+
     if(info.videos[0].codec_short == "libxvid")
+    {
         c->codec_tag = AV_RL32("xvid");
+        //c->codec_id = CODEC_ID_XVID;
+    }else if(info.videos[0].codec_short == "libx264")
+    {
+        c->codec_tag = AV_RL32("avc1");
+        c->codec_id = CODEC_ID_H264;
+    }
+
     /* put sample parameters */
     c->bit_rate = info.videos[0].bit_rate * 1000;
 
@@ -87,7 +96,31 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 
     //c->flags |= CODEC_FLAG2_LOCAL_HEADER;
 
-
+    if(info.videos[0].codec_short == "libx264")
+    {
+        c->coder_type = FF_CODER_TYPE_AC;
+        c->flags = CODEC_FLAG_LOOP_FILTER;
+        c->me_cmp = FF_CMP_CHROMA;
+        c->partitions = X264_PART_I8X8 | X264_PART_I4X4 | X264_PART_P8X8 | X264_PART_P8X8 | X264_PART_B8X8;
+        c->me_method = 7;
+        c->me_subpel_quality = 7;
+        c->me_range = 16;
+        c->gop_size = 250;
+        c->keyint_min = 25;
+        c->scenechange_threshold = 40;
+        c->i_quant_factor = 0.71;
+        c->b_frame_strategy = FF_RC_STRATEGY_XVID;
+        c->qcompress = 0.6;
+        c->qmin = 10;
+        c->qmax = 51;
+        c->max_qdiff=4;
+        c->max_b_frames = 3;
+        c->refs=3;
+        c->directpred=1;
+        c->trellis=1;
+        c->flags2 = CODEC_FLAG2_BPYRAMID | CODEC_FLAG2_MIXED_REFS | CODEC_FLAG2_WPRED | CODEC_FLAG2_8X8DCT | CODEC_FLAG2_FASTPSKIP;
+        c->weighted_p_pred = 2;
+    }
     avcodec_open(c, codec);
 
     return st;
