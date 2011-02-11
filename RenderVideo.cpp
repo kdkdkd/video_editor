@@ -14,6 +14,7 @@ int16_t *samples;
 uint8_t *audio_outbuf;
 int audio_outbuf_size;
 int audio_input_frame_size;
+int64_t pts;
 
 static int sws_flags = SWS_BICUBIC;
 
@@ -53,10 +54,6 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     {
         c->codec_tag = AV_RL32("xvid");
         //c->codec_id = CODEC_ID_XVID;
-    }else if(info.videos[0].codec_short == "libx264")
-    {
-        c->codec_tag = AV_RL32("avc1");
-        c->codec_id = CODEC_ID_H264;
     }
 
     /* put sample parameters */
@@ -96,12 +93,13 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 
     //c->flags |= CODEC_FLAG2_LOCAL_HEADER;
 
-    if(info.videos[0].codec_short == "libx264")
+
+    if(codec->id == CODEC_ID_H264)
     {
         c->coder_type = FF_CODER_TYPE_AC;
-        c->flags = CODEC_FLAG_LOOP_FILTER;
+        c->flags |= CODEC_FLAG_LOOP_FILTER;
         c->me_cmp = FF_CMP_CHROMA;
-        c->partitions = X264_PART_I8X8 | X264_PART_I4X4 | X264_PART_P8X8 | X264_PART_P8X8 | X264_PART_B8X8;
+        c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P8X8 + X264_PART_B8X8;
         c->me_method = 7;
         c->me_subpel_quality = 7;
         c->me_range = 16;
@@ -118,7 +116,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
         c->refs=3;
         c->directpred=1;
         c->trellis=1;
-        c->flags2 = CODEC_FLAG2_BPYRAMID | CODEC_FLAG2_MIXED_REFS | CODEC_FLAG2_WPRED | CODEC_FLAG2_8X8DCT | CODEC_FLAG2_FASTPSKIP;
+        c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
         c->weighted_p_pred = 2;
     }
     avcodec_open(c, codec);
@@ -350,6 +348,8 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     else
     {
         /* encode the image */
+        if(st->codec->codec->id == CODEC_ID_H264)
+            picture->pts = pts++;
         out_size = avcodec_encode_video(c, video_outbuf, video_outbuf_size, picture);
         /* if zero size, it means the image was buffered */
         if (out_size > 0)
@@ -426,7 +426,7 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
 bool Timeline::Render(const Movie::Info & info)
 {
-
+        pts = 0;
         bool video_enabled = info.videos.size()>0;
         bool audio_enabled = info.audios.size()>0;
         end_writing = false;
@@ -532,3 +532,4 @@ bool Timeline::Render(const Movie::Info & info)
         av_free(oc);
     return true;
 }
+

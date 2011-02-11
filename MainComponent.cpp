@@ -234,7 +234,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     mainWindow = mainWindow_;
 
     av_register_all();
-
+    //av_log_set_level(AV_LOG_DEBUG);
     capabilities::InitFormats();
 
     initImageButton(String("pic\\zoomin.png"),zoomInButton);
