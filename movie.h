@@ -73,6 +73,7 @@ public:
     bool GotoSecondAndRead(double dest,bool decode = true, bool accurate = true);
     bool GoBack(int frames);
     Image * GeneratePreview();
+
     class VideoInfo
     {
         public:
@@ -87,9 +88,11 @@ public:
         String title;
         PixelFormat pix_fmt;
         int gop;
+        int compressionPreset;
         VideoInfo(){}
         VideoInfo(const VideoInfo& copy_info)
         {
+            this->compressionPreset = copy_info.compressionPreset;
             this->bit_rate = copy_info.bit_rate;
             this->gop = copy_info.gop;
             this->codec_tag = copy_info.codec_tag;

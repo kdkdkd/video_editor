@@ -66,6 +66,9 @@ private:
 
     encodeVideoComponent (const encodeVideo&);
     const encodeVideoComponent& operator= (const encodeVideo&);
+
+    ComboBox* compressionPreset;
+    bool hasCompressionPreset;
 };
 
 

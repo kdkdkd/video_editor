@@ -70,7 +70,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     sample_aspect_ratio.den = 1;
     sample_aspect_ratio.num = 1;
     st->sample_aspect_ratio =
-    c->sample_aspect_ratio = st->sample_aspect_ratio = sample_aspect_ratio;
+        c->sample_aspect_ratio = st->sample_aspect_ratio = sample_aspect_ratio;
     /* time base: this is the fundamental unit of time (in seconds) in terms
        of which frame timestamps are represented. for fixed-fps content,
        timebase should be 1/framerate and timestamp increments should be
@@ -96,28 +96,148 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 
     if(codec->id == CODEC_ID_H264)
     {
-        c->coder_type = FF_CODER_TYPE_AC;
-        c->flags |= CODEC_FLAG_LOOP_FILTER;
-        c->me_cmp = FF_CMP_CHROMA;
-        c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P8X8 + X264_PART_B8X8;
-        c->me_method = 7;
-        c->me_subpel_quality = 7;
-        c->me_range = 16;
-        c->gop_size = 250;
-        c->keyint_min = 25;
-        c->scenechange_threshold = 40;
-        c->i_quant_factor = 0.71;
-        c->b_frame_strategy = FF_RC_STRATEGY_XVID;
-        c->qcompress = 0.6;
-        c->qmin = 10;
-        c->qmax = 51;
-        c->max_qdiff=4;
-        c->max_b_frames = 3;
-        c->refs=3;
-        c->directpred=1;
-        c->trellis=1;
-        c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
-        c->weighted_p_pred = 2;
+        switch(info.videos[0].compressionPreset)
+        {
+            case 5:
+            {
+                //COMPRESSION_MEDIUM
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 7;
+                c->me_subpel_quality = 7;
+                c->me_range = 16;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = FF_RC_STRATEGY_XVID;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff=4;
+                c->max_b_frames = 3;
+                c->refs=3;
+                c->directpred=1;
+                c->trellis=1;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
+                c->weighted_p_pred = 2;
+            }
+            break;
+            case 4:
+            {
+                //COMPRESSION_SLOW
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 8;
+                c->me_subpel_quality = 8;
+                c->me_range = 16;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = 2;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff = 4;
+                c->max_b_frames = 3;
+                c->refs = 5;
+                c->directpred = 3;
+                c->trellis = 1;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
+                c->weighted_p_pred = 2;
+                c->rc_lookahead = 50;
+            }
+            break;
+            case 3:
+            {
+                //COMPRESSION_SLOWER
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 8;
+                c->me_subpel_quality = 9;
+                c->me_range = 16;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = 2;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff = 4;
+                c->max_b_frames = 3;
+                c->refs = 8;
+                c->directpred = 3;
+                c->trellis = 2;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
+                c->weighted_p_pred = 2;
+                c->rc_lookahead = 60;
+            }
+            break;
+            case 2:
+            {
+                //COMPRESSION_VERYSLOW
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 8;
+                c->me_subpel_quality = 10;
+                c->me_range = 24;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = 2;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff = 4;
+                c->max_b_frames = 8;
+                c->refs = 16;
+                c->directpred = 3;
+                c->trellis = 2;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
+                c->weighted_p_pred = 2;
+                c->rc_lookahead = 60;
+            }
+            break;
+            case 1:
+            {
+                //COMPRESSION_PLACEBO
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 10;
+                c->me_subpel_quality = 10;
+                c->me_range = 24;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = 2;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff=4;
+                c->max_b_frames = 16;
+                c->refs=16;
+                c->directpred=3;
+                c->trellis=2;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT;
+                c->weighted_p_pred = 2;
+                c->rc_lookahead = 60;
+            }
+            break;
+        }
     }
     avcodec_open(c, codec);
 
@@ -426,110 +546,110 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
 bool Timeline::Render(const Movie::Info & info)
 {
-        pts = 0;
-        bool video_enabled = info.videos.size()>0;
-        bool audio_enabled = info.audios.size()>0;
-        end_writing = false;
-        AVOutputFormat *fmt;
-        AVFormatContext *oc;
-        AVStream *audio_st, *video_st;
-        double audio_pts, video_pts;
-        int i;
+    pts = 0;
+    bool video_enabled = info.videos.size()>0;
+    bool audio_enabled = info.audios.size()>0;
+    end_writing = false;
+    AVOutputFormat *fmt;
+    AVFormatContext *oc;
+    AVStream *audio_st, *video_st;
+    double audio_pts, video_pts;
+    int i;
 
-        const char * c_string_filename = info.filename.toCString();
-        fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
+    const char * c_string_filename = info.filename.toCString();
+    fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
 
-        oc = avformat_alloc_context();
-        oc->oformat = fmt;
+    oc = avformat_alloc_context();
+    oc->oformat = fmt;
 
-        snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
-        video_st = NULL;
-        audio_st = NULL;
-        if (video_enabled)
-        {
-            GotoSecondAndRead(0.0,false);
-            video_st = add_video_stream(oc, info);
-        }
-        if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
-        {
-            audio_st = add_audio_stream(oc, fmt->audio_codec,info);
-        }
-        av_set_parameters(oc, NULL);
+    snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
+    video_st = NULL;
+    audio_st = NULL;
+    if (video_enabled)
+    {
+        GotoSecondAndRead(0.0,false);
+        video_st = add_video_stream(oc, info);
+    }
+    if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
+    {
+        audio_st = add_audio_stream(oc, fmt->audio_codec,info);
+    }
+    av_set_parameters(oc, NULL);
+
+    if (video_st)
+    {
+        open_video(oc, video_st);
+    }
+    if (audio_st)
+    {
+        open_audio(oc, audio_st);
+    }
+
+    url_fopen(&oc->pb, c_string_filename, URL_WRONLY);
+
+    av_write_header(oc);
+
+
+
+    for(;;)
+    {
+        /* compute current audio and video time */
+        if (audio_st)
+            audio_pts = (double)audio_st->pts.val * audio_st->time_base.num / audio_st->time_base.den;
+        else
+            audio_pts = 0.0;
 
         if (video_st)
+            video_pts = (double)video_st->pts.val * video_st->time_base.num / video_st->time_base.den;
+        else
+            video_pts = 0.0;
+
+        /*if ((!audio_st || audio_pts >= STREAM_DURATION) &&
+            (!video_st || video_pts >= STREAM_DURATION))
+            break;*/
+        if(end_writing)
+            break;
+
+        /* write interleaved audio and video frames */
+        if (!video_st || (video_st && audio_st && audio_pts < video_pts))
         {
-            open_video(oc, video_st);
+
+            write_audio_frame(oc, audio_st,info,this);
         }
-        if (audio_st)
+        else
         {
-            open_audio(oc, audio_st);
-        }
-
-        url_fopen(&oc->pb, c_string_filename, URL_WRONLY);
-
-        av_write_header(oc);
-
-
-
-        for(;;)
-        {
-            /* compute current audio and video time */
-            if (audio_st)
-                audio_pts = (double)audio_st->pts.val * audio_st->time_base.num / audio_st->time_base.den;
-            else
-                audio_pts = 0.0;
-
-            if (video_st)
-                video_pts = (double)video_st->pts.val * video_st->time_base.num / video_st->time_base.den;
-            else
-                video_pts = 0.0;
-
-            /*if ((!audio_st || audio_pts >= STREAM_DURATION) &&
-                (!video_st || video_pts >= STREAM_DURATION))
-                break;*/
-            if(end_writing)
+            bool res = write_video_frame(oc, video_st,info,this);
+            if(!res)
+            {
                 break;
-
-            /* write interleaved audio and video frames */
-            if (!video_st || (video_st && audio_st && audio_pts < video_pts))
-            {
-
-                write_audio_frame(oc, audio_st,info,this);
-            }
-            else
-            {
-                bool res = write_video_frame(oc, video_st,info,this);
-                if(!res)
-                {
-                    break;
-                }
             }
         }
-        av_write_trailer(oc);
+    }
+    av_write_trailer(oc);
 
-        if (video_st)
-        {
-            close_video(oc, video_st);
-        }
-        if (audio_st)
-        {
-            close_audio(oc, audio_st);
-        }
+    if (video_st)
+    {
+        close_video(oc, video_st);
+    }
+    if (audio_st)
+    {
+        close_audio(oc, audio_st);
+    }
 
-        for(i = 0; i < oc->nb_streams; i++)
-        {
-            av_freep(&oc->streams[i]->codec);
-            av_freep(&oc->streams[i]);
-        }
+    for(i = 0; i < oc->nb_streams; i++)
+    {
+        av_freep(&oc->streams[i]->codec);
+        av_freep(&oc->streams[i]);
+    }
 
-        if (!(fmt->flags & AVFMT_NOFILE))
-        {
+    if (!(fmt->flags & AVFMT_NOFILE))
+    {
 
-            url_fclose(oc->pb);
-        }
+        url_fclose(oc->pb);
+    }
 
 
-        av_free(oc);
+    av_free(oc);
     return true;
 }
 

@@ -15,10 +15,16 @@ vector<Format> formats;
 vector<VideoCodec> video_codecs;
 vector<FFMpegUnit> audio_codecs;
 
+bool VideoCodec::hasCompressionPreset()
+{
+    return id == "libx264";
+}
+
 bool compareFormat(FFMpegUnit f1,FFMpegUnit f2)
 {
     return f1.sort_number<f2.sort_number;
 }
+
 bool equalsFormat(Format f1,int compare)
 {
     return f1.sort_number==compare;
@@ -187,17 +193,17 @@ void InitFormats()
                 int sort_number=-1;
                 String id_string = p->name;
                 String show_id = id_string;
-                if(id_string == "libxvid")
+
+                if(id_string == "libx264")
+                {
+                    show_id = "h264";
+                    sort_number=10;
+                }
+                else if(id_string == "libxvid")
                 {
                     show_id = "xvid";
                     sort_number=10;
                 }
-                else if(id_string == "libx264")
-                {
-                    show_id = "h264";
-                    sort_number=20;
-                }
-
                 else if(id_string == "mpeg4")
                 {
                     sort_number=30;

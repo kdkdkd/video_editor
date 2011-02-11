@@ -31,6 +31,7 @@ namespace capabilities
         String header;
         Format(String id,String description,String display_id,int sort_number,String header);
         vector<VideoCodec*> getCodecs();
+        bool hasCompressionPreset();
     };
 
     class VideoCodec:public FFMpegUnit
@@ -38,10 +39,8 @@ namespace capabilities
         public:
         vector<ResolutionPreset> getResolutions(Format &format);
         VideoCodec(String id,String description,String display_id,int sort_number);
+        bool hasCompressionPreset();
     };
-
-
-
 
 
     extern vector<Format>formats;
