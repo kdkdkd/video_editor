@@ -16,6 +16,11 @@ uint8_t *audio_outbuf;
 int audio_outbuf_size;
 int audio_input_frame_size;
 int64_t pts;
+int current_pass;
+int all_pass;
+String pass_info;
+bool is_codec_x264;
+
 
 static int sws_flags = SWS_BICUBIC;
 
@@ -35,283 +40,562 @@ PixelFormat srcFormat;
 PixelFormat dstFormat;
 
 
-static void setCompressionPreset(AVCodecContext *c, int codec_id,int preset)
+static void setCompressionPreset(AVCodecContext *c, int preset,int pass_number)
 {
-    if(codec_id == CODEC_ID_H264)
+    if(is_codec_x264)
     {
-        switch(preset)
+        if(pass_number == 1)
         {
-        case 1:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","tesa",1,NULL);
-            av_set_string3(c,"subq","10",1,NULL);
-            av_set_string3(c,"me_range","24",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","2",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","16",1,NULL);
-            av_set_string3(c,"refs","16",1,NULL);
-            av_set_string3(c,"directpred","3",1,NULL);
-            av_set_string3(c,"trellis","2",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8-fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-            av_set_string3(c,"rc_lookahead","60",1,NULL);
+            switch(preset)
+            {
+            case 1:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","tesa",1,NULL);
+                av_set_string3(c,"subq","10",1,NULL);
+                av_set_string3(c,"me_range","24",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","16",1,NULL);
+                av_set_string3(c,"refs","16",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","2",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8-fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 2:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","24",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","8",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 3:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 4:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","50",1,NULL);
+            }
+            break;
+            case 5:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+            }
+            break;
+            case 6:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","30",1,NULL);
+            }
+            break;
+            case 7:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","1",1,NULL);
+                av_set_string3(c,"rc_lookahead","20",1,NULL);
+            }
+            break;
+            case 8:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","10",1,NULL);
+            }
+            break;
+            case 9:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","1",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred-dct8x8+fastpskip-mbtree",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","0",1,NULL);
+            }
+            break;
+            case 10:
+            {
+                av_set_string3(c,"coder","0",1,NULL);
+                av_set_string3(c,"flags","-loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","0",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","0",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","0",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","0",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","-bpyramid-mixed_refs-wpred-dct8x8+fastpskip-mbtree",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"aq_mode","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","0",1,NULL);
+            }
+            break;
+            }
         }
-        break;
-        case 2:
+        else
         {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","umh",1,NULL);
-            av_set_string3(c,"subq","10",1,NULL);
-            av_set_string3(c,"me_range","24",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","2",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","8",1,NULL);
-            av_set_string3(c,"refs","16",1,NULL);
-            av_set_string3(c,"directpred","3",1,NULL);
-            av_set_string3(c,"trellis","2",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-            av_set_string3(c,"rc_lookahead","60",1,NULL);
-        }
-        break;
-        case 3:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","umh",1,NULL);
-            av_set_string3(c,"subq","9",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","2",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","8",1,NULL);
-            av_set_string3(c,"directpred","3",1,NULL);
-            av_set_string3(c,"trellis","2",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-            av_set_string3(c,"rc_lookahead","60",1,NULL);
-        }
-        break;
-        case 4:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","umh",1,NULL);
-            av_set_string3(c,"subq","8",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","2",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","5",1,NULL);
-            av_set_string3(c,"directpred","3",1,NULL);
-            av_set_string3(c,"trellis","1",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-            av_set_string3(c,"rc_lookahead","50",1,NULL);
-        }
-        break;
-        case 5:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","hex",1,NULL);
-            av_set_string3(c,"subq","7",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","1",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","3",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","1",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-        }
-        break;
-        case 6:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","hex",1,NULL);
-            av_set_string3(c,"subq","6",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","1",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","2",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","1",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","2",1,NULL);
-            av_set_string3(c,"rc_lookahead","30",1,NULL);
-        }
-        break;
-        case 7:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","hex",1,NULL);
-            av_set_string3(c,"subq","4",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","1",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","2",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","1",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","1",1,NULL);
-            av_set_string3(c,"rc_lookahead","20",1,NULL);
-        }
-        break;
-        case 8:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
-            av_set_string3(c,"me_method","hex",1,NULL);
-            av_set_string3(c,"subq","2",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","1",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","1",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","0",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
-            av_set_string3(c,"wpredp","0",1,NULL);
-            av_set_string3(c,"rc_lookahead","10",1,NULL);
-        }
-        break;
-        case 9:
-        {
-            av_set_string3(c,"coder","1",1,NULL);
-            av_set_string3(c,"flags","+loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","+parti8x8+parti4x4-partp8x8-partb8x8",1,NULL);
-            av_set_string3(c,"me_method","dia",1,NULL);
-            av_set_string3(c,"subq","1",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","40",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","1",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","3",1,NULL);
-            av_set_string3(c,"refs","1",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","0",1,NULL);
-            av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip-mbtree",1,NULL);
-            av_set_string3(c,"wpredp","0",1,NULL);
-            av_set_string3(c,"rc_lookahead","0",1,NULL);
-        }
-        break;
-        case 10:
-        {
-            av_set_string3(c,"coder","0",1,NULL);
-            av_set_string3(c,"flags","-loop",1,NULL);
-            av_set_string3(c,"cmp","+chroma",1,NULL);
-            av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
-            av_set_string3(c,"me_method","dia",1,NULL);
-            av_set_string3(c,"subq","0",1,NULL);
-            av_set_string3(c,"me_range","16",1,NULL);
-            av_set_string3(c,"g","250",1,NULL);
-            av_set_string3(c,"keyint_min","25",1,NULL);
-            av_set_string3(c,"sc_threshold","0",1,NULL);
-            av_set_string3(c,"i_qfactor","0.71",1,NULL);
-            av_set_string3(c,"b_strategy","0",1,NULL);
-            av_set_string3(c,"qcomp","0.6",1,NULL);
-            av_set_string3(c,"qmin","10",1,NULL);
-            av_set_string3(c,"qmax","51",1,NULL);
-            av_set_string3(c,"qdiff","4",1,NULL);
-            av_set_string3(c,"bf","0",1,NULL);
-            av_set_string3(c,"refs","1",1,NULL);
-            av_set_string3(c,"directpred","1",1,NULL);
-            av_set_string3(c,"trellis","0",1,NULL);
-            av_set_string3(c,"flags2","-bpyramid-mixed_refs-wpred-dct8x8+fastpskip-mbtree",1,NULL);
-            av_set_string3(c,"wpredp","0",1,NULL);
-            av_set_string3(c,"aq_mode","0",1,NULL);
-            av_set_string3(c,"rc_lookahead","0",1,NULL);
-        }
-        break;
+            switch(preset)
+            {
+            case 1:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","tesa",1,NULL);
+                av_set_string3(c,"subq","10",1,NULL);
+                av_set_string3(c,"me_range","24",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","16",1,NULL);
+                av_set_string3(c,"refs","16",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","2",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8-fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 2:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","umh",1,NULL);
+                av_set_string3(c,"subq","10",1,NULL);
+                av_set_string3(c,"me_range","24",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","8",1,NULL);
+                av_set_string3(c,"refs","16",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","2",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 3:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partp4x4+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","umh",1,NULL);
+                av_set_string3(c,"subq","9",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","8",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","2",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","60",1,NULL);
+            }
+            break;
+            case 4:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","umh",1,NULL);
+                av_set_string3(c,"subq","8",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","2",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","5",1,NULL);
+                av_set_string3(c,"directpred","3",1,NULL);
+                av_set_string3(c,"trellis","1",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","50",1,NULL);
+            }
+            break;
+            case 5:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","hex",1,NULL);
+                av_set_string3(c,"subq","7",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","3",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","1",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+            }
+            break;
+            case 6:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","hex",1,NULL);
+                av_set_string3(c,"subq","6",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","2",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","1",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid+mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","2",1,NULL);
+                av_set_string3(c,"rc_lookahead","30",1,NULL);
+            }
+            break;
+            case 7:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","hex",1,NULL);
+                av_set_string3(c,"subq","4",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","2",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","1",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","1",1,NULL);
+                av_set_string3(c,"rc_lookahead","20",1,NULL);
+            }
+            break;
+            case 8:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4+partp8x8+partb8x8",1,NULL);
+                av_set_string3(c,"me_method","hex",1,NULL);
+                av_set_string3(c,"subq","2",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","10",1,NULL);
+            }
+            break;
+            case 9:
+            {
+                av_set_string3(c,"coder","1",1,NULL);
+                av_set_string3(c,"flags","+loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","+parti8x8+parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","1",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","40",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","1",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","3",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","+bpyramid-mixed_refs+wpred+dct8x8+fastpskip-mbtree",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","0",1,NULL);
+            }
+            break;
+            case 10:
+            {
+                av_set_string3(c,"coder","0",1,NULL);
+                av_set_string3(c,"flags","-loop",1,NULL);
+                av_set_string3(c,"cmp","+chroma",1,NULL);
+                av_set_string3(c,"partitions","-parti8x8-parti4x4-partp8x8-partb8x8",1,NULL);
+                av_set_string3(c,"me_method","dia",1,NULL);
+                av_set_string3(c,"subq","0",1,NULL);
+                av_set_string3(c,"me_range","16",1,NULL);
+                av_set_string3(c,"g","250",1,NULL);
+                av_set_string3(c,"keyint_min","25",1,NULL);
+                av_set_string3(c,"sc_threshold","0",1,NULL);
+                av_set_string3(c,"i_qfactor","0.71",1,NULL);
+                av_set_string3(c,"b_strategy","0",1,NULL);
+                av_set_string3(c,"qcomp","0.6",1,NULL);
+                av_set_string3(c,"qmin","10",1,NULL);
+                av_set_string3(c,"qmax","51",1,NULL);
+                av_set_string3(c,"qdiff","4",1,NULL);
+                av_set_string3(c,"bf","0",1,NULL);
+                av_set_string3(c,"refs","1",1,NULL);
+                av_set_string3(c,"directpred","1",1,NULL);
+                av_set_string3(c,"trellis","0",1,NULL);
+                av_set_string3(c,"flags2","-bpyramid-mixed_refs-wpred-dct8x8+fastpskip-mbtree",1,NULL);
+                av_set_string3(c,"wpredp","0",1,NULL);
+                av_set_string3(c,"aq_mode","0",1,NULL);
+                av_set_string3(c,"rc_lookahead","0",1,NULL);
+            }
+            break;
 
+            }
         }
     }
 
@@ -320,6 +604,7 @@ static void setCompressionPreset(AVCodecContext *c, int codec_id,int preset)
 
 static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
 {
+
     AVCodecContext *c;
     AVStream *st;
 
@@ -339,6 +624,9 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     {
         c->codec_tag = AV_RL32("xvid");
         //c->codec_id = CODEC_ID_XVID;
+    }else if(info.videos[0].codec_short == "libx264")
+    {
+        is_codec_x264 = true;
     }
 
     /* put sample parameters */
@@ -372,14 +660,25 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     //c->flags |= CODEC_FLAG_QSCALE;
     c->pix_fmt = PIX_FMT_YUV420P;
 
+    setCompressionPreset(c,info.videos[0].compressionPreset,(all_pass>1)?current_pass:2);
+
     // some formats want stream headers to be separate
     if(oc->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     //c->flags |= CODEC_FLAG2_LOCAL_HEADER;
 
-    setCompressionPreset(c,codec->id,info.videos[0].compressionPreset);
+    if(all_pass>1)
+    {
+        if(current_pass == 1)
+            c->flags |= CODEC_FLAG_PASS1;
+        else
+        {
+            c->flags |= CODEC_FLAG_PASS2;
 
+            c->stats_in = const_cast<char *>(pass_info.toCString());
+        }
+    }
     avcodec_open(c, codec);
 
     return st;
@@ -608,7 +907,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     {
         /* encode the image */
 
-        if(st->codec->codec->id == CODEC_ID_H264)
+        if(is_codec_x264)
             picture->pts = pts++;
 
         for(;;)
@@ -634,7 +933,8 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
             /* write the compressed frame in the media file */
             av_interleaved_write_frame(oc, &pkt);
-
+            if(all_pass>1 && c->stats_out)
+                pass_info<<c->stats_out;
             if (!end_writing)
                 break;
 
@@ -691,106 +991,116 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
 bool Timeline::Render(const Movie::Info & info)
 {
-    pts = 0;
     bool video_enabled = info.videos.size()>0;
-    bool audio_enabled = info.audios.size()>0;
-    end_writing = false;
-    AVOutputFormat *fmt;
-    AVFormatContext *oc;
-    AVStream *audio_st, *video_st;
-    double audio_pts, video_pts;
-    int i;
+    pass_info=String::empty;
+    is_codec_x264 = false;
 
-    const char * c_string_filename = info.filename.toCString();
-    fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
+    all_pass = (video_enabled)?info.videos[0].pass:1;
 
-    oc = avformat_alloc_context();
-    oc->oformat = fmt;
-
-    snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
-    video_st = NULL;
-    audio_st = NULL;
-    if (video_enabled)
+    for(current_pass=1; current_pass<=all_pass; ++current_pass)
     {
-        GotoSecondAndRead(0.0,false);
-        video_st = add_video_stream(oc, info);
-    }
-    if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
-    {
-        audio_st = add_audio_stream(oc, fmt->audio_codec,info);
-    }
-    av_set_parameters(oc, NULL);
+        bool audio_enabled = info.audios.size()>0 && all_pass==current_pass;
 
-    if (video_st)
-    {
-        open_video(oc, video_st);
-    }
-    if (audio_st)
-    {
-        open_audio(oc, audio_st);
-    }
+        pts = 0;
 
-    url_fopen(&oc->pb, c_string_filename, URL_WRONLY);
+        end_writing = false;
+        AVOutputFormat *fmt;
+        AVFormatContext *oc;
+        AVStream *audio_st, *video_st;
+        double audio_pts, video_pts;
+        int i;
 
-    av_write_header(oc);
+        const char * c_string_filename = info.filename.toCString();
+        fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
 
+        oc = avformat_alloc_context();
+        oc->oformat = fmt;
 
-
-    for(;;)
-    {
-        /* compute current audio and video time */
-        if (audio_st)
-            audio_pts = (double)audio_st->pts.val * audio_st->time_base.num / audio_st->time_base.den;
-        else
-            audio_pts = 0.0;
+        snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
+        video_st = NULL;
+        audio_st = NULL;
+        if (video_enabled)
+        {
+            GotoSecondAndRead(0.0,false);
+            video_st = add_video_stream(oc, info);
+        }
+        if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
+        {
+            audio_st = add_audio_stream(oc, fmt->audio_codec,info);
+        }
+        av_set_parameters(oc, NULL);
 
         if (video_st)
-            video_pts = (double)video_st->pts.val * video_st->time_base.num / video_st->time_base.den;
-        else
-            video_pts = 0.0;
+        {
+            open_video(oc, video_st);
+        }
+        if (audio_st)
+        {
+            open_audio(oc, audio_st);
+        }
 
-        /*if ((!audio_st || audio_pts >= STREAM_DURATION) &&
-            (!video_st || video_pts >= STREAM_DURATION))
-            break;*/
-        if(end_writing)
-            break;
+        url_fopen(&oc->pb, c_string_filename, URL_WRONLY);
 
-        /* write interleaved audio and video frames */
-        if (!video_st || (video_st && audio_st && audio_pts < video_pts))
+        av_write_header(oc);
+
+
+
+        for(;;)
+        {
+            /* compute current audio and video time */
+            if (audio_st)
+                audio_pts = (double)audio_st->pts.val * audio_st->time_base.num / audio_st->time_base.den;
+            else
+                audio_pts = 0.0;
+
+            if (video_st)
+                video_pts = (double)video_st->pts.val * video_st->time_base.num / video_st->time_base.den;
+            else
+                video_pts = 0.0;
+
+            /*if ((!audio_st || audio_pts >= STREAM_DURATION) &&
+                (!video_st || video_pts >= STREAM_DURATION))
+                break;*/
+            if(end_writing)
+                break;
+
+            /* write interleaved audio and video frames */
+            if (!video_st || (video_st && audio_st && audio_pts < video_pts))
+            {
+
+                write_audio_frame(oc, audio_st,info,this);
+            }
+            else
+            {
+                write_video_frame(oc, video_st,info,this);
+            }
+        }
+        av_write_trailer(oc);
+
+        if (video_st)
+        {
+            close_video(oc, video_st);
+        }
+        if (audio_st)
+        {
+            close_audio(oc, audio_st);
+        }
+
+        for(i = 0; i < oc->nb_streams; i++)
+        {
+            av_freep(&oc->streams[i]->codec);
+            av_freep(&oc->streams[i]);
+        }
+
+        if (!(fmt->flags & AVFMT_NOFILE))
         {
 
-            write_audio_frame(oc, audio_st,info,this);
+            url_fclose(oc->pb);
         }
-        else
-        {
-            write_video_frame(oc, video_st,info,this);
-        }
+
+
+        av_free(oc);
     }
-    av_write_trailer(oc);
-
-    if (video_st)
-    {
-        close_video(oc, video_st);
-    }
-    if (audio_st)
-    {
-        close_audio(oc, audio_st);
-    }
-
-    for(i = 0; i < oc->nb_streams; i++)
-    {
-        av_freep(&oc->streams[i]->codec);
-        av_freep(&oc->streams[i]);
-    }
-
-    if (!(fmt->flags & AVFMT_NOFILE))
-    {
-
-        url_fclose(oc->pb);
-    }
-
-
-    av_free(oc);
     return true;
 }
 

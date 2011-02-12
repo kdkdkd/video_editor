@@ -363,12 +363,14 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.height = videoHeight->getText().getIntValue();
         video_info.fps = fps->getText().getDoubleValue();
         video_info.compressionPreset = -1;
+        video_info.pass = passList->getSelectedId();
         if(!vc.hasCompressionPreset())
             video_info.gop = gop->getText().getIntValue();
         else
             video_info.compressionPreset = compressionPreset->getSelectedId();
         video_info.bit_rate = videoBitrate->getText().getIntValue();
         res.videos.push_back(video_info);
+
     }
     if(isAudioEnabled)
     {
@@ -779,6 +781,19 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             repaint();
         }
         /* ~Update gui: change CompressionPreset visibility */
+
+        /*  Update gui: two pass */
+            if(vc.allowTwoPass)
+            {
+                passList->setEnabled(true);
+            }
+            else
+            {
+                passList->setSelectedId(1);
+                passList->setEnabled(false);
+            }
+
+        /*  ~Update gui: two pass */
     }
     else if (comboBoxThatHasChanged == resolutionList)
     {

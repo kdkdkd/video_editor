@@ -89,10 +89,12 @@ public:
         PixelFormat pix_fmt;
         int gop;
         int compressionPreset;
+        int pass;
         VideoInfo(){}
         VideoInfo(const VideoInfo& copy_info)
         {
             this->compressionPreset = copy_info.compressionPreset;
+            this->pass = copy_info.pass;
             this->bit_rate = copy_info.bit_rate;
             this->gop = copy_info.gop;
             this->codec_tag = copy_info.codec_tag;

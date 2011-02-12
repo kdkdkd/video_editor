@@ -39,8 +39,9 @@ namespace capabilities
     class VideoCodec:public FFMpegUnit
     {
         public:
+        bool allowTwoPass;
         vector<ResolutionPreset> getResolutions(Format &format);
-        VideoCodec(String id,String description,String display_id,int sort_number);
+        VideoCodec(String id,String description,String display_id,int sort_number,bool allowTwoPass);
         bool hasCompressionPreset();
     };
 
