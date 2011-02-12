@@ -25,6 +25,32 @@ encodeVideo::~encodeVideo()
 
 }
 
+void encodeVideoComponent::textEditorReturnKeyPressed (TextEditor& editor)
+{
+}
+void encodeVideoComponent::textEditorEscapeKeyPressed (TextEditor& editor)
+{
+}
+void encodeVideoComponent::textEditorFocusLost (TextEditor& editor)
+{
+
+}
+
+void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
+{
+
+   String name = editor.getName();
+   if(name == "videoWidth" || name == "videoHeight")
+   {
+        resolutionList->setSelectedId(-100,false);
+   }else if(name == "videoBitrate")
+   {
+        qualityList->setSelectedId(-100,false);
+   }
+   clearValidation();
+   Validate();
+}
+
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     : format (0),
     path (0),
@@ -104,7 +130,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     String digits = T("0123456789");
     String digits_and_dot = T("0123456789.");
 
-    addAndMakeVisible (videoWidth = new TextEditor ());
+    addAndMakeVisible (videoWidth = new TextEditor (T("videoWidth")));
     videoWidth->setInputRestrictions(4,digits);
     videoWidth->setMultiLine (false);
     videoWidth->setReturnKeyStartsNewLine (false);
@@ -113,6 +139,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setCaretVisible (true);
     videoWidth->setPopupMenuEnabled (true);
     videoWidth->setText (String::empty);
+    videoWidth->addListener (this);
 
     addAndMakeVisible (gop = new TextEditor ());
     gop->setInputRestrictions(3,digits);
@@ -123,8 +150,9 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     gop->setCaretVisible (true);
     gop->setPopupMenuEnabled (true);
     gop->setText (String::empty);
+    gop->addListener(this);
 
-    addAndMakeVisible (videoHeight = new TextEditor ());
+    addAndMakeVisible (videoHeight = new TextEditor (T("videoHeight")));
     videoHeight->setInputRestrictions(4,digits);
     videoHeight->setMultiLine (false);
     videoHeight->setReturnKeyStartsNewLine (false);
@@ -133,8 +161,9 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoHeight->setCaretVisible (true);
     videoHeight->setPopupMenuEnabled (true);
     videoHeight->setText (String::empty);
+    videoHeight->addListener (this);
 
-    addAndMakeVisible (videoBitrate = new TextEditor ());
+    addAndMakeVisible (videoBitrate = new TextEditor (T("videoBitrate")));
     videoBitrate->setInputRestrictions(5,digits);
     videoBitrate->setMultiLine (false);
     videoBitrate->setReturnKeyStartsNewLine (false);
@@ -143,6 +172,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoBitrate->setCaretVisible (true);
     videoBitrate->setPopupMenuEnabled (true);
     videoBitrate->setText (String::empty);
+    videoBitrate->addListener (this);
 
     addAndMakeVisible (fps = new TextEditor ());
     fps->setInputRestrictions(0,digits_and_dot);
@@ -153,6 +183,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     fps->setCaretVisible (true);
     fps->setPopupMenuEnabled (true);
     fps->setText (String::empty);
+    fps->addListener(this);
 
     addAndMakeVisible (groupComponent2 = new GroupComponent (T("g2"),
             LABEL_AUDIO));
@@ -274,8 +305,8 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
     format->setSelectedItemIndex(index);
 
     Movie::VideoInfo video_info = info->videos[0];
-    gop->setText(String(12));
-    fps->setText(String(video_info.fps));
+    gop->setText(String(12),false);
+    fps->setText(String(video_info.fps),false);
     passList->setSelectedItemIndex(0);
 
     /* ~select video codec */
@@ -634,7 +665,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         break;
         }
 
-        videoBitrate->setText(String(normal_bitrate));
+        videoBitrate->setText(String(normal_bitrate),false);
     }
     else if (comboBoxThatHasChanged == videoCodec)
     {
@@ -729,15 +760,15 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                 }
             }
 
-            videoWidth->setText(String(max_pixel_width));
-            videoHeight->setText(String(max_pixel_height));
+            videoWidth->setText(String(max_pixel_width),false);
+            videoHeight->setText(String(max_pixel_height),false);
         }
         else
         {
             capabilities::ResolutionPreset resolution;
             resolution.fromInt32(resolutionList->getSelectedId());
-            videoWidth->setText(String(resolution.width));
-            videoHeight->setText(String(resolution.height));
+            videoWidth->setText(String(resolution.width),false);
+            videoHeight->setText(String(resolution.height),false);
         }
         comboBoxChanged(qualityList);
     }
@@ -745,7 +776,6 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     {
 
     }
-
 }
 void encodeVideoComponent::clearValidation()
 {

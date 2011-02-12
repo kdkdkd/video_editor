@@ -18,13 +18,17 @@ class encodeVideo  : DocumentWindow
 
 class encodeVideoComponent  : public ComboBoxListener,
                      public ButtonListener,
-                     public Component
+                     public Component,
+                     public TextEditor::Listener
 {
 public:
     TooltipWindow tooltipWindow;
     encodeVideoComponent(MainComponent* mainWindow);
     ~encodeVideoComponent();
 
+    void textEditorReturnKeyPressed (TextEditor& editor);
+    void textEditorEscapeKeyPressed (TextEditor& editor);
+    void textEditorFocusLost (TextEditor& editor);
 
     void paint (Graphics& g);
     void resized();
@@ -33,7 +37,7 @@ public:
     void selectByMovieInfo(Movie::Info * info);
     void clearValidation();
     bool Validate();
-
+    void textEditorTextChanged(TextEditor& editor);
 
 
 private:
