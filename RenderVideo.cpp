@@ -80,7 +80,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     if (codec->supported_framerates)
         fps = codec->supported_framerates[av_find_nearest_q_idx(fps, codec->supported_framerates)];
     swapVariables(fps.num,fps.den);
-    c->time_base = st->time_base = fps;
+    c->time_base = st->time_base = st->r_frame_rate = fps;
 
     c->gop_size = info.videos[0].gop; /* emit one intra frame every twelve frames at most */
     //c->max_b_frames = 2;
@@ -97,7 +97,61 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     if(codec->id == CODEC_ID_H264)
     {
         switch(info.videos[0].compressionPreset)
-        {
+        {/*
+                        coder=1
+flags=+loop
+cmp=+chroma
+partitions=+parti8x8+parti4x4+partp8x8+partb8x8
+me_method=hex
+subq=6
+me_range=16
+g=250
+keyint_min=25
+sc_threshold=40
+i_qfactor=0.71
+b_strategy=1
+qcomp=0.6
+qmin=10
+qmax=51
+qdiff=4
+bf=3
+refs=2
+directpred=1
+trellis=1
+flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
+wpredp=2
+rc_lookahead=30
+
+
+
+             */
+            case 6:
+            {
+                //COMPRESSION_FAST
+                c->coder_type = FF_CODER_TYPE_AC;
+                c->flags |= CODEC_FLAG_LOOP_FILTER;
+                c->me_cmp = FF_CMP_CHROMA;
+                c->partitions = X264_PART_I8X8 + X264_PART_I4X4 + X264_PART_P8X8 + X264_PART_P4X4 + X264_PART_B8X8;
+                c->me_method = 7;
+                c->me_subpel_quality = 7;
+                c->me_range = 16;
+                c->gop_size = 250;
+                c->keyint_min = 25;
+                c->scenechange_threshold = 40;
+                c->i_quant_factor = 0.71;
+                c->b_frame_strategy = 1;
+                c->qcompress = 0.6;
+                c->qmin = 10;
+                c->qmax = 51;
+                c->max_qdiff=4;
+                c->max_b_frames = 3;
+                c->refs=3;
+                c->directpred=1;
+                c->trellis=1;
+                c->flags2 = CODEC_FLAG2_BPYRAMID + CODEC_FLAG2_MIXED_REFS + CODEC_FLAG2_WPRED + CODEC_FLAG2_8X8DCT + CODEC_FLAG2_FASTPSKIP;
+                c->weighted_p_pred = 2;
+            }
+            break;
             case 5:
             {
                 //COMPRESSION_MEDIUM
@@ -435,9 +489,12 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 
 }
 
+//static flush_video()
+
+
 static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::Info& info, Timeline * timeline)
 {
-    int out_size, ret;
+    int out_size;
     AVCodecContext *c;
     c = st->codec;
 
@@ -445,10 +502,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     {
         fill_frame(picture, frame_count, info, timeline, c->pix_fmt);
     }
-    if (end_writing)
-    {
-        return false;
-    }
+
     //picture->quality = info.videos[0].bit_rate;
 
     if (oc->oformat->flags & AVFMT_RAWPICTURE)
@@ -463,17 +517,25 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
         pkt.data= (uint8_t *)picture;
         pkt.size= sizeof(AVPicture);
 
-        ret = av_interleaved_write_frame(oc, &pkt);
+        av_interleaved_write_frame(oc, &pkt);
     }
     else
     {
         /* encode the image */
+
         if(st->codec->codec->id == CODEC_ID_H264)
             picture->pts = pts++;
-        out_size = avcodec_encode_video(c, video_outbuf, video_outbuf_size, picture);
-        /* if zero size, it means the image was buffered */
-        if (out_size > 0)
+
+        for(;;)
         {
+            /* flushing buffers */
+            AVFrame * send_picture = (end_writing)?NULL:picture;
+
+            out_size = avcodec_encode_video(c, video_outbuf, video_outbuf_size, send_picture);
+            /* if zero size, it means the image was buffered */
+
+            if (out_size <= 0)
+                break;
             AVPacket pkt;
             av_init_packet(&pkt);
 
@@ -486,17 +548,15 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
             pkt.size = out_size;
 
             /* write the compressed frame in the media file */
-            ret = av_interleaved_write_frame(oc, &pkt);
+            av_interleaved_write_frame(oc, &pkt);
+
+            if (!end_writing)
+                break;
+
         }
-        else
-        {
-            ret = 0;
-        }
+
     }
-    if (ret != 0)
-    {
-        false;
-    }
+
     frame_count++;
     return true;
 }
@@ -618,11 +678,7 @@ bool Timeline::Render(const Movie::Info & info)
         }
         else
         {
-            bool res = write_video_frame(oc, video_st,info,this);
-            if(!res)
-            {
-                break;
-            }
+            write_video_frame(oc, video_st,info,this);
         }
     }
     av_write_trailer(oc);
