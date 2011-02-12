@@ -22,7 +22,7 @@ String pass_info;
 bool is_codec_x264;
 
 
-static int sws_flags = SWS_BICUBIC;
+static int sws_flags = SWS_GAUSS;
 
 
 extern "C" {
@@ -869,7 +869,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 
 
     sws_scale(img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
-              0, video_info.height, pict->data, pict->linesize);
+              0, movie->height, pict->data, pict->linesize);
 
     end_writing = !timeline->SkipFrame();
 
