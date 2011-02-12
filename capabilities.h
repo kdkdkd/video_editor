@@ -29,7 +29,9 @@ namespace capabilities
     {
         public:
         String header;
-        Format(String id,String description,String display_id,int sort_number,String header);
+        bool allowVideo;
+        bool allowAudio;
+        Format(String id,String description,String display_id,int sort_number,String header,bool AllowVideo,bool AllowAudio);
         vector<VideoCodec*> getCodecs();
         bool hasCompressionPreset();
     };

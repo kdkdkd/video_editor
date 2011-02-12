@@ -30,9 +30,11 @@ bool equalsFormat(Format f1,int compare)
     return f1.sort_number==compare;
 }
 
-Format::Format(String id,String description,String display_id,int sort_number,String header):FFMpegUnit(id,description,display_id,sort_number)
+Format::Format(String id,String description,String display_id,int sort_number,String header,bool allowVideo,bool allowAudio):FFMpegUnit(id,description,display_id,sort_number)
 {
     this->header = header;
+    this->allowVideo = allowVideo;
+    this->allowAudio = allowAudio;
 }
 
 vector<VideoCodec*> Format::getCodecs()
@@ -99,6 +101,8 @@ void InitFormats()
         int sort_number = -1;
         String show_id = id_string;
         String header = "";
+        bool allowVideo = true;
+        bool allowAudio = true;
         if(id_string == "avi")
         {
             header = MENU_HEADER_PC;
@@ -149,17 +153,20 @@ void InitFormats()
 
         else if(id_string == "mp3")
         {
+            allowVideo = false;
             header = MENU_HEADER_AUDIO;
             sort_number=120;
         }
 
         else if(id_string == "wav")
         {
+            allowVideo = false;
             sort_number=130;
         }
 
         else if(id_string == "aiff")
         {
+            allowVideo = false;
             sort_number=140;
         }
 
@@ -173,7 +180,7 @@ void InitFormats()
 
         if(sort_number>0)
         {
-            formats.push_back(Format(id_string,ofmt->long_name,show_id,sort_number,header));
+            formats.push_back(Format(id_string,ofmt->long_name,show_id,sort_number,header,allowVideo,allowAudio));
         }
 
     }

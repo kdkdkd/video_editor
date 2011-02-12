@@ -1,5 +1,5 @@
 #include "localization.h"
-#define upDetailed 10
+#define upDetailed 50
 #include "capabilities.h"
 
 #include "encodeVideo.h"
@@ -126,6 +126,17 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     advancedMode->setToggleState (true, false);
     advancedMode->addListener (this);
     isAdvancedMode = true;
+
+    addAndMakeVisible (enableVideo= new ToggleButton (LABEL_VIDEO_SAVE_ENABLE_VIDEO));
+    enableVideo->setToggleState (true, false);
+    enableVideo->addListener (this);
+    isVideoEnabled = true;
+
+    addAndMakeVisible (enableAudio= new ToggleButton (LABEL_VIDEO_SAVE_ENABLE_AUDIO));
+    enableAudio->setToggleState (true, false);
+    enableAudio->addListener (this);
+    isAudioEnabled = true;
+
 
     String digits = T("0123456789");
     String digits_and_dot = T("0123456789.");
@@ -287,6 +298,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     Movie::Info *movie_info = mainWindow->timeline->intervals.front()->movie->GetMovieInfo();
     selectByMovieInfo(movie_info);
 
+
     setVisible(true);
 }
 void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
@@ -342,7 +354,7 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
     if(format->getSelectedId())
         res.format_short = capabilities::formats[format->getSelectedId()-1].id;
     res.filename = path->getCurrentFile().getFullPathName();
-    if(videoCodec->getSelectedId())
+    if(isVideoEnabled)
     {
         Movie::VideoInfo video_info;
         capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
@@ -358,7 +370,7 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.bit_rate = videoBitrate->getText().getIntValue();
         res.videos.push_back(video_info);
     }
-    if(audioCodec->getSelectedId())
+    if(isAudioEnabled)
     {
         Movie::AudioInfo audio_info;
         audio_info.codec_short = capabilities::audio_codecs[audioCodec->getSelectedId()-1].id;
@@ -394,6 +406,8 @@ encodeVideoComponent::~encodeVideoComponent()
     deleteAndZero (ok);
     deleteAndZero (cancel);
     deleteAndZero (compressionPreset);
+    deleteAndZero (enableAudio);
+    deleteAndZero (enableVideo);
 
 }
 
@@ -403,17 +417,21 @@ void encodeVideoComponent::paint (Graphics& g)
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
     g.drawFittedText (LABEL_VIDEO_SAVE_PATH,
-                      12, 4 + upDetailed, 200, 30,2,
+                      12, 4, 200, 30,2,
                       Justification::centredRight, true);
 
 
     g.drawFittedText (LABEL_VIDEO_SAVE_FORMAT,
-                      12, 44+ upDetailed, 200, 30,2,
+                      12, 44, 200, 30,2,
                       Justification::centredRight, true);
 
     int add = 0;
     if(hasCompressionPreset)
         add = 40;
+
+    /* video labels */
+    if(!isVideoEnabled)
+        g.setColour (Colours::grey);
 
     if(isAdvancedMode)
         g.drawFittedText (LABEL_VIDEO_SAVE_BITRATE,
@@ -452,6 +470,22 @@ void encodeVideoComponent::paint (Graphics& g)
         g.drawFittedText (LABEL_VIDEO_SAVE_FPS,
                           0, 244+ upDetailed+120 + add, 148-20, 30,2,
                           Justification::centredRight, true);
+    if(isAdvancedMode)
+        g.drawFittedText (LABEL_KB_PER_SECOND,
+                          200-48 + 187, 208+ upDetailed+120+ add, 45, 24,2,
+                          Justification::centred, true);
+
+
+    if(isAdvancedMode)
+    g.drawText (T("X"),
+                    300-28-20, 164+ upDetailed+120 + add, 32, 30,
+                    Justification::centred, true);
+
+
+    if(isAdvancedMode)
+        g.drawFittedText (LABEL_VIDEO_SAVE_PASS,
+                          0, 324+ upDetailed+120 + add, 148-20, 30,2,
+                          Justification::centredRight, true);
 
     if(hasCompressionPreset)
         g.setColour (Colours::grey);
@@ -461,25 +495,17 @@ void encodeVideoComponent::paint (Graphics& g)
                           0, 284+ upDetailed+120 + add, 148-20, 30,2,
                           Justification::centredRight, true);
 
-    if(hasCompressionPreset)
-        g.setColour (Colours::black);
-
-    if(isAdvancedMode)
-        g.drawFittedText (LABEL_VIDEO_SAVE_PASS,
-                          0, 324+ upDetailed+120 + add, 148-20, 30,2,
-                          Justification::centredRight, true);
+    /* ~video labels */
+    /* audio labels */
+    g.setColour (Colours::black);
 
 
-    if(isAdvancedMode)
-        g.drawText (T("X"),
-                    300-28-20, 164+ upDetailed+120 + add, 32, 30,
-                    Justification::centred, true);
-
+    if(!isAudioEnabled)
+        g.setColour (Colours::grey);
 
     g.drawFittedText (LABEL_AUDIO_SAVE_CODEC,
                       420-20, 124+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
-
 
     g.drawFittedText (LABEL_AUDIO_SAVE_BITRATE,
                       420-20, 164+ upDetailed, 108, 30,2,
@@ -496,10 +522,7 @@ void encodeVideoComponent::paint (Graphics& g)
                       420-20, 244+ upDetailed, 108, 30,2,
                       Justification::centredRight, true);
 
-    if(isAdvancedMode)
-        g.drawFittedText (LABEL_KB_PER_SECOND,
-                          200-48 + 187, 208+ upDetailed+120+ add, 45, 24,2,
-                          Justification::centred, true);
+
 
     g.drawFittedText (LABEL_KB_PER_SECOND,
                       535-20 + 202, 168+ upDetailed, 45, 24,2,
@@ -509,7 +532,7 @@ void encodeVideoComponent::paint (Graphics& g)
                       535-20 + 202, 208+ upDetailed, 45, 24,2,
                       Justification::centred, true);
 
-
+    /* ~audio labels */
 
 
     Image backgroundFill = Image (Image::ARGB, 10, 10, true);
@@ -534,8 +557,8 @@ void encodeVideoComponent::paint (Graphics& g)
 
 void encodeVideoComponent::resized()
 {
-    format->setBounds (232, 48+ upDetailed, 540, 24);
-    path->setBounds (232, 8+ upDetailed, 540, 24);
+    format->setBounds (232, 48, 540, 24);
+    path->setBounds (232, 8, 540, 24);
     int group_height = 224+120+40;
     if(!isAdvancedMode)
     {
@@ -544,6 +567,9 @@ void encodeVideoComponent::resized()
     int add = 0;
     if(hasCompressionPreset)
         add = 40;
+
+
+    enableVideo->setBounds (16+20, 104+ upDetailed-40, 360, 40);
     groupComponent->setBounds (16, 104+ upDetailed, 380, group_height + add);
     videoCodec->setBounds (200-48, 128+ upDetailed, 232, 24);
     videoWidth->setBounds (200-48, 168+ upDetailed+120 + add, 88, 24);
@@ -555,6 +581,7 @@ void encodeVideoComponent::resized()
     qualityList->setBounds (200-48, 128+ upDetailed+80, 232, 24);
     advancedMode->setBounds (200-48, 128+ upDetailed+120 + add, 232, 24);
     passList->setBounds (200-48, 288+ upDetailed+120+40+ add, 232, 24);
+    enableAudio->setBounds (400+20, 104+ upDetailed-40, 360, 40);
     groupComponent2->setBounds (400, 104+ upDetailed, 380, 184);
     audioCodec->setBounds (535-20, 128+ upDetailed, 252, 24);
     audioBitrate->setBounds (535-20, 168+ upDetailed, 202, 24);
@@ -571,6 +598,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     {
         /* set file extension */
         File temp(path->getCurrentFile());
+        capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
         String full_path = temp.getFullPathName();
         int last_index_of_dot = full_path.lastIndexOf(".");
         String new_file_with_ext;
@@ -592,7 +620,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             previous_id_string = capabilities::video_codecs[videoCodec->getSelectedId()-1].id;
         videoCodec->clear(true);
         int previous_id = 1;
-        vector<capabilities::VideoCodec*> codecs = capabilities::formats[format->getSelectedId()-1].getCodecs();
+        vector<capabilities::VideoCodec*> codecs = selected_format.getCodecs();
         int id = 0;
         for(vector<capabilities::VideoCodec*>::iterator it = codecs.begin(); it!=codecs.end(); ++it)
         {
@@ -606,6 +634,29 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         videoCodec->setSelectedId(previous_id);
 
         /* ~set aviable codecs */
+        /* allow video and audio */
+        if(!selected_format.allowVideo)
+        {
+            enableVideo->setEnabled(false);
+            enableVideo->setToggleState(false,true);
+
+            enableAudio->setEnabled(false);
+            enableAudio->setToggleState(true,true);
+        }else if(!selected_format.allowAudio)
+        {
+            enableAudio->setEnabled(false);
+            enableAudio->setToggleState(false,true);
+
+            enableVideo->setEnabled(false);
+            enableVideo->setToggleState(true,true);
+        }
+        else
+        {
+            enableVideo->setEnabled(true);
+            enableAudio->setEnabled(true);
+        }
+
+        /* ~allow video and audio */
     }
     else if (comboBoxThatHasChanged == qualityList)
     {
@@ -860,6 +911,70 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == cancel)
     {
         getParentComponent()->removeFromDesktop();
+    }
+    else if (buttonThatWasClicked == enableVideo)
+    {
+        isVideoEnabled = !isVideoEnabled;
+        if(isVideoEnabled)
+        {
+            videoWidth->setEnabled(true);
+            videoHeight->setEnabled(true);
+            videoCodec->setEnabled(true);
+            videoBitrate->setEnabled(true);
+            fps->setEnabled(true);
+            if(!hasCompressionPreset)
+                gop->setEnabled(true);
+            advancedMode->setEnabled(true);
+            passList->setEnabled(true);
+            qualityList->setEnabled(true);
+            compressionPreset->setEnabled(true);
+            resolutionList->setEnabled(true);
+        }else
+        {
+            videoWidth->setEnabled(false);
+            videoHeight->setEnabled(false);
+            videoCodec->setEnabled(false);
+            videoBitrate->setEnabled(false);
+            fps->setEnabled(false);
+            gop->setEnabled(false);
+            advancedMode->setEnabled(false);
+            passList->setEnabled(false);
+            qualityList->setEnabled(false);
+            compressionPreset->setEnabled(false);
+            resolutionList->setEnabled(false);
+        }
+
+        repaint();
+        if(!isVideoEnabled && !isAudioEnabled)
+        {
+            enableAudio->setToggleState(true,true);
+        }
+
+    }
+    else if (buttonThatWasClicked == enableAudio)
+    {
+        isAudioEnabled = !isAudioEnabled;
+        if(isAudioEnabled)
+        {
+            audioBitrate->setEnabled(true);
+            audioCodec->setEnabled(true);
+            audioSampleRate->setEnabled(true);
+            channels->setEnabled(true);
+        }else
+        {
+            audioBitrate->setEnabled(false);
+            audioCodec->setEnabled(false);
+            audioSampleRate->setEnabled(false);
+            channels->setEnabled(false);
+        }
+        repaint();
+
+        if(!isVideoEnabled && !isAudioEnabled)
+        {
+            enableVideo->setToggleState(true,true);
+        }
+
+
     }
     else if (buttonThatWasClicked == advancedMode)
     {

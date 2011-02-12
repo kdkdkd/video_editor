@@ -147,4 +147,8 @@ String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть 
 String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5");
 String VALIDATION_SAVE_BITRATE = T("Битрейт не должен быть нулевым");
 //String VALIDATION_SAVE_GOP = T("Число кадров в группе не должно быть 0");
+
+String LABEL_VIDEO_SAVE_ENABLE_VIDEO = T("Сохранить видео");
+String LABEL_VIDEO_SAVE_ENABLE_AUDIO = T("Сохранить аудио");
+
 }

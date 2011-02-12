@@ -73,6 +73,10 @@ private:
 
     ComboBox* compressionPreset;
     bool hasCompressionPreset;
+    ToggleButton* enableVideo;
+    bool isVideoEnabled;
+    ToggleButton* enableAudio;
+    bool isAudioEnabled;
 };
 
 
