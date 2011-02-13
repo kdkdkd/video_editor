@@ -656,12 +656,10 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     swapVariables(fps.num,fps.den);
     c->time_base = st->time_base = st->r_frame_rate = fps;
 
-    c->gop_size = info.videos[0].gop; /* emit one intra frame every twelve frames at most */
-    //c->max_b_frames = 2;
-    //c->flags |= CODEC_FLAG_QSCALE;
     c->pix_fmt = PIX_FMT_YUV420P;
 
     setCompressionPreset(c,info.videos[0].compressionPreset,(all_pass>1)?current_pass:2);
+    c->gop_size = info.videos[0].gop;
 
     // some formats want stream headers to be separate
     if(oc->oformat->flags & AVFMT_GLOBALHEADER)

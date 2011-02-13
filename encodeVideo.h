@@ -44,6 +44,7 @@ public:
     File getCurrentFileName();
     FilenameComponent* path;
     ComboBox* format;
+    bool gopSetByUser;
 private:
 
     MainComponent* mainWindow;

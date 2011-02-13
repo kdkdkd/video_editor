@@ -63,6 +63,9 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
     else if(name == "videoBitrate")
     {
         qualityList->setSelectedId(-100,false);
+    }else if(name = "gop")
+    {
+        gopSetByUser = true;
     }
     clearValidation();
     Validate();
@@ -90,6 +93,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     Component("encodeVideoComponent"),
     hasCompressionPreset(false)
 {
+    gopSetByUser = false;
     this->mainWindow = mainWindow;
     addAndMakeVisible (compressionPreset = new ComboBox ());
     compressionPreset->setEditableText (false);
@@ -173,7 +177,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setText (String::empty);
     videoWidth->addListener (this);
 
-    addAndMakeVisible (gop = new TextEditor ());
+    addAndMakeVisible (gop = new TextEditor ("gop"));
     gop->setInputRestrictions(3,digits);
     gop->setMultiLine (false);
     gop->setReturnKeyStartsNewLine (false);
@@ -181,7 +185,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     gop->setScrollbarsShown (true);
     gop->setCaretVisible (true);
     gop->setPopupMenuEnabled (true);
-    gop->setText (String::empty);
+    gop->setText (String::empty,false);
     gop->addListener(this);
 
     addAndMakeVisible (videoHeight = new TextEditor (T("videoHeight")));
@@ -336,7 +340,7 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
     format->setSelectedItemIndex(index);
 
     Movie::VideoInfo video_info = info->videos[0];
-    gop->setText(String(12),false);
+    gop->setText(String(""),false);
     fps->setText(String(video_info.fps),false);
     passList->setSelectedItemIndex(0);
 
@@ -377,10 +381,10 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.fps = fps->getText().getDoubleValue();
         video_info.compressionPreset = -1;
         video_info.pass = passList->getSelectedId();
-        if(!vc.hasCompressionPreset())
-            video_info.gop = gop->getText().getIntValue();
-        else
+        if(vc.hasCompressionPreset())
             video_info.compressionPreset = compressionPreset->getSelectedId();
+
+        video_info.gop = gop->getText().getIntValue();
         video_info.bit_rate = videoBitrate->getText().getIntValue();
         res.videos.push_back(video_info);
 
@@ -501,9 +505,6 @@ void encodeVideoComponent::paint (Graphics& g)
         g.drawFittedText (LABEL_VIDEO_SAVE_PASS,
                           0, 324+ upDetailed+120 + add, 148-20, 30,2,
                           Justification::centredRight, true);
-
-    if(hasCompressionPreset)
-        g.setColour (Colours::grey);
 
     if(isAdvancedMode)
         g.drawFittedText (LABEL_VIDEO_GOP,
@@ -777,7 +778,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                     new_height += 40;
                 }
                 compressionPreset->setVisible(true);
-                gop->setEnabled(false);
+
             }
             else
             {
@@ -787,7 +788,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                     new_height -= 40;
                 }
                 compressionPreset->setVisible(false);
-                gop->setEnabled(true);
+
             }
             hasCompressionPreset = needToHaveCompressionPreset;
             if(!isAdvancedMode)
@@ -810,6 +811,18 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         }
 
         /*  ~Update gui: two pass */
+
+        /* Update gop */
+        if(!gopSetByUser)
+        {
+            if(vc.hasCompressionPreset())
+                gop->setText(String("250"),false);
+            else
+                gop->setText(String("12"),false);
+        }
+
+
+        /* ~Update gop */
     }
     else if (comboBoxThatHasChanged == resolutionList)
     {
@@ -961,8 +974,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             videoCodec->setEnabled(true);
             videoBitrate->setEnabled(true);
             fps->setEnabled(true);
-            if(!hasCompressionPreset)
-                gop->setEnabled(true);
+            gop->setEnabled(true);
             advancedMode->setEnabled(true);
             passList->setEnabled(true);
             qualityList->setEnabled(true);
