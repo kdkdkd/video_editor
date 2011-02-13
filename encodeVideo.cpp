@@ -27,6 +27,8 @@ void encodeVideo::add ()
     {
         child->comboBoxChanged(child->resolutionList);
     }
+    child->path->setCurrentFile(child->getCurrentFileName(),false);
+    child->comboBoxChanged(child->format);
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
@@ -65,7 +67,11 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
     clearValidation();
     Validate();
 }
-
+File encodeVideoComponent::getCurrentFileName()
+{
+ String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
+ return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
+}
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     : format (0),
     path (0),
@@ -84,6 +90,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     Component("encodeVideoComponent"),
     hasCompressionPreset(false)
 {
+    this->mainWindow = mainWindow;
     addAndMakeVisible (compressionPreset = new ComboBox ());
     compressionPreset->setEditableText (false);
     compressionPreset->setJustificationType (Justification::centredLeft);
@@ -97,9 +104,8 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     format->addListener (this);
 
 
-    String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
     addAndMakeVisible (path = new FilenameComponent(String::empty,
-            File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename),
+            getCurrentFileName(),
             true,
             false,
             true,
@@ -255,8 +261,6 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     cancel->setButtonText (LABEL_CANCEL);
     cancel->addListener (this);
 
-
-    this->mainWindow = mainWindow;
 
     setSize (800, 350 + upDetailed+120+40);
 

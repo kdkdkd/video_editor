@@ -41,11 +41,13 @@ public:
     void textEditorTextChanged(TextEditor& editor);
     ComboBox* qualityList;
     ComboBox* resolutionList;
+    File getCurrentFileName();
+    FilenameComponent* path;
+    ComboBox* format;
 private:
 
     MainComponent* mainWindow;
-    ComboBox* format;
-    FilenameComponent* path;
+
 
     GroupComponent* groupComponent;
     ComboBox* videoCodec;
