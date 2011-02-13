@@ -703,7 +703,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                     bit_rate_max = bit_rate;
                 }
             }
-            normal_bitrate = bit_rate_max;
+            if(bit_rate_max>0)
+                normal_bitrate = bit_rate_max;
         }
         break;
         case -100:
