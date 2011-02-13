@@ -34,15 +34,19 @@ namespace capabilities
         Format(String id,String description,String display_id,int sort_number,String header,bool AllowVideo,bool AllowAudio);
         vector<VideoCodec*> getCodecs();
         bool hasCompressionPreset();
+
     };
 
     class VideoCodec:public FFMpegUnit
     {
         public:
         bool allowTwoPass;
+        int qmin;
+        int qmax;
         vector<ResolutionPreset> getResolutions(Format &format);
-        VideoCodec(String id,String description,String display_id,int sort_number,bool allowTwoPass);
+        VideoCodec(String id,String description,String display_id,int sort_number,bool allowTwoPass,int qmin,int qmax);
         bool hasCompressionPreset();
+        bool canCQ();
     };
 
 

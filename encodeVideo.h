@@ -45,6 +45,11 @@ public:
     FilenameComponent* path;
     ComboBox* format;
     bool gopSetByUser;
+    ComboBox* rateControl;
+    TextEditor* crf;
+    void recalculateCRF();
+    void recalculateBitrate();
+    void UpdateFileExtension();
 private:
 
     MainComponent* mainWindow;

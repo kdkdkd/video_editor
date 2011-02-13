@@ -47,8 +47,10 @@ vector<VideoCodec*> Format::getCodecs()
     return res;
 }
 
-VideoCodec::VideoCodec(String id,String description,String display_id,int sort_number,bool allowTwoPass):FFMpegUnit(id,description,display_id,sort_number)
+VideoCodec::VideoCodec(String id,String description,String display_id,int sort_number,bool allowTwoPass,int qmin,int qmax):FFMpegUnit(id,description,display_id,sort_number)
 {
+    this->qmin=qmin;
+    this->qmax=qmax;
     this->allowTwoPass = allowTwoPass;
 }
 
@@ -63,6 +65,10 @@ void ResolutionPreset::fromInt32(unsigned int id)
 {
     height = id&65535;
     width = id>>16;
+}
+bool VideoCodec::canCQ()
+{
+    return id!="libtheora";
 }
 vector<ResolutionPreset> VideoCodec::getResolutions(Format &format)
 {
@@ -201,12 +207,15 @@ void InitFormats()
                 int sort_number=-1;
                 String id_string = p->name;
                 String show_id = id_string;
+                int qmin = 1;
+                int qmax = 31;
                 bool allowTwoPass = true;
 
                 if(id_string == "libx264")
                 {
                     show_id = "h264";
                     sort_number=10;
+                    qmax = 51;
                 }
                 else if(id_string == "libxvid")
                 {
@@ -216,6 +225,7 @@ void InitFormats()
                 else if(id_string == "mpeg4")
                 {
                     sort_number=30;
+
                 }
                 else if(id_string == "mpeg2video")
                 {
@@ -234,6 +244,7 @@ void InitFormats()
                 }
                 else if(id_string == "libvpx")
                 {
+                    qmax = 63;
                     allowTwoPass = false;
                     show_id = "vp8";
                     sort_number=80;
@@ -257,7 +268,7 @@ void InitFormats()
                     sort_number=120;
                 }
                 if(sort_number>0)
-                video_codecs.push_back(VideoCodec(id_string,p->long_name,show_id,sort_number,allowTwoPass));
+                video_codecs.push_back(VideoCodec(id_string,p->long_name,show_id,sort_number,allowTwoPass,qmin,qmax));
             }
             break;
             case AVMEDIA_TYPE_AUDIO:

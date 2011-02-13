@@ -78,6 +78,7 @@ public:
     {
         public:
         int bit_rate;
+        bool is_bitrate_or_crf;
         String codec_short;
         String codec_tag;
         String codec_long;
@@ -93,6 +94,7 @@ public:
         VideoInfo(){}
         VideoInfo(const VideoInfo& copy_info)
         {
+            this->is_bitrate_or_crf = copy_info.is_bitrate_or_crf;
             this->compressionPreset = copy_info.compressionPreset;
             this->pass = copy_info.pass;
             this->bit_rate = copy_info.bit_rate;

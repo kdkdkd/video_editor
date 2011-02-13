@@ -146,9 +146,19 @@ String VALIDATION_SAVE_FPS = T("Частота кадров может быть 
 String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть не меньше 5");
 String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5");
 String VALIDATION_SAVE_BITRATE = T("Битрейт не должен быть нулевым");
-//String VALIDATION_SAVE_GOP = T("Число кадров в группе не должно быть 0");
+String VALIDATION_SAVE_CRF_MAIN = T("Коэффициент может быть в пределах от ");
+String VALIDATION_SAVE_CRF_TO = T(" до ");
 
 String LABEL_VIDEO_SAVE_ENABLE_VIDEO = T("Сохранить видео");
 String LABEL_VIDEO_SAVE_ENABLE_AUDIO = T("Сохранить аудио");
+
+String LABEL_VIDEO_SAVE_RATE_CONTROL = T("Управление качеством");
+String LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE = T("Битрейт");
+String LABEL_VIDEO_SAVE_RATE_CONTROL_CRF = T("Постоянное качество(crf)");
+String LABEL_VIDEO_SAVE_RATE_CONTROL_CQ = T("Постоянное качество(cqp)");
+String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF = T("Коэффициент (crf)");
+String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP = T("Коэффициент (cqp)");
+
+
 
 }

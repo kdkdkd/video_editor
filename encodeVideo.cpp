@@ -11,26 +11,161 @@ encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_V
     encodeVideoComponent* contentComponent = new encodeVideoComponent (mainWindow);
 
     setContentComponent(contentComponent);
-    centreAroundComponent(mainWindow, 800, 370 + upDetailed+120+40);
+    centreAroundComponent(mainWindow, 800, 370 + upDetailed+200);
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
 
-void encodeVideo::add ()
+void encodeVideo::add()
 {
     encodeVideoComponent *child = (encodeVideoComponent*)getContentComponent();
+    bool need_recalculate_crf = false;
     if(child->qualityList->getSelectedId() == 100)
     {
         child->comboBoxChanged(child->qualityList);
+        need_recalculate_crf = true;
     }
     if(child->resolutionList->getSelectedId() == 1)
     {
         child->comboBoxChanged(child->resolutionList);
+        need_recalculate_crf = true;
     }
+    if(need_recalculate_crf)
+        child->recalculateCRF();
     child->path->setCurrentFile(child->getCurrentFileName(),false);
-    child->comboBoxChanged(child->format);
+    child->UpdateFileExtension();
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
+}
+void encodeVideoComponent::UpdateFileExtension()
+{
+    File temp(path->getCurrentFile());
+    capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
+    String full_path = temp.getFullPathName();
+    int last_index_of_dot = full_path.lastIndexOf(".");
+    String new_file_with_ext;
+    if(last_index_of_dot>=0)
+    {
+        new_file_with_ext = full_path.substring(0,last_index_of_dot);
+    }
+    else
+    {
+        new_file_with_ext = full_path;
+    }
+    new_file_with_ext<<"."<<capabilities::formats.at(format->getSelectedId()-1).display_id;
+    path->setCurrentFile(File(new_file_with_ext),false,false);
+}
+void encodeVideoComponent::recalculateCRF()
+{
+    if(rateControl->getSelectedId()>1)
+    {
+        int quality_id = qualityList->getSelectedId();
+        if(quality_id>-20)
+        {
+            double rate;
+            switch(quality_id)
+            {
+            case -3:
+                rate = 0.8;
+                break;
+            case -2:
+                rate = 0.6;
+                break;
+            case -1:
+                rate = 0.4;
+                break;
+            case 100:
+            case 1:
+                rate = 0.3;
+                break;
+            case 2:
+                rate = 0.2;
+                break;
+            case 3:
+                rate = 0.1;
+                break;
+            case 4:
+                rate = 0.0;
+                break;
+            }
+            capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
+            crf->setText(String(int(double(vc.qmax - vc.qmin) * rate + vc.qmin)),false);
+
+        }
+    }
+}
+void encodeVideoComponent::recalculateBitrate()
+{
+    int id = qualityList->getSelectedId();
+    int normal_bitrate = videoWidth->getText().getIntValue() * videoHeight->getText().getIntValue() / 150 ;
+
+    switch(id)
+    {
+    case 4:
+        normal_bitrate*=3;
+        break;
+    case 3:
+        normal_bitrate*=2;
+        break;
+    case 2:
+        normal_bitrate*=3;
+        normal_bitrate/=2;
+        break;
+    case -1:
+        normal_bitrate/=2;
+        break;
+    case -2:
+        normal_bitrate/=4;
+        break;
+    case -3:
+        normal_bitrate/=8;
+        break;
+    case 100:
+    {
+        int bit_rate_max = 0;
+        for(vector<Timeline::Interval*>::iterator it = mainWindow->timeline->intervals.begin(); it!=mainWindow->timeline->intervals.end(); ++it)
+        {
+            int bit_rate = (*it)->movie->GetMovieInfo()->bit_rate;
+            if((*it)->movie->GetMovieInfo()->videos.size()>0)
+            {
+                int bit_rate_candidate = (*it)->movie->GetMovieInfo()->videos[0].bit_rate;
+                if(bit_rate_candidate>0)
+                    bit_rate = bit_rate_candidate;
+            }
+            if(bit_rate>bit_rate_max)
+            {
+                bit_rate_max = bit_rate;
+            }
+        }
+        if(bit_rate_max>0)
+            normal_bitrate = bit_rate_max;
+    }
+    break;
+    case -100:
+    {
+        if(rateControl->getSelectedId()==1)
+        {
+            if(!isAdvancedMode)
+                advancedMode->setToggleState(true,true);
+            videoBitrate->setSelectAllWhenFocused(true);
+            videoBitrate->grabKeyboardFocus();
+            videoBitrate->setSelectAllWhenFocused(false);
+            return;
+        }
+        else
+        {
+            if(!isAdvancedMode)
+                advancedMode->setToggleState(true,true);
+            crf->setSelectAllWhenFocused(true);
+            crf->grabKeyboardFocus();
+            crf->setSelectAllWhenFocused(false);
+            return;
+        }
+    }
+    break;
+    }
+
+    videoBitrate->setText(String(normal_bitrate),false);
 }
 void encodeVideo::closeButtonPressed()
 {
@@ -60,20 +195,22 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
     {
         resolutionList->setSelectedId(-100,false);
     }
-    else if(name == "videoBitrate")
+    else if(name == "videoBitrate" || name == "crf")
     {
         qualityList->setSelectedId(-100,false);
-    }else if(name = "gop")
+    }
+    else if(name = "gop")
     {
         gopSetByUser = true;
     }
+
     clearValidation();
     Validate();
 }
 File encodeVideoComponent::getCurrentFileName()
 {
- String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
- return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
+    String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
+    return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
 }
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     : format (0),
@@ -127,6 +264,13 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoCodec->setTextWhenNothingSelected (String::empty);
     videoCodec->addListener (this);
 
+    addAndMakeVisible (rateControl = new ComboBox ());
+    rateControl->setEditableText (false);
+    rateControl->setJustificationType (Justification::centredLeft);
+    rateControl->setTextWhenNothingSelected (String::empty);
+    rateControl->addListener (this);
+
+
     addAndMakeVisible (resolutionList = new ComboBox ());
     resolutionList->setEditableText (false);
     resolutionList->setJustificationType (Justification::centredLeft);
@@ -176,6 +320,17 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoWidth->setPopupMenuEnabled (true);
     videoWidth->setText (String::empty);
     videoWidth->addListener (this);
+
+    addChildComponent(crf = new TextEditor (T("crf")));
+    crf->setInputRestrictions(2,digits);
+    crf->setMultiLine (false);
+    crf->setReturnKeyStartsNewLine (false);
+    crf->setReadOnly (false);
+    crf->setScrollbarsShown (true);
+    crf->setCaretVisible (true);
+    crf->setPopupMenuEnabled (true);
+    crf->setText (String::empty);
+    crf->addListener (this);
 
     addAndMakeVisible (gop = new TextEditor ("gop"));
     gop->setInputRestrictions(3,digits);
@@ -384,8 +539,9 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         if(vc.hasCompressionPreset())
             video_info.compressionPreset = compressionPreset->getSelectedId();
 
+        video_info.is_bitrate_or_crf = rateControl->getSelectedId()==1;
         video_info.gop = gop->getText().getIntValue();
-        video_info.bit_rate = videoBitrate->getText().getIntValue();
+        video_info.bit_rate = (video_info.is_bitrate_or_crf)?videoBitrate->getText().getIntValue():crf->getText().getIntValue();
         res.videos.push_back(video_info);
 
     }
@@ -427,7 +583,7 @@ encodeVideoComponent::~encodeVideoComponent()
     deleteAndZero (compressionPreset);
     deleteAndZero (enableAudio);
     deleteAndZero (enableVideo);
-
+    deleteAndZero (crf);
 }
 
 //==============================================================================
@@ -451,18 +607,46 @@ void encodeVideoComponent::paint (Graphics& g)
     /* video labels */
     if(!isVideoEnabled)
         g.setColour (Colours::grey);
-
     if(isAdvancedMode)
-        g.drawFittedText (LABEL_VIDEO_SAVE_BITRATE,
+    {
+        int rate_control_id = rateControl->getSelectedId();
+        int width = 0;
+        if(rate_control_id==1)
+        {
+            if(isAdvancedMode)
+                g.drawFittedText (LABEL_KB_PER_SECOND,
+                                  200-48 + 187, 208+ upDetailed+160+ add, 45, 24,2,
+                                  Justification::centred, true);
+        }
+        String text;
+        switch(rate_control_id)
+        {
+        case 1:
+            text = LABEL_VIDEO_SAVE_BITRATE;
+            break;
+        case 2:
+            text = LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP;
+            break;
+        case 3:
+            text = LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF;
+            break;
+        }
+
+        g.drawFittedText (text,
+                          20, 204+ upDetailed+160+add, 148-20-20, 30,2,
+                          Justification::centredRight, true);
+
+
+        g.drawFittedText (LABEL_VIDEO_SAVE_RATE_CONTROL,
                           0, 204+ upDetailed+120+add, 148-20, 30,2,
                           Justification::centredRight, true);
 
-    if(isAdvancedMode)
+
         g.drawFittedText (LABEL_VIDEO_SAVE_RESOLUTION,
                           0, 164+ upDetailed+120 + add, 148-20, 30,2,
                           Justification::centredRight, true);
 
-
+    }
     g.drawFittedText (LABEL_VIDEO_SAVE_CODEC,
                       0, 124+ upDetailed, 148-20, 30,2,
                       Justification::centredRight, true);
@@ -487,12 +671,8 @@ void encodeVideoComponent::paint (Graphics& g)
 
     if(isAdvancedMode)
         g.drawFittedText (LABEL_VIDEO_SAVE_FPS,
-                          0, 244+ upDetailed+120 + add, 148-20, 30,2,
+                          0, 244+ upDetailed+160 + add, 148-20, 30,2,
                           Justification::centredRight, true);
-    if(isAdvancedMode)
-        g.drawFittedText (LABEL_KB_PER_SECOND,
-                          200-48 + 187, 208+ upDetailed+120+ add, 45, 24,2,
-                          Justification::centred, true);
 
 
     if(isAdvancedMode)
@@ -503,12 +683,12 @@ void encodeVideoComponent::paint (Graphics& g)
 
     if(isAdvancedMode)
         g.drawFittedText (LABEL_VIDEO_SAVE_PASS,
-                          0, 324+ upDetailed+120 + add, 148-20, 30,2,
+                          0, 324+ upDetailed+160 + add, 148-20, 30,2,
                           Justification::centredRight, true);
 
     if(isAdvancedMode)
         g.drawFittedText (LABEL_VIDEO_GOP,
-                          0, 284+ upDetailed+120 + add, 148-20, 30,2,
+                          0, 284+ upDetailed+160 + add, 148-20, 30,2,
                           Justification::centredRight, true);
 
     /* ~video labels */
@@ -575,10 +755,10 @@ void encodeVideoComponent::resized()
 {
     format->setBounds (232, 48, 540, 24);
     path->setBounds (232, 8, 540, 24);
-    int group_height = 224+120+40;
+    int group_height = 224+120+40 + 40;
     if(!isAdvancedMode)
     {
-        group_height -= 200;
+        group_height -= 200 + 40;
     }
     int add = 0;
     if(hasCompressionPreset)
@@ -586,17 +766,19 @@ void encodeVideoComponent::resized()
 
 
     enableVideo->setBounds (16+20, 104+ upDetailed-40, 360, 40);
-    groupComponent->setBounds (16, 104+ upDetailed, 380, group_height + add);
+    groupComponent->setBounds (16, 104+ upDetailed , 380, group_height + add );
     videoCodec->setBounds (200-48, 128+ upDetailed, 232, 24);
     videoWidth->setBounds (200-48, 168+ upDetailed+120 + add, 88, 24);
     videoHeight->setBounds (344-48, 168+ upDetailed+120 + add, 88, 24);
-    videoBitrate->setBounds (200-48, 208+ upDetailed+120 + add, 182, 24);
-    fps->setBounds (200-48, 248+ upDetailed+120 + add, 232, 24);
-    gop->setBounds (200-48, 288+ upDetailed+120 + add, 232, 24);
+    rateControl->setBounds (200-48, 208+ upDetailed+120 + add, 232, 24);
+    videoBitrate->setBounds (200-48, 208+ upDetailed+160 + add, 182, 24);
+    crf->setBounds (200-48, 208+ upDetailed+160 + add, 232, 24);
+    fps->setBounds (200-48, 248+ upDetailed+160 + add, 232, 24);
+    gop->setBounds (200-48, 288+ upDetailed+160 + add, 232, 24);
     resolutionList->setBounds (200-48, 128+ upDetailed+40, 232, 24);
     qualityList->setBounds (200-48, 128+ upDetailed+80, 232, 24);
     advancedMode->setBounds (200-48, 128+ upDetailed+120 + add, 232, 24);
-    passList->setBounds (200-48, 288+ upDetailed+120+40+ add, 232, 24);
+    passList->setBounds (200-48, 288+ upDetailed+160+40+ add, 232, 24);
     enableAudio->setBounds (400+20, 104+ upDetailed-40, 360, 40);
     groupComponent2->setBounds (400, 104+ upDetailed, 380, 184);
     audioCodec->setBounds (535-20, 128+ upDetailed, 252, 24);
@@ -610,24 +792,33 @@ void encodeVideoComponent::resized()
 
 void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 {
-    if (comboBoxThatHasChanged == format)
+    if (comboBoxThatHasChanged == rateControl)
     {
-        /* set file extension */
-        File temp(path->getCurrentFile());
-        capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
-        String full_path = temp.getFullPathName();
-        int last_index_of_dot = full_path.lastIndexOf(".");
-        String new_file_with_ext;
-        if(last_index_of_dot>=0)
+        int selected_id = rateControl->getSelectedId();
+        if(selected_id>1)
         {
-            new_file_with_ext = full_path.substring(0,last_index_of_dot);
+            passList->setEnabled(false);
+            crf->setVisible(true);
+            videoBitrate->setVisible(false);
         }
         else
         {
-            new_file_with_ext = full_path;
+            crf->setVisible(false);
+            videoBitrate->setVisible(true);
+            passList->setEnabled(true);
         }
-        new_file_with_ext<<"."<<capabilities::formats.at(format->getSelectedId()-1).display_id;
-        path->setCurrentFile(File(new_file_with_ext),false,false);
+        recalculateCRF();
+        recalculateBitrate();
+
+        resized();
+        repaint();
+
+    }
+    else if (comboBoxThatHasChanged == format)
+    {
+        /* set file extension */
+        UpdateFileExtension();
+        capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
         /* ~set file extension */
 
         /* set aviable codecs */
@@ -677,64 +868,9 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     }
     else if (comboBoxThatHasChanged == qualityList)
     {
-        int id = qualityList->getSelectedId();
-        int normal_bitrate = videoWidth->getText().getIntValue() * videoHeight->getText().getIntValue() / 150 ;
+        recalculateCRF();
+        recalculateBitrate();
 
-        switch(id)
-        {
-        case 4:
-            normal_bitrate*=3;
-            break;
-        case 3:
-            normal_bitrate*=2;
-            break;
-        case 2:
-            normal_bitrate*=3;
-            normal_bitrate/=2;
-            break;
-        case -1:
-            normal_bitrate/=2;
-            break;
-        case -2:
-            normal_bitrate/=4;
-            break;
-        case -3:
-            normal_bitrate/=8;
-            break;
-        case 100:
-        {
-            int bit_rate_max = 0;
-            for(vector<Timeline::Interval*>::iterator it = mainWindow->timeline->intervals.begin(); it!=mainWindow->timeline->intervals.end(); ++it)
-            {
-                int bit_rate = (*it)->movie->GetMovieInfo()->bit_rate;
-                if((*it)->movie->GetMovieInfo()->videos.size()>0)
-                {
-                    int bit_rate_candidate = (*it)->movie->GetMovieInfo()->videos[0].bit_rate;
-                    if(bit_rate_candidate>0)
-                        bit_rate = bit_rate_candidate;
-                }
-                if(bit_rate>bit_rate_max)
-                {
-                    bit_rate_max = bit_rate;
-                }
-            }
-            if(bit_rate_max>0)
-                normal_bitrate = bit_rate_max;
-        }
-        break;
-        case -100:
-        {
-            if(!isAdvancedMode)
-                advancedMode->setToggleState(true,true);
-            videoBitrate->setSelectAllWhenFocused(true);
-            videoBitrate->grabKeyboardFocus();
-            videoBitrate->setSelectAllWhenFocused(false);
-            return;
-        }
-        break;
-        }
-
-        videoBitrate->setText(String(normal_bitrate),false);
     }
     else if (comboBoxThatHasChanged == videoCodec)
     {
@@ -820,9 +956,27 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             else
                 gop->setText(String("12"),false);
         }
-
-
         /* ~Update gop */
+        /* Update Rate Control */
+        int rate_control_id = rateControl->getSelectedId();
+        int rate_control_selected_id = 1;
+        rateControl->clear();
+        rateControl->addItem(LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE,1);
+        if(vc.hasCompressionPreset())
+        {
+            if(rate_control_id>1)
+                rate_control_selected_id = 3;
+            rateControl->addItem(LABEL_VIDEO_SAVE_RATE_CONTROL_CRF,3);
+        }
+        else if(vc.canCQ())
+        {
+            if(rate_control_id>1)
+                rate_control_selected_id = 2;
+            rateControl->addItem(LABEL_VIDEO_SAVE_RATE_CONTROL_CQ,2);
+        }
+        rateControl->setSelectedId(rate_control_selected_id,true);
+        /* ~Update Rate Control */
+
     }
     else if (comboBoxThatHasChanged == resolutionList)
     {
@@ -883,7 +1037,10 @@ void encodeVideoComponent::clearValidation()
     videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
     videoHeight->applyFontToAllText(videoHeight->getFont());
     videoHeight->setTooltip("");
-    //gop->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));gop->applyFontToAllText(gop->getFont());gop->setTooltip("");
+
+    crf->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
+    crf->applyFontToAllText(crf->getFont());
+    crf->setTooltip("");
     videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
     videoBitrate->applyFontToAllText(videoBitrate->getFont());
     videoBitrate->setTooltip("");
@@ -920,26 +1077,30 @@ bool encodeVideoComponent::Validate()
         res = false;
     }
 
-    /*int gop_int = gop->getText().getIntValue();
-    if(gop_int==0)
+    if(rateControl->getSelectedId()==1)
     {
-        gop->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
-        gop->setTooltip(VALIDATION_SAVE_GOP);
-        gop->applyFontToAllText(gop->getFont());
-        res = false;
-    }*/
-
-
-    int video_bitrate_int = videoBitrate->getText().getIntValue();
-    if(video_bitrate_int==0)
-    {
-        videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
-        videoBitrate->setTooltip(VALIDATION_SAVE_BITRATE);
-        videoBitrate->applyFontToAllText(videoBitrate->getFont());
-        res = false;
+        int video_bitrate_int = videoBitrate->getText().getIntValue();
+        if(video_bitrate_int==0)
+        {
+            videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
+            videoBitrate->setTooltip(VALIDATION_SAVE_BITRATE);
+            videoBitrate->applyFontToAllText(videoBitrate->getFont());
+            res = false;
+        }
     }
+    else
+    {
+        int crf_int = crf->getText().getIntValue();
+        capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
+        if(crf_int<vc.qmin || crf_int>vc.qmax)
+        {
+            crf->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
+            crf->setTooltip(VALIDATION_SAVE_CRF_MAIN + String(vc.qmin) + VALIDATION_SAVE_CRF_TO + String(vc.qmax));
 
-
+            crf->applyFontToAllText(crf->getFont());
+            res = false;
+        }
+    }
 
     return res;
 }
@@ -977,6 +1138,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             gop->setEnabled(true);
             advancedMode->setEnabled(true);
             passList->setEnabled(true);
+            rateControl->setEnabled(true);
             qualityList->setEnabled(true);
             compressionPreset->setEnabled(true);
             resolutionList->setEnabled(true);
@@ -989,11 +1151,13 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             videoBitrate->setEnabled(false);
             fps->setEnabled(false);
             gop->setEnabled(false);
+            rateControl->setEnabled(false);
             advancedMode->setEnabled(false);
             passList->setEnabled(false);
             qualityList->setEnabled(false);
             compressionPreset->setEnabled(false);
             resolutionList->setEnabled(false);
+            advancedMode->setToggleState(false,true);
         }
 
         repaint();
@@ -1032,12 +1196,15 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == advancedMode)
     {
         isAdvancedMode = !isAdvancedMode;
+        rateControl->setVisible(isAdvancedMode);
+        bool is_crf = rateControl->getSelectedId()>1;
+        crf->setVisible(isAdvancedMode && is_crf);
+        videoBitrate->setVisible(isAdvancedMode && !is_crf);
         gop->setVisible(isAdvancedMode);
         fps->setVisible(isAdvancedMode);
         videoWidth->setVisible(isAdvancedMode);
         videoHeight->setVisible(isAdvancedMode);
         passList->setVisible(isAdvancedMode);
-        videoBitrate->setVisible(isAdvancedMode);
         int new_height = getHeight();
         int new_height_parent = getParentComponent()->getHeight();
         if(isAdvancedMode)
@@ -1047,8 +1214,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
                 new_height+=40;
                 new_height_parent+=40;
             }
-            new_height+=160;
-            new_height_parent+=160;
+            new_height+=200;
+            new_height_parent+=200;
         }
         else
         {
@@ -1057,8 +1224,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
                 new_height-=40;
                 new_height_parent-=40;
             }
-            new_height-=160;
-            new_height_parent-=160;
+            new_height-=200;
+            new_height_parent-=200;
         }
         setSize(getWidth(),new_height);
         getParentComponent()->setSize(getParentComponent()->getWidth(),new_height_parent);
