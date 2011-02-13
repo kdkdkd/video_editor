@@ -630,7 +630,8 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     }
 
     /* put sample parameters */
-    c->bit_rate = info.videos[0].bit_rate * 1000;
+   c->bit_rate = info.videos[0].bit_rate * 1000;
+   //c->qmin = 0; c->qmax = info.videos[0].bit_rate;
 
     //c->flags |= CODEC_FLAG_QSCALE;
     //c->global_quality = st->quality = FF_QP2LAMBDA * (float)info.videos[0].bit_rate;

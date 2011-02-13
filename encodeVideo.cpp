@@ -15,10 +15,24 @@ encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_V
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
+
+void encodeVideo::add ()
+{
+    encodeVideoComponent *child = (encodeVideoComponent*)getContentComponent();
+    if(child->qualityList->getSelectedId() == 100)
+    {
+        child->comboBoxChanged(child->qualityList);
+    }
+    if(child->resolutionList->getSelectedId() == 1)
+    {
+        child->comboBoxChanged(child->resolutionList);
+    }
+    setVisible(true);
+    addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
+}
 void encodeVideo::closeButtonPressed()
 {
     removeFromDesktop();
-    delete this->getContentComponent();
 }
 encodeVideo::~encodeVideo()
 {
@@ -39,16 +53,17 @@ void encodeVideoComponent::textEditorFocusLost (TextEditor& editor)
 void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
 {
 
-   String name = editor.getName();
-   if(name == "videoWidth" || name == "videoHeight")
-   {
+    String name = editor.getName();
+    if(name == "videoWidth" || name == "videoHeight")
+    {
         resolutionList->setSelectedId(-100,false);
-   }else if(name == "videoBitrate")
-   {
+    }
+    else if(name == "videoBitrate")
+    {
         qualityList->setSelectedId(-100,false);
-   }
-   clearValidation();
-   Validate();
+    }
+    clearValidation();
+    Validate();
 }
 
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
@@ -325,7 +340,6 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
     /* select audio codec */
 
 
-    Movie::AudioInfo audio_info = info->audios[0];
     for(int i = 0; i<audioCodec->getNumItems(); ++i)
     {
         if(capabilities::audio_codecs[audioCodec->getItemId(i)-1].display_id == "ac3")
@@ -335,15 +349,10 @@ void encodeVideoComponent::selectByMovieInfo(Movie::Info * info)
         }
     }
     audioCodec->setSelectedItemIndex(index);
-    if(audio_info.sample_rate>0)
-        audioSampleRate->setText(String(audio_info.sample_rate));
-    else
-        audioSampleRate->setText(String("441"));
-    if(audio_info.bit_rate>0)
-        audioBitrate->setText(String(audio_info.bit_rate));
-    else
-        audioBitrate->setText(String("64"));
-    channels->setText(String(audio_info.channels));
+    audioSampleRate->setText(String("441"));
+    audioBitrate->setText(String("64"));
+    channels->setText(String("2"));
+
     /* ~select audio codec */
 }
 
@@ -462,9 +471,9 @@ void encodeVideoComponent::paint (Graphics& g)
                       Justification::centredRight, true);
 
     if(hasCompressionPreset)
-    g.drawFittedText (LABEL_VIDEO_SAVE_COMPRESSION,
-                      0, 204+ upDetailed + 40, 148-20, 30,2,
-                      Justification::centredRight, true);
+        g.drawFittedText (LABEL_VIDEO_SAVE_COMPRESSION,
+                          0, 204+ upDetailed + 40, 148-20, 30,2,
+                          Justification::centredRight, true);
 
 
 
@@ -479,7 +488,7 @@ void encodeVideoComponent::paint (Graphics& g)
 
 
     if(isAdvancedMode)
-    g.drawText (T("X"),
+        g.drawText (T("X"),
                     300-28-20, 164+ upDetailed+120 + add, 32, 30,
                     Justification::centred, true);
 
@@ -644,7 +653,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
             enableAudio->setEnabled(false);
             enableAudio->setToggleState(true,true);
-        }else if(!selected_format.allowAudio)
+        }
+        else if(!selected_format.allowAudio)
         {
             enableAudio->setEnabled(false);
             enableAudio->setToggleState(false,true);
@@ -764,7 +774,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                 }
                 compressionPreset->setVisible(true);
                 gop->setEnabled(false);
-            }else
+            }
+            else
             {
                 if(isAdvancedMode)
                 {
@@ -784,15 +795,15 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         /* ~Update gui: change CompressionPreset visibility */
 
         /*  Update gui: two pass */
-            if(vc.allowTwoPass)
-            {
-                passList->setEnabled(true);
-            }
-            else
-            {
-                passList->setSelectedId(1);
-                passList->setEnabled(false);
-            }
+        if(vc.allowTwoPass)
+        {
+            passList->setEnabled(true);
+        }
+        else
+        {
+            passList->setSelectedId(1);
+            passList->setEnabled(false);
+        }
 
         /*  ~Update gui: two pass */
     }
@@ -846,11 +857,19 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 }
 void encodeVideoComponent::clearValidation()
 {
-    fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));fps->applyFontToAllText(fps->getFont());fps->setTooltip("");
-    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoWidth->applyFontToAllText(videoWidth->getFont());videoWidth->setTooltip("");
-    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoHeight->applyFontToAllText(videoHeight->getFont());videoHeight->setTooltip("");
+    fps->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
+    fps->applyFontToAllText(fps->getFont());
+    fps->setTooltip("");
+    videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
+    videoWidth->applyFontToAllText(videoWidth->getFont());
+    videoWidth->setTooltip("");
+    videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
+    videoHeight->applyFontToAllText(videoHeight->getFont());
+    videoHeight->setTooltip("");
     //gop->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));gop->applyFontToAllText(gop->getFont());gop->setTooltip("");
-    videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));videoBitrate->applyFontToAllText(videoBitrate->getFont());videoBitrate->setTooltip("");
+    videoBitrate->setColour(TextEditor::textColourId,Colour::fromRGB(0,0,0));
+    videoBitrate->applyFontToAllText(videoBitrate->getFont());
+    videoBitrate->setTooltip("");
 }
 
 bool encodeVideoComponent::Validate()
@@ -945,7 +964,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             qualityList->setEnabled(true);
             compressionPreset->setEnabled(true);
             resolutionList->setEnabled(true);
-        }else
+        }
+        else
         {
             videoWidth->setEnabled(false);
             videoHeight->setEnabled(false);
@@ -976,7 +996,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             audioCodec->setEnabled(true);
             audioSampleRate->setEnabled(true);
             channels->setEnabled(true);
-        }else
+        }
+        else
         {
             audioBitrate->setEnabled(false);
             audioCodec->setEnabled(false);

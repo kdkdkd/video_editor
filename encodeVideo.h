@@ -14,6 +14,7 @@ class encodeVideo  : DocumentWindow
     encodeVideo(MainComponent* mainWindow);
     ~encodeVideo();
     void closeButtonPressed();
+    void add ();
 };
 
 class encodeVideoComponent  : public ComboBoxListener,
@@ -38,18 +39,19 @@ public:
     void clearValidation();
     bool Validate();
     void textEditorTextChanged(TextEditor& editor);
-
-
+    ComboBox* qualityList;
+    ComboBox* resolutionList;
 private:
+
     MainComponent* mainWindow;
     ComboBox* format;
     FilenameComponent* path;
 
     GroupComponent* groupComponent;
     ComboBox* videoCodec;
-    ComboBox* resolutionList;
+
     ComboBox* passList;
-    ComboBox* qualityList;
+
     ToggleButton* advancedMode;
     bool isAdvancedMode;
     TextEditor* videoWidth;

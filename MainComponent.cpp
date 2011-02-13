@@ -912,12 +912,14 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSave:
     {
         StopVideo();
-        if(encodeVideoWindow)
+        if(!encodeVideoWindow)
         {
-            delete encodeVideoWindow;
-            encodeVideoWindow = 0;
+            encodeVideoWindow = new encodeVideo(this);
+        }else
+        {
+            encodeVideoWindow->add();
         }
-        encodeVideoWindow = new encodeVideo(this);
+
 
     }
 
