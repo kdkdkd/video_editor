@@ -830,14 +830,24 @@ static void close_audio(AVFormatContext *oc, AVStream *st)
 /* prepare a dummy image */
 static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, Timeline * timeline,PixelFormat pix_fmt)
 {
+
+    Movie::VideoInfo video_info = info.videos[0];
     if(!timeline->current_interval)
     {
         //Make black image
+
+        int height = video_info.height;
+        int width = video_info.width;
+
+        /* Y */memset(pict->data[0],0,(height-1) * pict->linesize[0] + width-1);
+        /* U */memset(pict->data[1],128,(height/2-1) * pict->linesize[1] + width/2-1);
+        /* V */memset(pict->data[2],128,(height/2-1) * pict->linesize[2] + width/2-1);
+
         end_writing = !timeline->SkipFrame();
         return;
     }
     Movie * movie = timeline->current_interval->movie;
-    Movie::VideoInfo video_info = info.videos[0];
+
     if(
         img_convert_ctx == NULL
         || srcW != movie->width
