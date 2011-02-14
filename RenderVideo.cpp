@@ -624,7 +624,8 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     {
         c->codec_tag = AV_RL32("xvid");
         //c->codec_id = CODEC_ID_XVID;
-    }else if(info.videos[0].codec_short == "libx264")
+    }
+    else if(info.videos[0].codec_short == "libx264")
     {
         is_codec_x264 = true;
     }
@@ -633,14 +634,17 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info)
     if(info.videos[0].is_bitrate_or_crf)
     {
         c->bit_rate = info.videos[0].bit_rate * 1000;
-    }else
+    }
+    else
     {
         if(is_codec_x264)
         {
             c->crf = info.videos[0].bit_rate;
-        }else
+        }
+        else
         {
-            c->qmin = 1;c->qmax = info.videos[0].bit_rate;
+            c->qmin = 1;
+            c->qmax = info.videos[0].bit_rate;
         }
     }
 
@@ -849,9 +853,12 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
         int height = video_info.height;
         int width = video_info.width;
 
-        /* Y */memset(pict->data[0],0,(height-1) * pict->linesize[0] + width-1);
-        /* U */memset(pict->data[1],128,(height/2-1) * pict->linesize[1] + width/2-1);
-        /* V */memset(pict->data[2],128,(height/2-1) * pict->linesize[2] + width/2-1);
+        /* Y */
+        memset(pict->data[0],0,(height-1) * pict->linesize[0] + width-1);
+        /* U */
+        memset(pict->data[1],128,(height/2-1) * pict->linesize[1] + width/2-1);
+        /* V */
+        memset(pict->data[2],128,(height/2-1) * pict->linesize[2] + width/2-1);
 
         end_writing = !timeline->SkipFrame();
         return;
@@ -1008,7 +1015,12 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     }
     return true;
 }
-
+int _WritePacket(void* cookie, uint8_t* buffer, int bufferSize)
+{
+    FileOutputStream* fs = reinterpret_cast<FileOutputStream*>(cookie);
+    int res = fs->write(buffer,bufferSize);
+    return res;
+}
 bool Timeline::Render(const Movie::Info & info)
 {
     bool video_enabled = info.videos.size()>0;
@@ -1059,11 +1071,15 @@ bool Timeline::Render(const Movie::Info & info)
             open_audio(oc, audio_st);
         }
 
-        url_fopen(&oc->pb, c_string_filename, URL_WRONLY);
+        File f(info.filename);
+        FileOutputStream* fs = f.createOutputStream();
+        ByteIOContext* ByteIOCtx = new ByteIOContext();
+        int lSize = 32768;
+        unsigned char* pDataBuffer = new unsigned char[lSize];
+        init_put_byte(ByteIOCtx, pDataBuffer, lSize, 1, fs, NULL, _WritePacket, NULL);
+        oc->pb = ByteIOCtx;
 
         av_write_header(oc);
-
-
 
         for(;;)
         {
@@ -1115,7 +1131,9 @@ bool Timeline::Render(const Movie::Info & info)
         if (!(fmt->flags & AVFMT_NOFILE))
         {
 
-            url_fclose(oc->pb);
+            delete []pDataBuffer;
+            delete ByteIOCtx;
+            delete fs;
         }
 
 
