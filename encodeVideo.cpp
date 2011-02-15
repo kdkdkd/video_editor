@@ -11,7 +11,7 @@ encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_V
     encodeVideoComponent* contentComponent = new encodeVideoComponent (mainWindow);
 
     setContentComponent(contentComponent);
-    centreAroundComponent(mainWindow, 800, 370 + upDetailed+200);
+    centreAroundComponent(mainWindow, 800, 370 + upDetailed);
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
@@ -266,7 +266,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoCodec->setTextWhenNothingSelected (String::empty);
     videoCodec->addListener (this);
 
-    addAndMakeVisible (rateControl = new ComboBox ());
+    addChildComponent (rateControl = new ComboBox ());
     rateControl->setEditableText (false);
     rateControl->setJustificationType (Justification::centredLeft);
     rateControl->setTextWhenNothingSelected (String::empty);
@@ -280,7 +280,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     resolutionList->addListener (this);
 
 
-    addAndMakeVisible (passList = new ComboBox ());
+    addChildComponent (passList = new ComboBox ());
     passList->setEditableText (false);
     passList->setJustificationType (Justification::centredLeft);
     passList->setTextWhenNothingSelected (String::empty);
@@ -294,9 +294,9 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     qualityList->addListener (this);
 
     addAndMakeVisible (advancedMode= new ToggleButton (LABEL_VIDEO_SAVE_ADVANCED_MODE));
-    advancedMode->setToggleState (true, false);
+    advancedMode->setToggleState (false, false);
     advancedMode->addListener (this);
-    isAdvancedMode = true;
+    isAdvancedMode = false;
 
     addAndMakeVisible (enableVideo= new ToggleButton (LABEL_VIDEO_SAVE_ENABLE_VIDEO));
     enableVideo->setToggleState (true, false);
@@ -312,7 +312,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     String digits = T("0123456789");
     String digits_and_dot = T("0123456789.");
 
-    addAndMakeVisible (videoWidth = new TextEditor (T("videoWidth")));
+    addChildComponent (videoWidth = new TextEditor (T("videoWidth")));
     videoWidth->setInputRestrictions(4,digits);
     videoWidth->setMultiLine (false);
     videoWidth->setReturnKeyStartsNewLine (false);
@@ -334,7 +334,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     crf->setText (String::empty);
     crf->addListener (this);
 
-    addAndMakeVisible (gop = new TextEditor ("gop"));
+    addChildComponent (gop = new TextEditor ("gop"));
     gop->setInputRestrictions(3,digits);
     gop->setMultiLine (false);
     gop->setReturnKeyStartsNewLine (false);
@@ -345,7 +345,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     gop->setText (String::empty,false);
     gop->addListener(this);
 
-    addAndMakeVisible (videoHeight = new TextEditor (T("videoHeight")));
+    addChildComponent (videoHeight = new TextEditor (T("videoHeight")));
     videoHeight->setInputRestrictions(4,digits);
     videoHeight->setMultiLine (false);
     videoHeight->setReturnKeyStartsNewLine (false);
@@ -356,7 +356,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoHeight->setText (String::empty);
     videoHeight->addListener (this);
 
-    addAndMakeVisible (videoBitrate = new TextEditor (T("videoBitrate")));
+    addChildComponent (videoBitrate = new TextEditor (T("videoBitrate")));
     videoBitrate->setInputRestrictions(5,digits);
     videoBitrate->setMultiLine (false);
     videoBitrate->setReturnKeyStartsNewLine (false);
@@ -367,7 +367,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     videoBitrate->setText (String::empty);
     videoBitrate->addListener (this);
 
-    addAndMakeVisible (fps = new TextEditor ());
+    addChildComponent (fps = new TextEditor ());
     fps->setInputRestrictions(0,digits_and_dot);
     fps->setMultiLine (false);
     fps->setReturnKeyStartsNewLine (false);
