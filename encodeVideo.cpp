@@ -32,20 +32,21 @@ void encodeVideo::add()
     }
     if(need_recalculate_crf)
         child->recalculateCRF();
-    child->path->setCurrentFile(child->getCurrentFileName(),false);
-    child->UpdateFileExtension();
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
 }
-void encodeVideoComponent::UpdateFileExtension()
+void encodeVideoComponent::UpdateFileExtension(bool forse_extension)
 {
     File temp(path->getCurrentFile());
     capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
     String full_path = temp.getFullPathName();
     int last_index_of_dot = full_path.lastIndexOf(".");
+
     String new_file_with_ext;
     if(last_index_of_dot>=0)
     {
+        if(!forse_extension)
+            return;
         new_file_with_ext = full_path.substring(0,last_index_of_dot);
     }
     else
@@ -254,6 +255,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
             String::empty,
             String::empty));
 
+    path->addListener(this);
 
     addAndMakeVisible (groupComponent = new GroupComponent (T("g1"),
             LABEL_VIDEO));
@@ -789,7 +791,13 @@ void encodeVideoComponent::resized()
     cancel->setBounds (248+380, 300 + upDetailed, 150, 24);
     compressionPreset->setBounds (200-48, 128+ upDetailed+120, 232, 24);
 }
-
+void encodeVideoComponent::filenameComponentChanged (FilenameComponent* fileComponentThatHasChanged)
+{
+    if(fileComponentThatHasChanged == path)
+    {
+        UpdateFileExtension(false);
+    }
+}
 void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 {
     if (comboBoxThatHasChanged == rateControl)
@@ -817,7 +825,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     else if (comboBoxThatHasChanged == format)
     {
         /* set file extension */
-        UpdateFileExtension();
+        UpdateFileExtension(true);
         capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
         /* ~set file extension */
 
@@ -1120,6 +1128,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
 
         mainWindow->timeline->Render(GetMovieInfo());
         getParentComponent()->removeFromDesktop();
+        path->setCurrentFile(getCurrentFileName(),false);
+        UpdateFileExtension(true);
     }
     else if (buttonThatWasClicked == cancel)
     {
