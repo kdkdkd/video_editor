@@ -159,6 +159,8 @@ String LABEL_VIDEO_SAVE_RATE_CONTROL_CQ = T("Постоянное качеств
 String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF = T("Коэффициент (crf)");
 String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP = T("Коэффициент (cqp)");
 
+String LABEL_VIDEO_SAVE_FAILED = T("Не удалось сохранить видео");
+
 
 
 }
