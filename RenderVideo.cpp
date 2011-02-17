@@ -23,6 +23,7 @@ public:
     String pass_info;
     bool is_codec_x264;
     SwsContext *img_convert_ctx;
+    bool error;
     RenderContext()
     {
         picture = 0;
@@ -32,6 +33,10 @@ public:
         img_convert_ctx = 0;
     }
     ~RenderContext()
+    {
+        Dispose();
+    }
+    void Dispose()
     {
         if(img_convert_ctx != NULL )
         {
@@ -646,14 +651,24 @@ static void setCompressionPreset(AVCodecContext *c, int preset,int pass_number,R
 
 static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,RenderContext *rc)
 {
-
     AVCodecContext *c;
     AVStream *st;
 
     st = av_new_stream(oc, 0);
-
+    if (!st)
+    {
+        rc->error = true;
+        fprintf(stderr, "Could not alloc stream\n");
+        return st;
+    }
 
     AVCodec *codec = avcodec_find_encoder_by_name(info.videos[0].codec_short.toCString());
+    if (!codec)
+    {
+        rc->error = true;
+        fprintf(stderr, "Could find encoder\n");
+        return st;
+    }
 
     c = st->codec;
 
@@ -735,17 +750,28 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
             c->stats_in = const_cast<char *>(rc->pass_info.toCString());
         }
     }
-    avcodec_open(c, codec);
+    if(avcodec_open(c, codec)<0)
+    {
+        rc->error = true;
+        fprintf(stderr, "could not open codec\n");
+        return st;
+    }
 
     return st;
 }
 
-static AVStream *add_audio_stream(AVFormatContext *oc, enum CodecID codec_id,const Movie::Info & info)
+static AVStream *add_audio_stream(AVFormatContext *oc, enum CodecID codec_id,const Movie::Info & info, RenderContext *rc)
 {
     AVCodecContext *c;
     AVStream *st;
 
     st = av_new_stream(oc, 1);
+    if (!st)
+    {
+        rc->error = true;
+        fprintf(stderr, "Could not alloc stream\n");
+        return st;
+    }
 
     c = st->codec;
     c->codec_id = codec_id;
@@ -775,9 +801,20 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
 
     /* find the audio encoder */
     codec = avcodec_find_encoder(c->codec_id);
+    if (!codec)
+    {
+        rc->error = true;
+        fprintf(stderr, "codec not found\n");
+        return;
+    }
 
     /* open it */
-    avcodec_open(c, codec) < 0;
+    if(avcodec_open(c, codec) < 0)
+    {
+        rc->error = true;
+        fprintf(stderr, "could not open codec\n");
+        return;
+    }
 
     /* init signal generator */
     rc->t = 0;
@@ -787,7 +824,12 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
 
     rc->audio_outbuf_size = 1000000;
     rc->audio_outbuf = (uint8_t *)av_malloc(rc->audio_outbuf_size);
-
+    if(!rc->audio_outbuf)
+    {
+        rc->error = true;
+        fprintf(stderr, "could alocate audio buffer size %d\n",rc->audio_outbuf_size);
+        return;
+    }
     /* ugly hack for PCM codecs (will be removed ASAP with new PCM
        support to compute the input frame size in samples */
     if (c->frame_size <= 1)
@@ -809,7 +851,14 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     {
         rc->audio_input_frame_size = c->frame_size;
     }
-    rc->samples = (int16_t *)av_malloc(rc->audio_input_frame_size * 2 * c->channels);
+    int size_samples = rc->audio_input_frame_size * 2 * c->channels;
+    rc->samples = (int16_t *)av_malloc(size_samples);
+    if(!rc->samples)
+    {
+        rc->error = true;
+        fprintf(stderr, "could alocate audio buffer size %d\n",size_samples);
+        return;
+    }
 }
 
 static AVFrame *alloc_picture(enum PixelFormat pix_fmt, int width, int height)
@@ -820,16 +869,20 @@ static AVFrame *alloc_picture(enum PixelFormat pix_fmt, int width, int height)
 
     picture = avcodec_alloc_frame();
     if (!picture)
-        return NULL;
+        return 0;
     size = avpicture_get_size(pix_fmt, width, height);
+    if(size<0)
+    {
+        av_free(picture);
+        return 0;
+    }
     picture_buf = (uint8_t *)av_malloc(size);
     if (!picture_buf)
     {
         av_free(picture);
-        return NULL;
+        return 0;
     }
-    avpicture_fill((AVPicture *)picture, picture_buf,
-                   pix_fmt, width, height);
+    avpicture_fill((AVPicture *)picture, picture_buf, pix_fmt, width, height);
     return picture;
 }
 
@@ -843,23 +896,23 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
     rc->video_outbuf = NULL;
     if (!(oc->oformat->flags & AVFMT_RAWPICTURE))
     {
-        /* allocate output buffer */
-        /* XXX: API change will be done */
-        /* buffers passed into lav* can be allocated any way you prefer,
-           as long as they're aligned enough for the architecture, and
-           they're freed appropriately (such as using av_free for buffers
-           allocated with av_malloc) */
         rc->video_outbuf_size = 20000000;
         rc->video_outbuf = (uint8_t *)av_malloc(rc->video_outbuf_size);
+        if(!rc->video_outbuf)
+        {
+            rc->error = true;
+            fprintf(stderr, "could alocate video buffer size %d\n",rc->video_outbuf_size);
+            return;
+        }
     }
 
-    /* allocate the encoded raw picture */
     rc->picture = alloc_picture(c->pix_fmt, c->width, c->height);
-
-
-    /* if the output format is not YUV420P, then a temporary YUV420P
-       picture is needed too. It is then converted to the required
-       output format */
+    if(!rc->picture)
+    {
+        rc->error = true;
+        fprintf(stderr, "Could not allocate picture\n");
+        return;
+    }
 }
 
 static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, Timeline * timeline,PixelFormat pix_fmt, RenderContext *rc)
@@ -912,6 +965,12 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
                                              dstW, dstH,
                                              dstFormat,
                                              sws_flags, NULL, NULL, NULL);
+        if (rc->img_convert_ctx == NULL)
+        {
+            fprintf(stderr, "Cannot initialize the conversion context\n");
+            rc->error = true;
+            return;
+        }
     }
 
 
@@ -929,12 +988,11 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     AVCodecContext *c;
     c = st->codec;
 
-
+    fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
+    if(rc->error)
     {
-        fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
+        return false;
     }
-
-    //picture->quality = info.videos[0].bit_rate;
 
     if (oc->oformat->flags & AVFMT_RAWPICTURE)
     {
@@ -948,7 +1006,12 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
         pkt.data= (uint8_t *)rc->picture;
         pkt.size= sizeof(AVPicture);
 
-        av_interleaved_write_frame(oc, &pkt);
+        if(av_interleaved_write_frame(oc, &pkt)<0)
+        {
+            fprintf(stderr, "Error while writing video packet\n");
+            rc->error = true;
+            return false;
+        }
     }
     else
     {
@@ -965,8 +1028,16 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
             out_size = avcodec_encode_video(c, rc->video_outbuf, rc->video_outbuf_size, send_picture);
             /* if zero size, it means the image was buffered */
 
-            if (out_size <= 0)
+            if (out_size < 0)
+            {
+                fprintf(stderr, "Error while encoding video packet\n");
+                rc->error = true;
+                return false;
+            }
+
+            if(out_size == 0)
                 break;
+
             AVPacket pkt;
             av_init_packet(&pkt);
 
@@ -979,7 +1050,12 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
             pkt.size = out_size;
 
             /* write the compressed frame in the media file */
-            av_interleaved_write_frame(oc, &pkt);
+             if(av_interleaved_write_frame(oc, &pkt)<0)
+            {
+                fprintf(stderr, "Error while writing video packet\n");
+                rc->error = true;
+                return false;
+            }
             if(rc->all_pass>1 && c->stats_out)
                 rc->pass_info<<c->stats_out;
             if (!rc->end_writing)
@@ -1020,8 +1096,13 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     c = st->codec;
     get_audio_frame(rc->samples, rc->audio_input_frame_size, c->channels, info, timeline, rc);
 
-    pkt.size= avcodec_encode_audio(c, rc->audio_outbuf, rc->audio_outbuf_size, rc->samples);
-
+    pkt.size = avcodec_encode_audio(c, rc->audio_outbuf, rc->audio_outbuf_size, rc->samples);
+    if(pkt.size<0)
+    {
+        fprintf(stderr, "Error while encoding audio packet\n");
+        rc->error = true;
+        return false;
+    }
     if (c->coded_frame && c->coded_frame->pts != AV_NOPTS_VALUE)
         pkt.pts= av_rescale_q(c->coded_frame->pts, c->time_base, st->time_base);
     pkt.flags |= AV_PKT_FLAG_KEY;
@@ -1029,29 +1110,24 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     pkt.data = rc->audio_outbuf;
 
     /* write the compressed frame in the media file */
-    if (av_interleaved_write_frame(oc, &pkt) != 0)
+    if (av_interleaved_write_frame(oc, &pkt) <0)
     {
+        fprintf(stderr, "Error while writing audio packet\n");
+        rc->error = true;
         return false;
     }
     return true;
 }
+
 int _WritePacket(void* cookie, uint8_t* buffer, int bufferSize)
 {
     FileOutputStream* fs = reinterpret_cast<FileOutputStream*>(cookie);
-    int res;
-    try
-    {
-        res = fs->write(buffer,bufferSize);
-    }catch(...)
-    {
-        res = 0;
-    }
-    return res;
+    return fs->write(buffer,bufferSize);
 }
 
 class CloseRender
 {
-    public:
+public:
     AVStream* video_st;
     AVStream* audio_st;
     AVFormatContext *oc;
@@ -1089,8 +1165,6 @@ class CloseRender
             }
             av_free(oc);
             oc = 0;
-
-
         }
         if(pDataBuffer)
         {
@@ -1117,6 +1191,7 @@ bool Timeline::Render(const Movie::Info & info)
     RenderContext rc,*rcp = &rc;
     rcp->pass_info=String::empty;
     rcp->is_codec_x264 = false;
+    rcp->error = false;
 
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
@@ -1138,8 +1213,17 @@ bool Timeline::Render(const Movie::Info & info)
 
         const char * c_string_filename = info.filename.toCString();
         fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
-
+        if (!fmt)
+        {
+            fprintf(stderr, "Could not deduce output format\n");
+            return false;
+        }
         deleter.oc = avformat_alloc_context();
+        if (!deleter.oc)
+        {
+            fprintf(stderr, "Could not avformat_alloc_context\n");
+            return false;
+        }
         deleter.oc->oformat = fmt;
 
         snprintf(deleter.oc->filename, sizeof(deleter.oc->filename), "%s", c_string_filename);
@@ -1149,34 +1233,84 @@ bool Timeline::Render(const Movie::Info & info)
         {
             GotoSecondAndRead(0.0,false);
             deleter.video_st = add_video_stream(deleter.oc, info, rcp);
+            if(rcp->error)
+                return false;
         }
         if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
         {
-            deleter.audio_st = add_audio_stream(deleter.oc, fmt->audio_codec,info);
+            deleter.audio_st = add_audio_stream(deleter.oc, fmt->audio_codec, info, rcp);
+            if(rcp->error)
+                return false;
         }
-        av_set_parameters(deleter.oc, NULL);
+        if (av_set_parameters(deleter.oc, NULL) < 0)
+        {
+            fprintf(stderr, "Invalid output format parameters\n");
+            return false;
+        }
 
         if (deleter.video_st)
         {
             open_video(deleter.oc, deleter.video_st, rcp);
+            if(rcp->error)
+                return false;
         }
         if (deleter.audio_st)
         {
             open_audio(deleter.oc, deleter.audio_st, rcp);
+            if(rcp->error)
+                return false;
         }
 
         File f(info.filename);
-        FileOutputStream* fs = f.createOutputStream();
-        deleter.fs = fs;
-        int lSize = 32768;
-        ByteIOContext* ByteIOCtx = new ByteIOContext();
-        deleter.ByteIOCtx = ByteIOCtx;
-        unsigned char* pDataBuffer = new unsigned char[lSize];
-        deleter.pDataBuffer = pDataBuffer;
-        init_put_byte(ByteIOCtx, pDataBuffer, lSize, 1, fs, NULL, _WritePacket, NULL);
-        deleter.oc->pb = ByteIOCtx;
+        if(f.exists())
+        {
+            if(!f.deleteFile())
+            {
+                fprintf(stderr, "Not able to delete file\n");
+                return false;
+            }
+        }
+        if(!f.hasWriteAccess())
+        {
+            fprintf(stderr, "No write access\n");
+            return false;
+        }
 
-        av_write_header(deleter.oc);
+
+
+
+        deleter.fs = f.createOutputStream();
+        int lSize = 32768;
+        try
+        {
+            deleter.ByteIOCtx = new ByteIOContext();
+        }
+        catch(std::bad_alloc& ex)
+        {
+            fprintf(stderr, "Memory allocation error\n");
+            deleter.ByteIOCtx = 0;
+            return false;
+        }
+
+        try
+        {
+            deleter.pDataBuffer = new unsigned char[lSize];
+        }
+        catch(std::bad_alloc& ex)
+        {
+            fprintf(stderr, "Memory allocation error\n");
+            deleter.pDataBuffer = 0;
+            return false;
+        }
+
+        init_put_byte(deleter.ByteIOCtx, deleter.pDataBuffer, lSize, 1, deleter.fs, NULL, _WritePacket, NULL);
+        deleter.oc->pb = deleter.ByteIOCtx;
+
+        if(av_write_header(deleter.oc))
+        {
+            fprintf(stderr, "Can't write header\n");
+            return false;
+        }
 
         for(;;)
         {
@@ -1202,16 +1336,29 @@ bool Timeline::Render(const Movie::Info & info)
             {
 
                 write_audio_frame(deleter.oc, deleter.audio_st,info,this, rcp);
+                if(rcp->error)
+                {
+                    return false;
+                }
             }
             else
             {
                 write_video_frame(deleter.oc, deleter.video_st,info,this, rcp);
+                if(rcp->error)
+                {
+                    return false;
+                }
             }
         }
-        av_write_trailer(deleter.oc);
+
+        if(av_write_trailer(deleter.oc))
+        {
+            fprintf(stderr, "Can't write trailer\n");
+            return false;
+        }
 
 
-
+        rcp->Dispose();
     }
     return true;
 }

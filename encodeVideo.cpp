@@ -1133,6 +1133,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         getParentComponent()->removeFromDesktop();
         path->setCurrentFile(getCurrentFileName(),false);
         UpdateFileExtension(true);
+        mainWindow->repaint();
     }
     else if (buttonThatWasClicked == cancel)
     {
