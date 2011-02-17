@@ -908,10 +908,10 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
             rc->img_convert_ctx = NULL;
         }
         rc->img_convert_ctx = sws_getContext(srcW, srcH,
-                                         srcFormat,
-                                         dstW, dstH,
-                                         dstFormat,
-                                         sws_flags, NULL, NULL, NULL);
+                                             srcFormat,
+                                             dstW, dstH,
+                                             dstFormat,
+                                             sws_flags, NULL, NULL, NULL);
     }
 
 
@@ -1038,52 +1038,78 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 int _WritePacket(void* cookie, uint8_t* buffer, int bufferSize)
 {
     FileOutputStream* fs = reinterpret_cast<FileOutputStream*>(cookie);
-    int res = fs->write(buffer,bufferSize);
+    int res;
+    try
+    {
+        res = fs->write(buffer,bufferSize);
+    }catch(...)
+    {
+        res = 0;
+    }
     return res;
 }
 
-void CloseRender(AVStream* video_stream,AVStream* audio_stream,AVFormatContext *oc,ByteIOContext* ByteIOCtx,unsigned char* pDataBuffer,FileOutputStream* fs)
+class CloseRender
 {
-    if(video_stream)
+    public:
+    AVStream* video_st;
+    AVStream* audio_st;
+    AVFormatContext *oc;
+    ByteIOContext* ByteIOCtx;
+    unsigned char* pDataBuffer;
+    FileOutputStream* fs;
+    CloseRender()
     {
-        avcodec_close(video_stream->codec);
-        video_stream = 0;
-    }
-    if(audio_stream)
-    {
-        avcodec_close(audio_stream->codec);
-        audio_stream = 0;
-    }
-
-    if(oc)
-    {
-        for(int i = 0; i < oc->nb_streams; i++)
-        {
-            av_freep(&oc->streams[i]->codec);
-            av_freep(&oc->streams[i]);
-        }
-        av_free(oc);
+        video_st = 0;
+        audio_st = 0;
         oc = 0;
-
-
-    }
-    if(pDataBuffer)
-    {
-        delete []pDataBuffer;
-        pDataBuffer = 0;
-    }
-    if(ByteIOCtx)
-    {
-        delete ByteIOCtx;
         ByteIOCtx = 0;
-    }
-    if(fs)
-    {
-        delete fs;
+        pDataBuffer = 0;
         fs = 0;
     }
+    ~CloseRender()
+    {
+        if(video_st)
+        {
+            avcodec_close(video_st->codec);
+            video_st = 0;
+        }
+        if(audio_st)
+        {
+            avcodec_close(audio_st->codec);
+            audio_st = 0;
+        }
 
-}
+        if(oc)
+        {
+            for(int i = 0; i < oc->nb_streams; i++)
+            {
+                av_freep(&oc->streams[i]->codec);
+                av_freep(&oc->streams[i]);
+            }
+            av_free(oc);
+            oc = 0;
+
+
+        }
+        if(pDataBuffer)
+        {
+            delete []pDataBuffer;
+            pDataBuffer = 0;
+        }
+        if(ByteIOCtx)
+        {
+            delete ByteIOCtx;
+            ByteIOCtx = 0;
+        }
+        if(fs)
+        {
+            delete fs;
+            fs = 0;
+        }
+
+    }
+};
 
 bool Timeline::Render(const Movie::Info & info)
 {
@@ -1093,71 +1119,75 @@ bool Timeline::Render(const Movie::Info & info)
     rcp->is_codec_x264 = false;
 
 
-    return false;
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
     for(rcp->current_pass=1; rcp->current_pass<=rcp->all_pass; ++rcp->current_pass)
     {
+        CloseRender deleter;
+
         bool audio_enabled = info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
 
         rcp->pts = 0;
 
         rcp->end_writing = false;
         AVOutputFormat *fmt;
-        AVFormatContext *oc = 0;
-        AVStream *audio_st=0, *video_st=0;
+
+
         double audio_pts, video_pts;
         int i;
 
         const char * c_string_filename = info.filename.toCString();
         fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
 
-        oc = avformat_alloc_context();
-        oc->oformat = fmt;
+        deleter.oc = avformat_alloc_context();
+        deleter.oc->oformat = fmt;
 
-        snprintf(oc->filename, sizeof(oc->filename), "%s", c_string_filename);
-        video_st = NULL;
-        audio_st = NULL;
+        snprintf(deleter.oc->filename, sizeof(deleter.oc->filename), "%s", c_string_filename);
+        deleter.video_st = NULL;
+        deleter.audio_st = NULL;
         if (video_enabled)
         {
             GotoSecondAndRead(0.0,false);
-            video_st = add_video_stream(oc, info, rcp);
+            deleter.video_st = add_video_stream(deleter.oc, info, rcp);
         }
         if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
         {
-            audio_st = add_audio_stream(oc, fmt->audio_codec,info);
+            deleter.audio_st = add_audio_stream(deleter.oc, fmt->audio_codec,info);
         }
-        av_set_parameters(oc, NULL);
+        av_set_parameters(deleter.oc, NULL);
 
-        if (video_st)
+        if (deleter.video_st)
         {
-            open_video(oc, video_st, rcp);
+            open_video(deleter.oc, deleter.video_st, rcp);
         }
-        if (audio_st)
+        if (deleter.audio_st)
         {
-            open_audio(oc, audio_st, rcp);
+            open_audio(deleter.oc, deleter.audio_st, rcp);
         }
 
         File f(info.filename);
         FileOutputStream* fs = f.createOutputStream();
+        deleter.fs = fs;
         int lSize = 32768;
         ByteIOContext* ByteIOCtx = new ByteIOContext();
+        deleter.ByteIOCtx = ByteIOCtx;
         unsigned char* pDataBuffer = new unsigned char[lSize];
+        deleter.pDataBuffer = pDataBuffer;
         init_put_byte(ByteIOCtx, pDataBuffer, lSize, 1, fs, NULL, _WritePacket, NULL);
-        oc->pb = ByteIOCtx;
+        deleter.oc->pb = ByteIOCtx;
 
-        av_write_header(oc);
+        av_write_header(deleter.oc);
 
         for(;;)
         {
             /* compute current audio and video time */
-            if (audio_st)
-                audio_pts = (double)audio_st->pts.val * audio_st->time_base.num / audio_st->time_base.den;
+            if (deleter.audio_st)
+                audio_pts = (double)deleter.audio_st->pts.val * deleter.audio_st->time_base.num / deleter.audio_st->time_base.den;
             else
                 audio_pts = 0.0;
 
-            if (video_st)
-                video_pts = (double)video_st->pts.val * video_st->time_base.num / video_st->time_base.den;
+            if (deleter.video_st)
+                video_pts = (double)deleter.video_st->pts.val * deleter.video_st->time_base.num / deleter.video_st->time_base.den;
             else
                 video_pts = 0.0;
 
@@ -1168,19 +1198,19 @@ bool Timeline::Render(const Movie::Info & info)
                 break;
 
             /* write interleaved audio and video frames */
-            if (!video_st || (video_st && audio_st && audio_pts < video_pts))
+            if (!deleter.video_st || (deleter.video_st && deleter.audio_st && audio_pts < video_pts))
             {
 
-                write_audio_frame(oc, audio_st,info,this, rcp);
+                write_audio_frame(deleter.oc, deleter.audio_st,info,this, rcp);
             }
             else
             {
-                write_video_frame(oc, video_st,info,this, rcp);
+                write_video_frame(deleter.oc, deleter.video_st,info,this, rcp);
             }
         }
-        av_write_trailer(oc);
+        av_write_trailer(deleter.oc);
 
-        CloseRender(video_st, audio_st, oc, ByteIOCtx, pDataBuffer, fs);
+
 
     }
     return true;
