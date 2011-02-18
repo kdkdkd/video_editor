@@ -90,7 +90,7 @@ public:
     void Split();
     bool IsNearMovieBoundary();
 
-    bool Render(const Movie::Info & info);
+    String Render(const Movie::Info & info);
     bool IsEmpty();
 };
 

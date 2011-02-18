@@ -1126,9 +1126,9 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         }
 
         const Movie::Info &info = GetMovieInfo();
-        bool render_result = mainWindow->timeline->Render(info);
-        if(!render_result)
-            AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename);
+        String render_result = mainWindow->timeline->Render(info);
+        if(render_result!=String::empty)
+            AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
 
         getParentComponent()->removeFromDesktop();
         path->setCurrentFile(getCurrentFileName(),false);

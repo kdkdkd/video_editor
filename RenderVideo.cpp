@@ -24,6 +24,7 @@ public:
     bool is_codec_x264;
     SwsContext *img_convert_ctx;
     bool error;
+    String errorText;
     RenderContext()
     {
         picture = 0;
@@ -658,7 +659,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
     if (!st)
     {
         rc->error = true;
-        fprintf(stderr, "Could not alloc stream\n");
+        rc->errorText =  "Could not allocate stream";
         return st;
     }
 
@@ -666,7 +667,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
     if (!codec)
     {
         rc->error = true;
-        fprintf(stderr, "Could find encoder\n");
+        rc->errorText =  "Could not find encoder";
         return st;
     }
 
@@ -753,7 +754,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
     if(avcodec_open(c, codec)<0)
     {
         rc->error = true;
-        fprintf(stderr, "could not open codec\n");
+        rc->errorText =  "Could not open video codec";
         return st;
     }
 
@@ -769,7 +770,7 @@ static AVStream *add_audio_stream(AVFormatContext *oc, enum CodecID codec_id,con
     if (!st)
     {
         rc->error = true;
-        fprintf(stderr, "Could not alloc stream\n");
+        rc->errorText =  "Could not alloc stream";
         return st;
     }
 
@@ -804,7 +805,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if (!codec)
     {
         rc->error = true;
-        fprintf(stderr, "codec not found\n");
+        rc->errorText =  "Audio codec not found";
         return;
     }
 
@@ -812,7 +813,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if(avcodec_open(c, codec) < 0)
     {
         rc->error = true;
-        fprintf(stderr, "could not open codec\n");
+        rc->errorText =  "Could not open audio codec";
         return;
     }
 
@@ -827,7 +828,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if(!rc->audio_outbuf)
     {
         rc->error = true;
-        fprintf(stderr, "could alocate audio buffer size %d\n",rc->audio_outbuf_size);
+        rc->errorText = "Could not allocate audio buffer size";
         return;
     }
     /* ugly hack for PCM codecs (will be removed ASAP with new PCM
@@ -856,7 +857,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if(!rc->samples)
     {
         rc->error = true;
-        fprintf(stderr, "could alocate audio buffer size %d\n",size_samples);
+        rc->errorText =  "Could not alocate audio buffer size";
         return;
     }
 }
@@ -901,7 +902,7 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
         if(!rc->video_outbuf)
         {
             rc->error = true;
-            fprintf(stderr, "could alocate video buffer size %d\n",rc->video_outbuf_size);
+            rc->errorText =  "Could not alocate video buffer";
             return;
         }
     }
@@ -910,7 +911,7 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
     if(!rc->picture)
     {
         rc->error = true;
-        fprintf(stderr, "Could not allocate picture\n");
+        rc->errorText = "Could not allocate picture";
         return;
     }
 }
@@ -967,7 +968,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
                                              sws_flags, NULL, NULL, NULL);
         if (rc->img_convert_ctx == NULL)
         {
-            fprintf(stderr, "Cannot initialize the conversion context\n");
+            rc->errorText = "Can't initialize the conversion context";
             rc->error = true;
             return;
         }
@@ -1008,7 +1009,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
         if(av_interleaved_write_frame(oc, &pkt)<0)
         {
-            fprintf(stderr, "Error while writing video packet\n");
+            rc->errorText =  "Error while writing video packet";
             rc->error = true;
             return false;
         }
@@ -1030,7 +1031,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
             if (out_size < 0)
             {
-                fprintf(stderr, "Error while encoding video packet\n");
+                rc->errorText =  "Error while encoding video packet";
                 rc->error = true;
                 return false;
             }
@@ -1052,7 +1053,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
             /* write the compressed frame in the media file */
              if(av_interleaved_write_frame(oc, &pkt)<0)
             {
-                fprintf(stderr, "Error while writing video packet\n");
+                rc->errorText =  "Error while writing video packet";
                 rc->error = true;
                 return false;
             }
@@ -1099,7 +1100,7 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     pkt.size = avcodec_encode_audio(c, rc->audio_outbuf, rc->audio_outbuf_size, rc->samples);
     if(pkt.size<0)
     {
-        fprintf(stderr, "Error while encoding audio packet\n");
+        rc->errorText =  "Error while encoding audio packet";
         rc->error = true;
         return false;
     }
@@ -1112,7 +1113,7 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     /* write the compressed frame in the media file */
     if (av_interleaved_write_frame(oc, &pkt) <0)
     {
-        fprintf(stderr, "Error while writing audio packet\n");
+        rc->errorText =  "Error while writing audio packet";
         rc->error = true;
         return false;
     }
@@ -1185,7 +1186,7 @@ public:
     }
 };
 
-bool Timeline::Render(const Movie::Info & info)
+String Timeline::Render(const Movie::Info & info)
 {
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
@@ -1215,14 +1216,12 @@ bool Timeline::Render(const Movie::Info & info)
         fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
         if (!fmt)
         {
-            fprintf(stderr, "Could not deduce output format\n");
-            return false;
+            return "Could not deduce output format";
         }
         deleter.oc = avformat_alloc_context();
         if (!deleter.oc)
         {
-            fprintf(stderr, "Could not avformat_alloc_context\n");
-            return false;
+            return "Could not avformat_alloc_context";
         }
         deleter.oc->oformat = fmt;
 
@@ -1234,31 +1233,30 @@ bool Timeline::Render(const Movie::Info & info)
             GotoSecondAndRead(0.0,false);
             deleter.video_st = add_video_stream(deleter.oc, info, rcp);
             if(rcp->error)
-                return false;
+                return rcp->errorText;
         }
         if (fmt->audio_codec != CODEC_ID_NONE && audio_enabled)
         {
             deleter.audio_st = add_audio_stream(deleter.oc, fmt->audio_codec, info, rcp);
             if(rcp->error)
-                return false;
+                return rcp->errorText;
         }
         if (av_set_parameters(deleter.oc, NULL) < 0)
         {
-            fprintf(stderr, "Invalid output format parameters\n");
-            return false;
+            return "Invalid output format parameters";
         }
 
         if (deleter.video_st)
         {
             open_video(deleter.oc, deleter.video_st, rcp);
             if(rcp->error)
-                return false;
+                return rcp->errorText;
         }
         if (deleter.audio_st)
         {
             open_audio(deleter.oc, deleter.audio_st, rcp);
             if(rcp->error)
-                return false;
+                return rcp->errorText;
         }
 
         File f(info.filename);
@@ -1266,14 +1264,12 @@ bool Timeline::Render(const Movie::Info & info)
         {
             if(!f.deleteFile())
             {
-                fprintf(stderr, "Not able to delete file\n");
-                return false;
+                return "Not able to delete file";
             }
         }
         if(!f.hasWriteAccess())
         {
-            fprintf(stderr, "No write access\n");
-            return false;
+            return "No write access";
         }
 
 
@@ -1287,9 +1283,8 @@ bool Timeline::Render(const Movie::Info & info)
         }
         catch(std::bad_alloc& ex)
         {
-            fprintf(stderr, "Memory allocation error\n");
             deleter.ByteIOCtx = 0;
-            return false;
+            return "Memory allocation error";
         }
 
         try
@@ -1298,9 +1293,8 @@ bool Timeline::Render(const Movie::Info & info)
         }
         catch(std::bad_alloc& ex)
         {
-            fprintf(stderr, "Memory allocation error\n");
             deleter.pDataBuffer = 0;
-            return false;
+            return "Memory allocation error";
         }
 
         init_put_byte(deleter.ByteIOCtx, deleter.pDataBuffer, lSize, 1, deleter.fs, NULL, _WritePacket, NULL);
@@ -1308,8 +1302,7 @@ bool Timeline::Render(const Movie::Info & info)
 
         if(av_write_header(deleter.oc))
         {
-            fprintf(stderr, "Can't write header\n");
-            return false;
+            return "Can't write header";
         }
 
         for(;;)
@@ -1338,7 +1331,7 @@ bool Timeline::Render(const Movie::Info & info)
                 write_audio_frame(deleter.oc, deleter.audio_st,info,this, rcp);
                 if(rcp->error)
                 {
-                    return false;
+                    return rcp->errorText;
                 }
             }
             else
@@ -1346,20 +1339,19 @@ bool Timeline::Render(const Movie::Info & info)
                 write_video_frame(deleter.oc, deleter.video_st,info,this, rcp);
                 if(rcp->error)
                 {
-                    return false;
+                    return rcp->errorText;
                 }
             }
         }
 
         if(av_write_trailer(deleter.oc))
         {
-            fprintf(stderr, "Can't write trailer\n");
-            return false;
+            return "Can't write trailer";
         }
 
 
         rcp->Dispose();
     }
-    return true;
+    return String::empty;
 }
 
