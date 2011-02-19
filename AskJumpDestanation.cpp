@@ -89,8 +89,7 @@ void AskJumpDestanation::buttonClicked (Button* button)
         double input = (double)(input_hours->getText().getIntValue())*3600.0d + (double)(input_minutes->getText().getIntValue())*60.0d + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0d;
         if(fabs(mainWindow->timeline->current - input) > 0.01d)
         {
-            mainWindow->timeline->GotoSecondAndRead(input);
-            mainWindow->repaint();
+            mainWindow->GotoSecondAndRead(input);
         }
     }
     exitModalState(0);

@@ -9,11 +9,13 @@
 #include "toolbox.h"
 #include "ContainerBox.h"
 #include "encodeVideo.h"
+#include "events.h"
 
 class AskJumpDestanation;
 class encodeVideo;
 
 using namespace localization;
+
 
 class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener, public DragAndDropTarget
 {
@@ -141,6 +143,9 @@ public:
     int dragIntervalOffset;
 
     encodeVideo * encodeVideoWindow;
+
+    EventList AfterChangePosition;
+    void GotoSecondAndRead(double second);
 
 };
 

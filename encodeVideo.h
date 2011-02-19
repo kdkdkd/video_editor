@@ -57,10 +57,8 @@ public:
     ToggleButton* showPreview;
     Timeline* timeline;
     bool isPreviewVisible;
-private:
-
     MainComponent* mainWindow;
-
+private:
 
     GroupComponent* groupComponent;
     ComboBox* videoCodec;

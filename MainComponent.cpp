@@ -683,10 +683,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
         if(NeedDrawArrow())
         {
             int position = GetArrowPosition();
-            timeline->GotoSecondAndRead(GetPositionSecond(position));
-            ResizeViewport();
-            repaint();
-
+            GotoSecondAndRead(GetPositionSecond(position));
         }
         if(!timeline_original)
         {
@@ -1260,3 +1257,10 @@ void MainComponent::mouseExit(const MouseEvent& e)
         itemDropped(String(""),0,e.x, e.y);
 }
 
+void MainComponent::GotoSecondAndRead(double second)
+{
+    timeline->GotoSecondAndRead(second);
+    CallEventList(AfterChangePosition);
+    ResizeViewport();
+    repaint();
+}

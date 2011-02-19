@@ -6,7 +6,10 @@ videoPreview::videoPreview(encodeVideoComponent* parent):DocumentWindow(LABEL_PR
 {
     setTitleBarHeight (20);
     setResizable (true, false);
-    setBounds(10,10,400,300);
+    videoPreviewComponent* contentComponent = new videoPreviewComponent(parent);
+
+    setContentComponent(contentComponent);
+    setBounds(10,10,600,200);
     this->parent = parent;
     setVisible(true);
     add();
@@ -15,7 +18,21 @@ videoPreview::~videoPreview()
 {
 
 }
+void _DoOnMainComponentPointerChange(void * object)
+{
+    videoPreviewComponent * o = (videoPreviewComponent *)object;
+    o->repaint();
+}
 
+videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Component()
+{
+    this->parent = parent;
+    AddEvent(parent->mainWindow->AfterChangePosition,this,_DoOnMainComponentPointerChange);
+}
+videoPreviewComponent::~videoPreviewComponent()
+{
+
+}
 void videoPreview::closeButtonPressed()
 {
     remove();
@@ -33,7 +50,7 @@ void videoPreview::remove()
     parent->isPreviewVisible = false;
 }
 
-void videoPreview::paint(Graphics& g)
+void videoPreviewComponent::paint(Graphics& g)
 {
     g.drawImageWithin(*(parent->timeline->GetImage()),0,0,getWidth()/2,getHeight(),RectanglePlacement::centred,false);
 

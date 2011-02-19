@@ -4,8 +4,10 @@
 #include "juce/juce.h"
 #include "localization.h"
 #include "encodeVideo.h"
+#include "events.h"
 
 class encodeVideoComponent;
+
 class videoPreview  : DocumentWindow
 {
     public:
@@ -15,6 +17,14 @@ class videoPreview  : DocumentWindow
     void add();
     void remove();
     encodeVideoComponent *parent;
+};
+class videoPreviewComponent  : public Component
+{
+    public:
+    videoPreviewComponent(encodeVideoComponent* parent);
+    ~videoPreviewComponent();
+    encodeVideoComponent *parent;
     void paint (Graphics& g);
+    void DoOnMainComponentPointerChange();
 };
 #endif
