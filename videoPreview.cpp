@@ -32,3 +32,9 @@ void videoPreview::remove()
     parent->showPreview->setToggleState(false,false);
     parent->isPreviewVisible = false;
 }
+
+void videoPreview::paint(Graphics& g)
+{
+    g.drawImageWithin(*(parent->timeline->GetImage()),0,0,getWidth()/2,getHeight(),RectanglePlacement::centred,false);
+
+}

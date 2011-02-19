@@ -15,6 +15,6 @@ class videoPreview  : DocumentWindow
     void add();
     void remove();
     encodeVideoComponent *parent;
-
+    void paint (Graphics& g);
 };
 #endif
