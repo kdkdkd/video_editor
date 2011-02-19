@@ -798,6 +798,10 @@ bool MainComponent::perform (const InvocationInfo& info)
         if(interval)
         {
             StopVideo();
+            if(timeline->intervals.size()==1 && encodeVideoWindow)
+            {
+                encodeVideoWindow->closeButtonPressed();
+            }
             timeline->InsertIntervalIn(interval,-2.0);
             repaint();
         }
@@ -1158,6 +1162,11 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         }
         current_drag_x = -1;
         delete timeline;
+        if(timeline_original->intervals.size()==0 && encodeVideoWindow)
+        {
+            encodeVideoWindow->closeButtonPressed();
+        }
+
         timeline = timeline_original;
         timeline_original = 0;
         sliderValueChanged(scale_timeline);

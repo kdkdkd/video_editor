@@ -1,7 +1,7 @@
 #ifndef __JUCER_HEADER_ENCODEVIDEO_ENCODEVIDEO_19114A34__
 #define __JUCER_HEADER_ENCODEVIDEO_ENCODEVIDEO_19114A34__
 
-
+#include "videoPreview.h"
 #include "MainComponent.h"
 #include "juce/juce.h"
 #include <vector>
@@ -16,7 +16,7 @@ class encodeVideo  : DocumentWindow
     void closeButtonPressed();
     void add ();
 };
-
+class videoPreview;
 class encodeVideoComponent  : public ComboBoxListener,
                      public ButtonListener,
                      public Component,
@@ -53,6 +53,10 @@ public:
     void recalculateBitrate();
     void UpdateFileExtension(bool forse_extension);
     void filenameComponentChanged (FilenameComponent* fileComponentThatHasChanged);
+    videoPreview * preview;
+    ToggleButton* showPreview;
+    Timeline* timeline;
+    bool isPreviewVisible;
 private:
 
     MainComponent* mainWindow;
@@ -64,6 +68,7 @@ private:
     ComboBox* passList;
 
     ToggleButton* advancedMode;
+
     bool isAdvancedMode;
     TextEditor* videoWidth;
     TextEditor* videoHeight;

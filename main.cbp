@@ -85,6 +85,8 @@
 		<Unit filename="timeline.h" />
 		<Unit filename="toolbox.cpp" />
 		<Unit filename="toolbox.h" />
+		<Unit filename="videoPreview.cpp" />
+		<Unit filename="videoPreview.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

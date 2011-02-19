@@ -5,7 +5,6 @@
 #include "encodeVideo.h"
 encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_VIDEO,Colours::whitesmoke,DocumentWindow::closeButton)
 {
-
     setTitleBarHeight (20);
 
     encodeVideoComponent* contentComponent = new encodeVideoComponent (mainWindow);
@@ -124,7 +123,7 @@ void encodeVideoComponent::recalculateBitrate()
     case 100:
     {
         int bit_rate_max = 0;
-        for(vector<Timeline::Interval*>::iterator it = mainWindow->timeline->intervals.begin(); it!=mainWindow->timeline->intervals.end(); ++it)
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); ++it)
         {
             int bit_rate = (*it)->movie->GetMovieInfo()->bit_rate;
             if((*it)->movie->GetMovieInfo()->videos.size()>0)
@@ -170,6 +169,9 @@ void encodeVideoComponent::recalculateBitrate()
 }
 void encodeVideo::closeButtonPressed()
 {
+    encodeVideoComponent *child = (encodeVideoComponent*)getContentComponent();
+    if(child->isPreviewVisible)
+        child->preview->remove();
     removeFromDesktop();
 }
 encodeVideo::~encodeVideo()
@@ -210,7 +212,7 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
 }
 File encodeVideoComponent::getCurrentFileName()
 {
-    String filename = Time::getCurrentTime().formatted(File(mainWindow->timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
+    String filename = Time::getCurrentTime().formatted(File(timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
     return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
 }
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
@@ -229,10 +231,13 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     ok (0),
     cancel (0),
     Component("encodeVideoComponent"),
-    hasCompressionPreset(false)
+    preview(0),
+    hasCompressionPreset(false),
+    isPreviewVisible(false)
 {
     gopSetByUser = false;
     this->mainWindow = mainWindow;
+    this->timeline = mainWindow->timeline;
     addAndMakeVisible (compressionPreset = new ComboBox ());
     compressionPreset->setEditableText (false);
     compressionPreset->setJustificationType (Justification::centredLeft);
@@ -297,6 +302,11 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     advancedMode->setToggleState (false, false);
     advancedMode->addListener (this);
     isAdvancedMode = false;
+
+    addAndMakeVisible (showPreview= new ToggleButton (LABEL_VIDEO_SAVE_PREVIEW));
+    showPreview->setToggleState (false, false);
+    showPreview->addListener (this);
+
 
     addAndMakeVisible (enableVideo= new ToggleButton (LABEL_VIDEO_SAVE_ENABLE_VIDEO));
     enableVideo->setToggleState (true, false);
@@ -475,7 +485,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     passList->addItem(LABEL_VIDEO_SAVE_PASS_TWO,2);
 
     /* ~display all formats and codecs */
-    Movie::Info *movie_info = mainWindow->timeline->intervals.front()->movie->GetMovieInfo();
+    Movie::Info *movie_info = timeline->intervals.front()->movie->GetMovieInfo();
     selectByMovieInfo(movie_info);
 
 
@@ -586,6 +596,8 @@ encodeVideoComponent::~encodeVideoComponent()
     deleteAndZero (enableAudio);
     deleteAndZero (enableVideo);
     deleteAndZero (crf);
+    if(preview)
+        deleteAndZero (preview);
 }
 
 //==============================================================================
@@ -748,7 +760,7 @@ void encodeVideoComponent::paint (Graphics& g)
         g.setTiledImageFill (backgroundFill, 0, 0, 1.0f);
         g.fillAll();
     }
-    g.drawImageWithin(*(mainWindow->timeline->intervals[0]->preview),20,10,128,96 ,RectanglePlacement::centred,false);
+    g.drawImageWithin(*(timeline->intervals[0]->preview),20,10,128,96 ,RectanglePlacement::centred,false);
 
 
 }
@@ -766,8 +778,8 @@ void encodeVideoComponent::resized()
     if(hasCompressionPreset)
         add = 40;
 
-
-    enableVideo->setBounds (16+20, 104+ upDetailed-40, 360, 40);
+    showPreview->setBounds (16+20 + 180, 104+ upDetailed-40, 150, 40);
+    enableVideo->setBounds (16+20, 104+ upDetailed-40, 150, 40);
     groupComponent->setBounds (16, 104+ upDetailed , 380, group_height + add );
     videoCodec->setBounds (200-48, 128+ upDetailed, 232, 24);
     videoWidth->setBounds (200-48, 168+ upDetailed+120 + add, 88, 24);
@@ -1003,7 +1015,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             int max_pixel = 0;
             int max_pixel_width = 0;
             int max_pixel_height = 0;
-            for(vector<Timeline::Interval*>::iterator it = mainWindow->timeline->intervals.begin(); it!=mainWindow->timeline->intervals.end(); ++it)
+            for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); ++it)
             {
                 int current_pixel_width = (*it)->movie->width;
                 int current_pixel_height = (*it)->movie->height;
@@ -1115,7 +1127,21 @@ bool encodeVideoComponent::Validate()
 
 void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
 {
-    if (buttonThatWasClicked == ok)
+    if (buttonThatWasClicked == showPreview)
+    {
+        isPreviewVisible = !isPreviewVisible;
+        if(isPreviewVisible)
+        {
+            if(!preview)
+                preview = new videoPreview(this);
+            else
+                preview->add();
+        }else
+        {
+            preview->remove();
+        }
+
+    }else if (buttonThatWasClicked == ok)
     {
         clearValidation();
         if(!Validate())
@@ -1126,7 +1152,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         }
 
         const Movie::Info &info = GetMovieInfo();
-        String render_result = mainWindow->timeline->Render(info);
+        String render_result = timeline->Render(info);
         if(render_result!=String::empty)
             AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
 
@@ -1137,6 +1163,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
     }
     else if (buttonThatWasClicked == cancel)
     {
+        if(isPreviewVisible)
+            preview->remove();
         getParentComponent()->removeFromDesktop();
     }
     else if (buttonThatWasClicked == enableVideo)
