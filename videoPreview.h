@@ -26,5 +26,7 @@ class videoPreviewComponent  : public Component
     encodeVideoComponent *parent;
     void paint (Graphics& g);
     void DoOnMainComponentPointerChange();
+
+    Image encodedImage;
 };
 #endif

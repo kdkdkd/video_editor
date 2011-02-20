@@ -77,6 +77,8 @@
 		<Unit filename="capabilities.h" />
 		<Unit filename="encodeVideo.cpp" />
 		<Unit filename="encodeVideo.h" />
+		<Unit filename="events.cpp" />
+		<Unit filename="events.h" />
 		<Unit filename="localization.cpp" />
 		<Unit filename="localization.h" />
 		<Unit filename="movie.cpp" />

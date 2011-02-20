@@ -58,6 +58,7 @@ public:
     Timeline* timeline;
     bool isPreviewVisible;
     MainComponent* mainWindow;
+    Movie::Info GetMovieInfo();
 private:
 
     GroupComponent* groupComponent;
@@ -80,9 +81,6 @@ private:
     TextButton* ok;
     TextButton* cancel;
     TextEditor* gop;
-
-    Movie::Info GetMovieInfo();
-
 
     encodeVideoComponent (const encodeVideo&);
     const encodeVideoComponent& operator= (const encodeVideo&);
