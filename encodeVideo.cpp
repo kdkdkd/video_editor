@@ -1152,7 +1152,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         }
 
         const Movie::Info &info = GetMovieInfo();
-        String render_result = timeline->Render(info);
+        String render_result = timeline->Render(info,false);
         if(render_result!=String::empty)
             AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
 

@@ -24,6 +24,8 @@ public:
     bool is_codec_x264;
     SwsContext *img_convert_ctx;
     bool error;
+    bool preview;
+    int frames_left;
     String errorText;
     RenderContext()
     {
@@ -988,7 +990,13 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     c = st->codec;
 
     fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
-    rc->end_writing = !timeline->SkipFrame();
+    if(rc->preview)
+    {
+        rc->frames_left--;
+        if(rc->frames_left<=0)
+            rc->end_writing = true;
+    }else
+        rc->end_writing = !timeline->SkipFrame();
     if(rc->error)
     {
         return false;
@@ -1177,6 +1185,7 @@ public:
         }
         if(fs)
         {
+            fs->flush();
             delete fs;
             fs = 0;
         }
@@ -1184,13 +1193,16 @@ public:
     }
 };
 
-String Timeline::Render(const Movie::Info & info)
+String Timeline::Render(const Movie::Info & info, bool preview)
 {
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
     rcp->pass_info=String::empty;
     rcp->is_codec_x264 = false;
     rcp->error = false;
+    rcp->preview = preview;
+    if(preview)
+        rcp->frames_left = 30;
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
@@ -1227,7 +1239,8 @@ String Timeline::Render(const Movie::Info & info)
         deleter.audio_st = NULL;
         if (video_enabled)
         {
-            GotoSecondAndRead(0.0,false);
+            if(!rcp->preview)
+                GotoSecondAndRead(0.0,false);
             deleter.video_st = add_video_stream(deleter.oc, info, rcp);
             if(rcp->error)
                 return rcp->errorText;
@@ -1354,88 +1367,18 @@ String Timeline::Render(const Movie::Info & info)
 
 Image Timeline::RenderImage(const Movie::Info & info)
 {
-    if(!current_interval)
-        return Image();
-    int width = GetImage()->getWidth();
-    int height = GetImage()->getHeight();
-    RenderContext rc,*rcp = &rc;
-    rcp->pass_info=String::empty;
-    rcp->is_codec_x264 = false;
-    rcp->error = false;
 
-    rcp->all_pass = 1;
-
-    CloseRender deleter;
-
-    rcp->pts = 0;
-
-    rcp->end_writing = false;
-    AVOutputFormat * fmt = av_guess_format(info.format_short.toCString(), NULL, NULL);
-    if (!fmt)
-    {
-        return Image();
-    }
-    deleter.oc = avformat_alloc_context();
-    if (!deleter.oc)
-    {
-        return Image();
-    }
-    deleter.oc->oformat = fmt;
-    deleter.video_st = NULL;
-    deleter.video_st = add_video_stream(deleter.oc, info, rcp);
-    if(rcp->error)
-        return Image();
-    open_video(deleter.oc, deleter.video_st, rcp);
-    if(rcp->error)
+    Movie::Info info_copy = info;
+    Random r(1);
+    info_copy.filename += String(r.nextInt(99999));
+    String res = Render(info_copy,true);
+    if(res!=String::empty)
         return Image();
 
-    fill_frame(rcp->picture, rcp->frame_count, info, this, deleter.video_st->codec->pix_fmt, rcp);
-    int out_size = avcodec_encode_video(deleter.video_st->codec, rcp->video_outbuf, rcp->video_outbuf_size, rcp->picture);
-    if (out_size < 0)
-    {
+    Movie movie;
+    movie.Load(info_copy.filename);
+    if(!movie.loaded)
         return Image();
-    }else if(out_size == 0)
-    {
-        out_size = avcodec_encode_video(deleter.video_st->codec, rcp->video_outbuf, rcp->video_outbuf_size, NULL);
-    }
-
-    AVFrame *pFrame=avcodec_alloc_frame();
-    if(pFrame==NULL)
-        return Image();
-
-
-    int numBytes = avpicture_get_size(PIX_FMT_BGR24, width, height);
-    uint8_t * buffer = new uint8_t[numBytes];
-
-    avpicture_fill((AVPicture *)pFrame, buffer, deleter.video_st->codec->pix_fmt, width, height);
-
-    AVFrame *pFrameRGB=avcodec_alloc_frame();
-    if(pFrameRGB==NULL)
-        return Image();
-
-    numBytes = avpicture_get_size(PIX_FMT_BGR24, width, height);
-    buffer = new uint8_t[numBytes];
-
-    avpicture_fill((AVPicture *)pFrameRGB, buffer, PIX_FMT_BGR24, width, height);
-
-    int frameFinished;
-
-    AVPacket pkt;
-    av_init_packet(&pkt);
-
-    pkt.stream_index = deleter.video_st->index;
-    pkt.data = rcp->video_outbuf;
-    pkt.size = out_size;
-
-    avcodec_decode_video2(deleter.video_st->codec, pFrame, &frameFinished, &pkt);
-
-
-    Image res = Image(Image::RGB,width,height,true);
-    Image::BitmapData* bitmapData = new Image::BitmapData(res,0,0,width,height,true);
-
-    SwsContext *img_convert_ctx = sws_getContext(width,height,deleter.video_st->codec->pix_fmt,width,height,PIX_FMT_BGR24,SWS_BICUBIC, NULL, NULL, NULL);
-    sws_scale (img_convert_ctx, pFrame->data, pFrame->linesize, 0, height,&bitmapData->data,pFrameRGB->linesize);
-
-    return res;
+    return *movie.image;
 }
 
