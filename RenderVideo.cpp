@@ -1025,7 +1025,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     {
         /* encode the image */
 
-        if(rc->is_codec_x264)
+        //if(rc->is_codec_x264)
             rc->picture->pts = rc->pts++;
         for(;;)
         {
@@ -1202,7 +1202,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
     rcp->error = false;
     rcp->preview = preview;
     if(preview)
-        rcp->frames_left = 200;
+        rcp->frames_left = 300;
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
@@ -1376,7 +1376,7 @@ Image Timeline::RenderImage(const Movie::Info & info)
         return Image();
 
     Movie movie;
-    movie.Load(info_copy.filename);
+    movie.Load(info_copy.filename,true);
     if(!movie.loaded)
         return Image();
     for(int i = 0;i<80;++i)

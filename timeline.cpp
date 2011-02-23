@@ -19,10 +19,10 @@ Timeline::Timeline()
 
 
 
-Movie* Timeline::Load(String &filename)
+Movie* Timeline::Load(String &filename, bool soft)
 {
     Movie *movie = new Movie();
-    movie->Load(filename);
+    movie->Load(filename,soft);
     bool loaded_local = movie->loaded;
     if(loaded_local)
     {

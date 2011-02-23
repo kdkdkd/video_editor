@@ -6,6 +6,7 @@
 #include "encodeVideo.h"
 #include "events.h"
 #include "movie.h"
+#include "timeline.h"
 
 class encodeVideoComponent;
 
@@ -19,7 +20,7 @@ class videoPreview  : DocumentWindow
     void remove();
     encodeVideoComponent *parent;
 };
-class videoPreviewComponent  : public Component, public Timer
+class videoPreviewComponent  : public Component, public Timer, public Thread
 {
     public:
     videoPreviewComponent(encodeVideoComponent* parent);
@@ -30,5 +31,9 @@ class videoPreviewComponent  : public Component, public Timer
 
     void  timerCallback();
     Movie *encodedMovie;
+    double encodedSecond;
+    void run();
+    Timeline* timeline_copy;
+    bool dirty;
 };
 #endif

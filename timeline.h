@@ -25,7 +25,7 @@ public:
     bool loaded;
     double duration;
     double current;
-    Movie* Load(String &filename);
+    Movie* Load(String &filename,bool soft);
     void Dispose();
     ~Timeline();
     bool SkipFrame(bool jump_to_next = true);

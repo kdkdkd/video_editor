@@ -62,7 +62,7 @@ public:
     int ToInternalTime(double seconds);
     double ToSeconds(int internals);
 
-    bool Load(String &filename);
+    bool Load(String &filename, bool soft);
     void Dispose();
     ~Movie();
     AVPacket* ReadFrame();

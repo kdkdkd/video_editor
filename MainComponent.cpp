@@ -15,7 +15,7 @@ void MainComponent::changeFileName(String new_filename)
 {
     bool loaded_local = false;
 
-    Movie * movie = timeline->Load(new_filename);
+    Movie * movie = timeline->Load(new_filename,false);
     loaded_local = movie;
     if(loaded_local)
     {

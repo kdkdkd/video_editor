@@ -43,7 +43,7 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
     return offset;
 }
 
-bool Movie::Load(String &filename)
+bool Movie::Load(String &filename, bool soft)
 {
     File f(filename);
     if(!f.exists())
@@ -163,11 +163,14 @@ bool Movie::Load(String &filename)
     height = pCodecCtx->height;
 
     //Generate preview
-    GotoRatioAndRead(.1,true,false);
+    if(!soft)
+    {
+        GotoRatioAndRead(.1,true,false);
 
-    image_preview = GeneratePreview();
+        image_preview = GeneratePreview();
 
-    GotoSecondAndRead(.0);
+        GotoSecondAndRead(.0);
+    }
     //~Generate preview
 
     loaded = true;
