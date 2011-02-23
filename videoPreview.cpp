@@ -18,21 +18,71 @@ videoPreview::~videoPreview()
 {
 
 }
-void _DoOnMainComponentPointerChange(void * object)
+void _UpdatePreview(void * object)
 {
+
     videoPreviewComponent * o = (videoPreviewComponent *)object;
-    o->encodedImage = o->parent->timeline->RenderImage(o->parent->GetMovieInfo());
+
+    if(o->encodedMovie)
+    {
+        File f(o->encodedMovie->filename);
+        if(f.exists())
+            f.deleteFile();
+        delete o->encodedMovie;
+        o->encodedMovie = 0;
+    }
+    Movie::Info info_copy(o->parent->GetMovieInfo());
+    info_copy.filename = File::createTempFile("tmp").getFullPathName();
+    String res = o->parent->timeline->Render(info_copy,true);
+    if(res!=String::empty)
+    {
+        o->encodedMovie = 0;
+        File f(info_copy.filename);
+        if(f.exists())
+            f.deleteFile();
+        o->repaint();
+        return;
+    }
+    Movie* movie = new Movie();
+    movie->Load(info_copy.filename);
+    if(!movie->loaded)
+    {
+        File f(info_copy.filename);
+        if(f.exists())
+            f.deleteFile();
+        delete movie;
+        o->encodedMovie = 0;
+        o->repaint();
+        return;
+    }
+    o->encodedMovie = movie;
     o->repaint();
 }
 
+void  videoPreviewComponent::timerCallback()
+{
+    if(encodedMovie)
+    {
+        encodedMovie->ReadAndDecodeFrame();
+        repaint();
+    }
+
+}
 videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Component()
 {
     this->parent = parent;
-    AddEvent(parent->mainWindow->AfterChangePosition,this,_DoOnMainComponentPointerChange);
-    encodedImage = Image();
+    AddEvent(parent->mainWindow->AfterChangePosition,this,_UpdatePreview);
+    encodedMovie = 0;
 }
 videoPreviewComponent::~videoPreviewComponent()
 {
+    if(encodedMovie)
+    {
+        File f(encodedMovie->filename);
+        if(f.exists())
+            f.deleteFile();
+        delete encodedMovie;
+    }
 
 }
 void videoPreview::closeButtonPressed()
@@ -84,10 +134,11 @@ void videoPreviewComponent::paint(Graphics& g)
         }
         g.drawImage(*(parent->timeline->GetImage()),dstX,dstY,width/2,height,srcX,srcY,width/2,height);
 
-        image_width = encodedImage.getWidth();
-        image_height = encodedImage.getHeight();
-        if(image_width>0)
+        if(encodedMovie)
         {
+            image_width = encodedMovie->width;
+            image_height = encodedMovie->height;
+
             dstX = 0;
             dstY = 0;
             if(image_width<width/2)
@@ -108,7 +159,7 @@ void videoPreviewComponent::paint(Graphics& g)
             {
                 srcY = (- height + image_height)/2;
             }
-            g.drawImage(encodedImage,dstX + width/2,dstY,width/2,height,srcX,srcY,width/2,height);
+            g.drawImage(*encodedMovie->image,dstX + width/2,dstY,width/2,height,srcX,srcY,width/2,height);
         }
 
 

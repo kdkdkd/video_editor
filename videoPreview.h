@@ -5,6 +5,7 @@
 #include "localization.h"
 #include "encodeVideo.h"
 #include "events.h"
+#include "movie.h"
 
 class encodeVideoComponent;
 
@@ -18,7 +19,7 @@ class videoPreview  : DocumentWindow
     void remove();
     encodeVideoComponent *parent;
 };
-class videoPreviewComponent  : public Component
+class videoPreviewComponent  : public Component, public Timer
 {
     public:
     videoPreviewComponent(encodeVideoComponent* parent);
@@ -27,6 +28,7 @@ class videoPreviewComponent  : public Component
     void paint (Graphics& g);
     void DoOnMainComponentPointerChange();
 
-    Image encodedImage;
+    void  timerCallback();
+    Movie *encodedMovie;
 };
 #endif

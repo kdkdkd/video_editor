@@ -993,7 +993,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     if(rc->preview)
     {
         rc->frames_left--;
-        if(rc->frames_left<=0)
+        if(rc->frames_left<=0 || !timeline->SkipFrame())
             rc->end_writing = true;
     }else
         rc->end_writing = !timeline->SkipFrame();
@@ -1202,7 +1202,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
     rcp->error = false;
     rcp->preview = preview;
     if(preview)
-        rcp->frames_left = 100;
+        rcp->frames_left = 200;
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
