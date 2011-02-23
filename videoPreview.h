@@ -19,6 +19,7 @@ class videoPreview  : DocumentWindow
     void add();
     void remove();
     encodeVideoComponent *parent;
+    void UpdatePreview();
 };
 class videoPreviewComponent  : public Component, public Timer, public Thread
 {
@@ -35,5 +36,8 @@ class videoPreviewComponent  : public Component, public Timer, public Thread
     void run();
     Timeline* timeline_copy;
     bool dirty;
+    void UpdatePreview();
+    String label_loading;
+    int label_loading_int;
 };
 #endif

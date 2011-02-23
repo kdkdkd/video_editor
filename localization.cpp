@@ -163,5 +163,6 @@ String LABEL_VIDEO_SAVE_FAILED = T("Не удалось сохранить ви�
 
 String LABEL_PREVIEW_VIDEO = T("Оценка качества");
 String LABEL_VIDEO_SAVE_PREVIEW = T("Предпросмотр");
+String LABEL_LOADING = T("Загрузка");
 
 }

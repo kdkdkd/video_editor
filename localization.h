@@ -167,6 +167,7 @@ extern String LABEL_VIDEO_SAVE_FAILED;
 
 extern String LABEL_PREVIEW_VIDEO;
 extern String LABEL_VIDEO_SAVE_PREVIEW;
+extern String LABEL_LOADING;
 }
 
 

@@ -194,21 +194,29 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
 {
 
     String name = editor.getName();
+    bool UpdatePreview = false;
     if(name == "videoWidth" || name == "videoHeight")
     {
+        UpdatePreview = true;
         resolutionList->setSelectedId(-100,false);
     }
     else if(name == "videoBitrate" || name == "crf")
     {
+        UpdatePreview = true;
         qualityList->setSelectedId(-100,false);
     }
     else if(name = "gop")
     {
         gopSetByUser = true;
     }
-
     clearValidation();
     Validate();
+
+    if(UpdatePreview && preview && isPreviewVisible && Validate())
+    {
+        preview->UpdatePreview();
+    }
+
 }
 File encodeVideoComponent::getCurrentFileName()
 {
@@ -812,8 +820,10 @@ void encodeVideoComponent::filenameComponentChanged (FilenameComponent* fileComp
 }
 void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 {
+    bool UpdatePreview = false;
     if (comboBoxThatHasChanged == rateControl)
     {
+        UpdatePreview = true;
         int selected_id = rateControl->getSelectedId();
         if(selected_id>1)
         {
@@ -836,6 +846,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     }
     else if (comboBoxThatHasChanged == format)
     {
+        UpdatePreview = true;
         /* set file extension */
         UpdateFileExtension(true);
         capabilities::Format selected_format = capabilities::formats.at(format->getSelectedId()-1);
@@ -888,12 +899,14 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     }
     else if (comboBoxThatHasChanged == qualityList)
     {
+        UpdatePreview = true;
         recalculateCRF();
         recalculateBitrate();
 
     }
     else if (comboBoxThatHasChanged == videoCodec)
     {
+        UpdatePreview = true;
         capabilities::Format &current_format = capabilities::formats[format->getSelectedId()-1];
         capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
         vector<capabilities::ResolutionPreset> resolutions = vc.getResolutions(current_format);
@@ -1000,6 +1013,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     }
     else if (comboBoxThatHasChanged == resolutionList)
     {
+        UpdatePreview = true;
         int id = resolutionList->getSelectedId();
         if(id==-100)
         {
@@ -1044,6 +1058,10 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     else if (comboBoxThatHasChanged == audioCodec)
     {
 
+    }
+    if(UpdatePreview && preview && isPreviewVisible)
+    {
+        preview->UpdatePreview();
     }
 }
 void encodeVideoComponent::clearValidation()
@@ -1186,6 +1204,7 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             qualityList->setEnabled(true);
             compressionPreset->setEnabled(true);
             resolutionList->setEnabled(true);
+            showPreview->setEnabled(true);
         }
         else
         {
@@ -1202,6 +1221,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             compressionPreset->setEnabled(false);
             resolutionList->setEnabled(false);
             advancedMode->setToggleState(false,true);
+            showPreview->setEnabled(false);
+            showPreview->setToggleState(false,true);
         }
 
         repaint();

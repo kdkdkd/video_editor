@@ -18,7 +18,11 @@ videoPreview::~videoPreview()
 {
 
 }
-
+void videoPreview::UpdatePreview()
+{
+    videoPreviewComponent* contentComponent = (videoPreviewComponent*)getContentComponent();
+    contentComponent->UpdatePreview();
+}
 void videoPreviewComponent::run()
 {
 
@@ -78,6 +82,8 @@ void videoPreviewComponent::run()
     repaint();
 
 }
+
+
 void _UpdatePreview(void * object)
 {
     videoPreviewComponent * o = (videoPreviewComponent *)object;
@@ -97,6 +103,7 @@ void _UpdatePreview(void * object)
             delete o->timeline_copy;
         }
         o->timeline_copy = new Timeline();
+        o->repaint();
         o->startThread();
     }
     else
@@ -104,15 +111,14 @@ void _UpdatePreview(void * object)
         o->dirty = true;
     }
 }
-
+void videoPreviewComponent::UpdatePreview()
+{
+    _UpdatePreview(this);
+}
 void  videoPreviewComponent::timerCallback()
 {
-    if(dirty)
-    {
-        _UpdatePreview(this);
-        return;
-    }
-    if(encodedMovie && !isThreadRunning())
+
+    if(encodedMovie && !isThreadRunning() && !dirty)
     {
         if(!(encodedMovie->ReadAndDecodeFrame()))
         {
@@ -124,6 +130,23 @@ void  videoPreviewComponent::timerCallback()
             timeline_copy->ReadAndDecodeFrame();
         }
         repaint();
+    }else
+    {
+
+        label_loading = LABEL_LOADING;
+        for(int i = 0;i<label_loading_int;++i)
+        {
+            label_loading += " ";
+        }
+        label_loading += ".";
+        label_loading_int = (label_loading_int + 1)%5;
+
+        repaint();
+        if(dirty)
+        {
+            _UpdatePreview(this);
+            return;
+        }
     }
 
 }
@@ -138,6 +161,8 @@ videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Compo
     encodedSecond = 0.0;
     dirty = false;
 
+    label_loading_int = 0;
+    UpdatePreview();
 }
 videoPreviewComponent::~videoPreviewComponent()
 {
@@ -175,8 +200,16 @@ void videoPreview::remove()
 
 void videoPreviewComponent::paint(Graphics& g)
 {
+
     int width = getWidth();
     int height = getHeight();
+    if(isThreadRunning() || dirty)
+    {
+        int string_width = g.getCurrentFont().getStringWidth(LABEL_LOADING);
+        int string_height = g.getCurrentFont().getHeight();
+        g.drawText(label_loading,(width-string_width)/2,(height-string_height)/2,string_width+30,string_height,Justification::centredLeft,false);
+        return;
+    }
     if(!parent->timeline->current_interval)
         g.drawImageWithin(*(parent->timeline->GetImage()),0,0,width/2,height,RectanglePlacement::stretchToFit,false);
     else
