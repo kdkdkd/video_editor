@@ -1160,6 +1160,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         path->setCurrentFile(getCurrentFileName(),false);
         UpdateFileExtension(true);
         mainWindow->repaint();
+        if(isPreviewVisible)
+            preview->remove();
     }
     else if (buttonThatWasClicked == cancel)
     {
