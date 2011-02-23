@@ -225,12 +225,12 @@ void Movie::Dispose()
     }
 
 
-
-    delete image;
+    if(image)
+        delete image;
 
     //delete image_preview;
-
-    delete bitmapData;
+    if(bitmapData)
+        delete bitmapData;
 
     loaded = false;
 }
@@ -362,6 +362,7 @@ AVPacket* Movie::ReadFrame()
                 avcodec_decode_video2( pCodecCtx, pFrame, &frameFinished, packet);
                 if ( frameFinished )
                 {
+
                     current = ToSeconds(packet->dts - pStream->start_time);
                     return packet;
                 }

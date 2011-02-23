@@ -1202,7 +1202,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
     rcp->error = false;
     rcp->preview = preview;
     if(preview)
-        rcp->frames_left = 30;
+        rcp->frames_left = 100;
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
@@ -1210,7 +1210,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
     {
         CloseRender deleter;
 
-        bool audio_enabled = info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
+        bool audio_enabled = !preview && info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
 
         rcp->pts = 0;
 
@@ -1367,10 +1367,10 @@ String Timeline::Render(const Movie::Info & info, bool preview)
 
 Image Timeline::RenderImage(const Movie::Info & info)
 {
+    Movie::Info info_copy(info);
 
-    Movie::Info info_copy = info;
-    Random r(1);
-    info_copy.filename += String(r.nextInt(99999));
+    info_copy.filename = File::createTempFile("tmp").getFullPathName();
+
     String res = Render(info_copy,true);
     if(res!=String::empty)
         return Image();
@@ -1379,6 +1379,19 @@ Image Timeline::RenderImage(const Movie::Info & info)
     movie.Load(info_copy.filename);
     if(!movie.loaded)
         return Image();
-    return *movie.image;
+    for(int i = 0;i<80;++i)
+        movie.SkipFrame();
+
+    while(movie.pFrame->key_frame)
+        movie.SkipFrame();
+    movie.DecodeFrame();
+    Image res_image = *movie.image;
+    movie.image = 0;
+    movie.Dispose();
+    File f(info_copy.filename);
+    if(f.exists())
+        f.deleteFile();
+
+    return res_image;
 }
 
