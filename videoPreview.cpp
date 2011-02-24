@@ -63,12 +63,12 @@ void videoPreviewComponent::run()
         const MessageManagerLock mml (Thread::getCurrentThread());
         if (! mml.lockWasGained())
             return;
+        delete movie;
+        encodedMovie = 0;
 
         File f(info_copy.filename);
         if(f.exists())
             f.deleteFile();
-        delete movie;
-        encodedMovie = 0;
         repaint();
         return;
     }
@@ -93,10 +93,10 @@ void _UpdatePreview(void * object)
         if(o->encodedMovie)
         {
             File f(o->encodedMovie->filename);
-            if(f.exists())
-                f.deleteFile();
             delete o->encodedMovie;
             o->encodedMovie = 0;
+            if(f.exists())
+                f.deleteFile();
         }
         if(o->timeline_copy)
         {
@@ -145,7 +145,6 @@ void  videoPreviewComponent::timerCallback()
         if(dirty)
         {
             _UpdatePreview(this);
-            return;
         }
     }
 
@@ -167,13 +166,13 @@ videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Compo
 videoPreviewComponent::~videoPreviewComponent()
 {
     stopTimer();
-    stopThread(1000);
+    stopThread(200000);
     if(encodedMovie)
     {
         File f(encodedMovie->filename);
+        delete encodedMovie;
         if(f.exists())
             f.deleteFile();
-        delete encodedMovie;
     }
 
 }
@@ -219,52 +218,55 @@ void videoPreviewComponent::paint(Graphics& g)
         {
             int image_width = parent->timeline->GetImage()->getWidth();
             int image_height = parent->timeline->GetImage()->getHeight();
-            int dstX = 0;
-            int dstY = 0;
-            if(image_width<width/2)
+            int aviable_width = width/2 - 3;
+            int font_height = g.getCurrentFont().getHeight();
+            int aviable_height = height - 2 * font_height - 4;
+            int dstX = 2;
+            int dstY = font_height + 2;
+            if(image_width<aviable_width)
             {
-                dstX = (width/2 - image_width)/2;
+                dstX += (aviable_width - image_width)/2;
             }
-            if(image_height<height)
+            if(image_height<aviable_height)
             {
-                dstY = (height - image_height)/2;
+                dstY += (aviable_height - image_height)/2;
             }
             int srcX = 0;
             int srcY = 0;
-            if(image_width>width/2)
+            if(image_width>aviable_width)
             {
-                srcX = (- width/2 + image_width)/2;
+                srcX = (- aviable_width + image_width)/2;
             }
-            if(image_height>height)
+            if(image_height>aviable_height)
             {
-                srcY = (- height + image_height)/2;
+                srcY = (- aviable_height + image_height)/2;
             }
-            g.drawImage(*(timeline_copy->GetImage()),dstX,dstY,width/2,height,srcX,srcY,width/2,height);
+            g.drawImage(*(timeline_copy->GetImage()),dstX,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
 
             image_width = encodedMovie->width;
             image_height = encodedMovie->height;
 
-            dstX = 0;
-            dstY = 0;
-            if(image_width<width/2)
+            dstX = 2;
+            dstY = font_height + 2;
+            if(image_width<aviable_width)
             {
-                dstX = (width/2 - image_width)/2;
+                dstX += (aviable_width - image_width)/2;
             }
-            if(image_height<height)
+            if(image_height<aviable_height)
             {
-                dstY = (height - image_height)/2;
+                dstY += (aviable_height - image_height)/2;
             }
             srcX = 0;
             srcY = 0;
-            if(image_width>width/2)
+            if(image_width>aviable_width)
             {
-                srcX = (- width/2 + image_width)/2;
+                srcX = (- aviable_width + image_width)/2;
             }
-            if(image_height>height)
+            if(image_height>aviable_height)
             {
-                srcY = (- height + image_height)/2;
+                srcY = (- aviable_height + image_height)/2;
             }
-            g.drawImage(*(encodedMovie->image),dstX + width/2,dstY,width/2,height,srcX,srcY,width/2,height);
+            g.drawImage(*(encodedMovie->image),dstX + width/2,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
         }
 
 
