@@ -13,13 +13,13 @@ class Timeline
 {
 private:
 
-    void RecalculateDuration();
-    void RecalculateCurrent();
+
     bool disposeMovies;
     bool disposeIntervals;
 
 public:
-
+    void RecalculateDuration();
+    void RecalculateCurrent();
     vector<Movie*> movies;
     vector<Movie*> movies_internal;
     bool loaded;

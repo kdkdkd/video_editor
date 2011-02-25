@@ -555,11 +555,12 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.height = videoHeight->getText().getIntValue();
         video_info.fps = fps->getText().getDoubleValue();
         video_info.compressionPreset = -1;
-        video_info.pass = passList->getSelectedId();
+        video_info.is_bitrate_or_crf = rateControl->getSelectedId()==1;
+
+        video_info.pass = (video_info.is_bitrate_or_crf)?1:passList->getSelectedId();
         if(vc.hasCompressionPreset())
             video_info.compressionPreset = compressionPreset->getSelectedId();
 
-        video_info.is_bitrate_or_crf = rateControl->getSelectedId()==1;
         video_info.gop = gop->getText().getIntValue();
         video_info.bit_rate = (video_info.is_bitrate_or_crf)?videoBitrate->getText().getIntValue():crf->getText().getIntValue();
         res.videos.push_back(video_info);
@@ -1058,7 +1059,15 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     else if (comboBoxThatHasChanged == audioCodec)
     {
 
+    }else if (comboBoxThatHasChanged == passList)
+    {
+        UpdatePreview = true;
     }
+    else if (comboBoxThatHasChanged == compressionPreset)
+    {
+        UpdatePreview = true;
+    }
+
     if(UpdatePreview && preview && isPreviewVisible)
     {
         preview->UpdatePreview();

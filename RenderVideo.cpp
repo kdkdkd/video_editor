@@ -977,7 +977,6 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 
     int scale_res = sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
               0, movie->height, pict->data, pict->linesize);
-    printf("scale res = %i\n",scale_res);
 
 }
 

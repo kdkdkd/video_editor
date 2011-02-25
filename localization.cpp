@@ -165,4 +165,8 @@ String LABEL_PREVIEW_VIDEO = T("Оценка качества");
 String LABEL_VIDEO_SAVE_PREVIEW = T("Предпросмотр");
 String LABEL_LOADING = T("Загрузка");
 
+String LABEL_VIDEO_PREVIEW_ORIGINAL = T("Оригинал");
+String LABEL_VIDEO_PREVIEW_ENCODED = T("После кодировки");
+
+String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE = T("Ожидаемый размер файла");
 }

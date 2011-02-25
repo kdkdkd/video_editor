@@ -38,5 +38,6 @@ class videoPreviewComponent  : public Component, public Timer, public Thread
     void UpdatePreview();
     String label_loading;
     int label_loading_int;
+    String estimated_file_size;
 };
 #endif

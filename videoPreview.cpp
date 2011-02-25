@@ -9,6 +9,7 @@ videoPreview::videoPreview(encodeVideoComponent* parent):DocumentWindow(LABEL_PR
     videoPreviewComponent* contentComponent = new videoPreviewComponent(parent);
 
     setContentComponent(contentComponent);
+    setResizeLimits (200, 100, 8192, 8192);
     setBounds(10,10,600,200);
     this->parent = parent;
     setVisible(true);
@@ -27,7 +28,6 @@ void videoPreviewComponent::run()
 {
 
     Movie::Info info_copy;
-
     double timeline_second;
     {
         const MessageManagerLock mml (Thread::getCurrentThread());
@@ -44,6 +44,7 @@ void videoPreviewComponent::run()
         if(parent->timeline->current_interval->end<end)
         {
             end = parent->timeline->current_interval->end;
+
         }
         timeline_copy->current_interval->end = end;
         timeline_copy->current_interval->absolute_start = 0.0;
@@ -51,6 +52,7 @@ void videoPreviewComponent::run()
         timeline_copy->RecalculateCurrent();
     }
     info_copy.filename = File::createTempFile("tmp").getFullPathName();
+    //Some very very wierd bug
     timeline_copy->GotoSecondAndRead(0.0,true);
     timeline_copy->SkipFrame();
     timeline_copy->GotoSecondAndRead(0.0,true);
@@ -92,6 +94,9 @@ void videoPreviewComponent::run()
 
     timeline_copy->GotoSecondAndRead(0.0,true);
     encodedMovie = movie;
+    File f(info_copy.filename);
+
+    estimated_file_size = File::descriptionOfSizeInBytes((double)f.getSize() * parent->timeline->duration / timeline_copy->duration );
     repaint();
 
 }
@@ -198,6 +203,7 @@ void videoPreview::add()
 {
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar || ComponentPeer::windowIsResizable);
     videoPreviewComponent *o =((videoPreviewComponent *)getContentComponent());
+    UpdatePreview();
     o->startTimer(200);
 }
 
@@ -232,8 +238,15 @@ void videoPreviewComponent::paint(Graphics& g)
             int image_width = parent->timeline->GetImage()->getWidth();
             int image_height = parent->timeline->GetImage()->getHeight();
             int aviable_width = width/2 - 3;
-            int font_height = g.getCurrentFont().getHeight();
+            int font_height = 1.5 * (double)g.getCurrentFont().getHeight();
+
             int aviable_height = height - 2 * font_height - 4;
+
+            g.drawText(LABEL_VIDEO_PREVIEW_ORIGINAL,15,0,aviable_width,font_height,Justification::centredLeft,false);
+            g.drawText(LABEL_VIDEO_PREVIEW_ENCODED,width/2+15,0,aviable_width,font_height,Justification::centredLeft,false);
+
+            g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE + T(" : ") + estimated_file_size,15,aviable_height + font_height + 2 ,width-20,font_height,Justification::centredLeft,false);
+
             int dstX = 2;
             int dstY = font_height + 2;
             if(image_width<aviable_width)
