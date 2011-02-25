@@ -32,7 +32,6 @@ class videoPreviewComponent  : public Component, public Timer, public Thread
 
     void  timerCallback();
     Movie *encodedMovie;
-    double encodedSecond;
     void run();
     Timeline* timeline_copy;
     bool dirty;

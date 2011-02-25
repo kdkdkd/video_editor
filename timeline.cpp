@@ -185,7 +185,7 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
             it++;
             double frame = 1.0d / GetFps();
             double eps = frame/5.0d;
-            if(it != intervals.end() && (*it)->absolute_start - current_interval->GetAbsoluteEnd()<eps)
+            if(it != intervals.end() && fabs((*it)->absolute_start - current_interval->GetAbsoluteEnd())<eps)
             {
                 current_interval = *it;
                 current_interval->movie->GotoSecondAndRead(current_interval->start);

@@ -36,12 +36,25 @@ void videoPreviewComponent::run()
         if(!parent->timeline->current_interval)
             return;
         info_copy = parent->GetMovieInfo();
+        info_copy.audios.clear();
         timeline_second = parent->timeline->current - parent->timeline->current_interval->absolute_start;
         timeline_copy->Load(parent->timeline->current_interval->movie->filename,true);
+        timeline_copy->current_interval->start = timeline_second;
+        double end = timeline_second + 2.0;
+        if(parent->timeline->current_interval->end<end)
+        {
+            end = parent->timeline->current_interval->end;
+        }
+        timeline_copy->current_interval->end = end;
+        timeline_copy->current_interval->absolute_start = 0.0;
+        timeline_copy->RecalculateDuration();
+        timeline_copy->RecalculateCurrent();
     }
     info_copy.filename = File::createTempFile("tmp").getFullPathName();
-    timeline_copy->GotoSecondAndRead(timeline_second,true);
-    String res = timeline_copy->Render(info_copy,true);
+    timeline_copy->GotoSecondAndRead(0.0,true);
+    timeline_copy->SkipFrame();
+    timeline_copy->GotoSecondAndRead(0.0,true);
+    String res = timeline_copy->Render(info_copy);
     if(res!=String::empty)
     {
         const MessageManagerLock mml (Thread::getCurrentThread());
@@ -72,12 +85,12 @@ void videoPreviewComponent::run()
         repaint();
         return;
     }
+
     const MessageManagerLock mml (Thread::getCurrentThread());
     if (! mml.lockWasGained())
         return;
 
-    encodedSecond = timeline_second;
-    timeline_copy->GotoSecondAndRead(timeline_second,true);
+    timeline_copy->GotoSecondAndRead(0.0,true);
     encodedMovie = movie;
     repaint();
 
@@ -123,7 +136,7 @@ void  videoPreviewComponent::timerCallback()
         if(!(encodedMovie->ReadAndDecodeFrame()))
         {
             encodedMovie->GotoSecondAndRead(0.0);
-            timeline_copy->GotoSecondAndRead(encodedSecond,true);
+            timeline_copy->GotoSecondAndRead(0.0,true);
         }
         else
         {
@@ -142,10 +155,11 @@ void  videoPreviewComponent::timerCallback()
         label_loading_int = (label_loading_int + 1)%5;
 
         repaint();
-        if(dirty)
-        {
-            _UpdatePreview(this);
-        }
+    }
+    if(dirty && !isThreadRunning())
+    {
+        _UpdatePreview(this);
+        repaint();
     }
 
 }
@@ -157,7 +171,6 @@ videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Compo
     timeline_copy = 0;
     encodedMovie = 0;
     startTimer(200);
-    encodedSecond = 0.0;
     dirty = false;
 
     label_loading_int = 0;

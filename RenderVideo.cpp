@@ -24,8 +24,6 @@ public:
     bool is_codec_x264;
     SwsContext *img_convert_ctx;
     bool error;
-    bool preview;
-    int frames_left;
     String errorText;
     RenderContext()
     {
@@ -977,8 +975,9 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
     }
 
 
-    sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
+    int scale_res = sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
               0, movie->height, pict->data, pict->linesize);
+    printf("scale res = %i\n",scale_res);
 
 }
 
@@ -990,13 +989,8 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     c = st->codec;
 
     fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
-    if(rc->preview)
-    {
-        rc->frames_left--;
-        if(rc->frames_left<=0 || !timeline->SkipFrame())
-            rc->end_writing = true;
-    }else
-        rc->end_writing = !timeline->SkipFrame();
+    rc->end_writing = !timeline->SkipFrame();
+
     if(rc->error)
     {
         return false;
@@ -1193,16 +1187,14 @@ public:
     }
 };
 
-String Timeline::Render(const Movie::Info & info, bool preview)
+String Timeline::Render(const Movie::Info & info)
 {
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
     rcp->pass_info=String::empty;
     rcp->is_codec_x264 = false;
     rcp->error = false;
-    rcp->preview = preview;
-    if(preview)
-        rcp->frames_left = 300;
+
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
 
@@ -1210,7 +1202,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
     {
         CloseRender deleter;
 
-        bool audio_enabled = !preview && info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
+        bool audio_enabled = info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
 
         rcp->pts = 0;
 
@@ -1239,8 +1231,7 @@ String Timeline::Render(const Movie::Info & info, bool preview)
         deleter.audio_st = NULL;
         if (video_enabled)
         {
-            if(!rcp->preview)
-                GotoSecondAndRead(0.0,false);
+            GotoSecondAndRead(0.0,false);
             deleter.video_st = add_video_stream(deleter.oc, info, rcp);
             if(rcp->error)
                 return rcp->errorText;
@@ -1371,7 +1362,7 @@ Image Timeline::RenderImage(const Movie::Info & info)
 
     info_copy.filename = File::createTempFile("tmp").getFullPathName();
 
-    String res = Render(info_copy,true);
+    String res = Render(info_copy);
     if(res!=String::empty)
         return Image();
 
