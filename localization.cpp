@@ -169,4 +169,6 @@ String LABEL_VIDEO_PREVIEW_ORIGINAL = T("Оригинал");
 String LABEL_VIDEO_PREVIEW_ENCODED = T("После кодировки");
 
 String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE = T("Ожидаемый размер файла");
+String LABEL_VIDEO_PREVIEW_FAILED = T("Не удалось загрузить картинку");
+String LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP = T("Возможно, текущий кадр находиться за пределами фильма");
 }

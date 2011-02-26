@@ -9,7 +9,7 @@ videoPreview::videoPreview(encodeVideoComponent* parent):DocumentWindow(LABEL_PR
     videoPreviewComponent* contentComponent = new videoPreviewComponent(parent);
 
     setContentComponent(contentComponent);
-    setResizeLimits (200, 100, 8192, 8192);
+    setResizeLimits (400, 200, 8192, 8192);
     setBounds(10,10,600,200);
     this->parent = parent;
     setVisible(true);
@@ -37,7 +37,7 @@ void videoPreviewComponent::run()
             return;
         info_copy = parent->GetMovieInfo();
         info_copy.audios.clear();
-        timeline_second = parent->timeline->current - parent->timeline->current_interval->absolute_start;
+        timeline_second = parent->timeline->current - parent->timeline->current_interval->absolute_start + parent->timeline->current_interval->start;
         timeline_copy->Load(parent->timeline->current_interval->movie->filename,true);
         timeline_copy->current_interval->start = timeline_second;
         double end = timeline_second + 2.0;
@@ -148,11 +148,12 @@ void  videoPreviewComponent::timerCallback()
             timeline_copy->ReadAndDecodeFrame();
         }
         repaint();
-    }else
+    }
+    else
     {
 
         label_loading = LABEL_LOADING;
-        for(int i = 0;i<label_loading_int;++i)
+        for(int i = 0; i<label_loading_int; ++i)
         {
             label_loading += " ";
         }
@@ -228,73 +229,74 @@ void videoPreviewComponent::paint(Graphics& g)
         g.drawText(label_loading,(width-string_width)/2,(height-string_height)/2,string_width+30,string_height,Justification::centredLeft,false);
         return;
     }
-    if(!parent->timeline->current_interval)
-        g.drawImageWithin(*(parent->timeline->GetImage()),0,0,width/2,height,RectanglePlacement::stretchToFit,false);
-    else
+
+
+    if(encodedMovie)
     {
+        int image_width = parent->timeline->GetImage()->getWidth();
+        int image_height = parent->timeline->GetImage()->getHeight();
+        int aviable_width = width/2 - 3;
+        int font_height = 1.5 * (double)g.getCurrentFont().getHeight();
 
-        if(encodedMovie)
+        int aviable_height = height - 2 * font_height - 4;
+
+        g.drawText(LABEL_VIDEO_PREVIEW_ORIGINAL,15,0,aviable_width,font_height,Justification::centredLeft,false);
+        g.drawText(LABEL_VIDEO_PREVIEW_ENCODED,width/2+15,0,aviable_width,font_height,Justification::centredLeft,false);
+
+        g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE + T(" : ") + estimated_file_size,15,aviable_height + font_height + 2 ,width-20,font_height,Justification::centredLeft,false);
+
+        int dstX = 2;
+        int dstY = font_height + 2;
+        if(image_width<aviable_width)
         {
-            int image_width = parent->timeline->GetImage()->getWidth();
-            int image_height = parent->timeline->GetImage()->getHeight();
-            int aviable_width = width/2 - 3;
-            int font_height = 1.5 * (double)g.getCurrentFont().getHeight();
-
-            int aviable_height = height - 2 * font_height - 4;
-
-            g.drawText(LABEL_VIDEO_PREVIEW_ORIGINAL,15,0,aviable_width,font_height,Justification::centredLeft,false);
-            g.drawText(LABEL_VIDEO_PREVIEW_ENCODED,width/2+15,0,aviable_width,font_height,Justification::centredLeft,false);
-
-            g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE + T(" : ") + estimated_file_size,15,aviable_height + font_height + 2 ,width-20,font_height,Justification::centredLeft,false);
-
-            int dstX = 2;
-            int dstY = font_height + 2;
-            if(image_width<aviable_width)
-            {
-                dstX += (aviable_width - image_width)/2;
-            }
-            if(image_height<aviable_height)
-            {
-                dstY += (aviable_height - image_height)/2;
-            }
-            int srcX = 0;
-            int srcY = 0;
-            if(image_width>aviable_width)
-            {
-                srcX = (- aviable_width + image_width)/2;
-            }
-            if(image_height>aviable_height)
-            {
-                srcY = (- aviable_height + image_height)/2;
-            }
-            g.drawImage(*(timeline_copy->GetImage()),dstX,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
-
-            image_width = encodedMovie->width;
-            image_height = encodedMovie->height;
-
-            dstX = 2;
-            dstY = font_height + 2;
-            if(image_width<aviable_width)
-            {
-                dstX += (aviable_width - image_width)/2;
-            }
-            if(image_height<aviable_height)
-            {
-                dstY += (aviable_height - image_height)/2;
-            }
-            srcX = 0;
-            srcY = 0;
-            if(image_width>aviable_width)
-            {
-                srcX = (- aviable_width + image_width)/2;
-            }
-            if(image_height>aviable_height)
-            {
-                srcY = (- aviable_height + image_height)/2;
-            }
-            g.drawImage(*(encodedMovie->image),dstX + width/2,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
+            dstX += (aviable_width - image_width)/2;
         }
+        if(image_height<aviable_height)
+        {
+            dstY += (aviable_height - image_height)/2;
+        }
+        int srcX = 0;
+        int srcY = 0;
+        if(image_width>aviable_width)
+        {
+            srcX = (- aviable_width + image_width)/2;
+        }
+        if(image_height>aviable_height)
+        {
+            srcY = (- aviable_height + image_height)/2;
+        }
+        g.drawImage(*(timeline_copy->GetImage()),dstX,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
 
+        image_width = encodedMovie->width;
+        image_height = encodedMovie->height;
 
+        dstX = 2;
+        dstY = font_height + 2;
+        if(image_width<aviable_width)
+        {
+            dstX += (aviable_width - image_width)/2;
+        }
+        if(image_height<aviable_height)
+        {
+            dstY += (aviable_height - image_height)/2;
+        }
+        srcX = 0;
+        srcY = 0;
+        if(image_width>aviable_width)
+        {
+            srcX = (- aviable_width + image_width)/2;
+        }
+        if(image_height>aviable_height)
+        {
+            srcY = (- aviable_height + image_height)/2;
+        }
+        g.drawImage(*(encodedMovie->image),dstX + width/2,dstY,aviable_width,aviable_height,srcX,srcY,aviable_width,aviable_height);
+    }else
+    {
+        g.drawText(LABEL_VIDEO_PREVIEW_FAILED,0,0,width,height/2,Justification::centredBottom,true);
+        g.drawText(LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP,0,height/2,width,height/2,Justification::centredTop,true);
     }
+
+
+
 }
