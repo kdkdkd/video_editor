@@ -105,6 +105,8 @@ void videoPreviewComponent::run()
 void _UpdatePreview(void * object)
 {
     videoPreviewComponent * o = (videoPreviewComponent *)object;
+    if(!o->parent->isPreviewVisible)
+        return;
     if(!o->isThreadRunning())
     {
         o->dirty = false;
