@@ -1122,7 +1122,34 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 int _WritePacket(void* cookie, uint8_t* buffer, int bufferSize)
 {
     FileOutputStream* fs = reinterpret_cast<FileOutputStream*>(cookie);
-    return fs->write(buffer,bufferSize);
+    bool res = fs->write(buffer,bufferSize);
+    fs->flush();
+    return (res)?bufferSize:0;
+}
+
+int64_t _SeekWithOutputStream(void* cookie, int64_t offset, int whence)
+{
+    FileOutputStream* fs = reinterpret_cast<FileOutputStream*>(cookie);
+    int64_t real_offset = 0;
+    switch(whence)
+    {
+    case AVSEEK_SIZE:
+        return fs->getFile().getSize();
+    case SEEK_SET:
+        real_offset = offset;
+        break;
+    case SEEK_CUR:
+        real_offset = offset + fs->getPosition();
+        break;
+    case SEEK_END:
+        real_offset = fs->getFile().getSize() + offset - 1 ;
+        break;
+
+    }
+
+
+    fs->setPosition(offset);
+    return offset;
 }
 
 class CloseRender
@@ -1297,7 +1324,7 @@ String Timeline::Render(const Movie::Info & info)
             return "Memory allocation error";
         }
 
-        init_put_byte(deleter.ByteIOCtx, deleter.pDataBuffer, lSize, 1, deleter.fs, NULL, _WritePacket, NULL);
+        init_put_byte(deleter.ByteIOCtx, deleter.pDataBuffer, lSize, 1, deleter.fs, NULL, _WritePacket, _SeekWithOutputStream);
         deleter.oc->pb = deleter.ByteIOCtx;
 
         if(av_write_header(deleter.oc))
