@@ -91,6 +91,8 @@ private:
     bool isVideoEnabled;
     ToggleButton* enableAudio;
     bool isAudioEnabled;
+    int previous_format;
+    int previous_codec;
 };
 
 

@@ -729,10 +729,16 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
     swapVariables(fps.num,fps.den);
     c->time_base = st->time_base = st->r_frame_rate = fps;
 
-    c->pix_fmt = PIX_FMT_YUV420P;
+    if(info.videos[0].codec_short == "mjpeg")
+        c->pix_fmt = PIX_FMT_YUVJ420P;
+    else
+        c->pix_fmt = PIX_FMT_YUV420P;
 
     setCompressionPreset(c,info.videos[0].compressionPreset,(rc->all_pass>1)?rc->current_pass:2,rc);
-    c->gop_size = info.videos[0].gop;
+    if(info.videos[0].codec_short == "mjpeg")
+        c->gop_size = 0;
+    else
+        c->gop_size = info.videos[0].gop;
 
     // some formats want stream headers to be separate
     if(oc->oformat && oc->oformat->flags & AVFMT_GLOBALHEADER)

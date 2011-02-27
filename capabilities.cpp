@@ -25,6 +25,11 @@ bool compareFormat(FFMpegUnit f1,FFMpegUnit f2)
     return f1.sort_number<f2.sort_number;
 }
 
+bool compareFormatPointer(FFMpegUnit* f1,FFMpegUnit* f2)
+{
+    return f1->sort_number<f2->sort_number;
+}
+
 bool equalsFormat(Format f1,int compare)
 {
     return f1.sort_number==compare;
@@ -40,10 +45,188 @@ Format::Format(String id,String description,String display_id,int sort_number,St
 vector<VideoCodec*> Format::getCodecs()
 {
     vector<VideoCodec*> res;
-    for(vector<VideoCodec>::iterator it = video_codecs.begin();it!=video_codecs.end();it++)
+
+    if(id == "avi" || id == "asf")
     {
-        res.push_back(&*it);
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "libxvid")
+            {
+                vc->sort_number = 10;
+            }
+            else if(it->id == "wmv2")
+            {
+                vc->sort_number = 20;
+            }
+            else if(it->id == "mpeg4")
+            {
+                vc->sort_number = 30;
+            }
+            else if(it->id == "mpeg2video")
+            {
+                vc->sort_number = 40;
+            }
+            else if(it->id == "h263p")
+            {
+                vc->sort_number = 50;
+            }
+            else if(it->id == "mjpeg")
+            {
+                vc->sort_number = 60;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
     }
+    else if(id == "matroska")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "libx264")
+            {
+                vc->sort_number=10;
+            }
+            else if(it->id == "libxvid")
+            {
+                vc->sort_number=10;
+            }
+            else if(it->id == "mpeg4")
+            {
+                vc->sort_number=30;
+            }
+            else if(it->id == "mpeg2video")
+            {
+                vc->sort_number=40;
+            }
+            else if(it->id == "wmv2")
+            {
+                vc->sort_number=50;
+            }
+            else if(it->id == "flv")
+            {
+                vc->sort_number=60;
+            }
+            else if(it->id == "libvpx")
+            {
+                vc->sort_number=80;
+            }
+            else if(it->id == "libtheora")
+            {
+                vc->sort_number=90;
+            }
+            else if(it->id == "h263p")
+            {
+                vc->sort_number=120;
+            }
+            else if(it->id == "mjpeg")
+            {
+                vc->sort_number=130;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
+    }
+    else if(id == "mpeg")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            if(it->id == "mpeg2video")
+                res.push_back(&*it);
+        }
+    }
+    else if(id == "mp4")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "libx264")
+            {
+                vc->sort_number = 10;
+            }
+            else if(it->id == "mpeg4")
+            {
+                vc->sort_number = 30;
+            }
+            else if(it->id == "mpeg2video")
+            {
+                vc->sort_number = 40;
+            }
+            else if(it->id == "mjpeg")
+            {
+                vc->sort_number = 50;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
+    }
+    else if(id == "ogg")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            if(it->id == "libtheora")
+                res.push_back(&*it);
+        }
+    }
+    else if(id == "flv")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "libx264")
+            {
+                vc->sort_number = 10;
+            }
+            else if(it->id == "flv")
+            {
+                vc->sort_number = 30;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
+    }
+    else if(id == "rm")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "rv20")
+            {
+                vc->sort_number = 10;
+            }
+            else if(it->id == "rv10")
+            {
+                vc->sort_number = 30;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
+    }
+    else if(id == "3gp" || id == "ipod")
+    {
+        for(vector<VideoCodec>::iterator it = video_codecs.begin(); it!=video_codecs.end(); it++)
+        {
+            VideoCodec *vc = &*it;
+            vc->sort_number = -1;
+            if(it->id == "libx264")
+            {
+                vc->sort_number = 10;
+            }
+            else if(it->id == "mpeg4")
+            {
+                vc->sort_number = 30;
+            }
+            if(vc->sort_number>0)
+                res.push_back(vc);
+        }
+    }
+    sort(res.begin(),res.end(),compareFormatPointer);
     return res;
 }
 
@@ -74,18 +257,54 @@ vector<ResolutionPreset> VideoCodec::getResolutions(Format &format)
 {
     vector<ResolutionPreset> res;
     ResolutionPreset r1;
-    r1.width = 1920;r1.height = 1080;r1.tag = String("Full HD"); res.push_back(r1);
-    r1.width = 1440;r1.height = 1080;r1.tag = String("Full HD");res.push_back(r1);
-    r1.width = 1280;r1.height = 720;r1.tag = String("HD");res.push_back(r1);
-    r1.width = 800;r1.height = 600;r1.tag = String("SVGA");res.push_back(r1);
-    r1.width = 720;r1.height = 540;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 720;r1.height = 480;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 640;r1.height = 480;r1.tag = String("VGA");res.push_back(r1);
-    r1.width = 352;r1.height = 288;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 352;r1.height = 240;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 320;r1.height = 200;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 240;r1.height = 180;r1.tag = String::empty;res.push_back(r1);
-    r1.width = 128;r1.height = 96;r1.tag = String::empty;res.push_back(r1);
+    r1.width = 1920;
+    r1.height = 1080;
+    r1.tag = String("Full HD");
+    res.push_back(r1);
+    r1.width = 1440;
+    r1.height = 1080;
+    r1.tag = String("Full HD");
+    res.push_back(r1);
+    r1.width = 1280;
+    r1.height = 720;
+    r1.tag = String("HD");
+    res.push_back(r1);
+    r1.width = 800;
+    r1.height = 600;
+    r1.tag = String("SVGA");
+    res.push_back(r1);
+    r1.width = 720;
+    r1.height = 540;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 720;
+    r1.height = 480;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 640;
+    r1.height = 480;
+    r1.tag = String("VGA");
+    res.push_back(r1);
+    r1.width = 352;
+    r1.height = 288;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 352;
+    r1.height = 240;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 320;
+    r1.height = 200;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 240;
+    r1.height = 180;
+    r1.tag = String::empty;
+    res.push_back(r1);
+    r1.width = 128;
+    r1.height = 96;
+    r1.tag = String::empty;
+    res.push_back(r1);
     return res;
 }
 
@@ -146,10 +365,6 @@ void InitFormats()
         else if(id_string == "rm")
         {
             sort_number=90;
-        }
-        else if(id_string == "swf")
-        {
-            sort_number=100;
         }
 
         else if(id_string == "3gp")
@@ -267,8 +482,12 @@ void InitFormats()
                 {
                     sort_number=120;
                 }
+                else if(id_string == "mjpeg")
+                {
+                    sort_number=130;
+                }
                 if(sort_number>0)
-                video_codecs.push_back(VideoCodec(id_string,p->long_name,show_id,sort_number,allowTwoPass,qmin,qmax));
+                    video_codecs.push_back(VideoCodec(id_string,p->long_name,show_id,sort_number,allowTwoPass,qmin,qmax));
             }
             break;
             case AVMEDIA_TYPE_AUDIO:
@@ -288,4 +507,5 @@ void InitFormats()
 
 
 }
+
 

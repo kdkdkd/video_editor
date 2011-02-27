@@ -88,9 +88,14 @@ void encodeVideoComponent::recalculateCRF()
                 rate = 0.0;
                 break;
             }
-            capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
-            crf->setText(String(int(double(vc.qmax - vc.qmin) * rate + vc.qmin)),false);
+            capabilities::VideoCodec *vc = capabilities::formats.at(format->getSelectedId()-1).getCodecs()[videoCodec->getSelectedId()-1];
+            crf->setText(String(int(double(vc->qmax - vc->qmin) * rate + vc->qmin)),false);
 
+        }
+        if(crf->getText().length()==0)
+        {
+            capabilities::VideoCodec *vc = capabilities::formats.at(format->getSelectedId()-1).getCodecs()[videoCodec->getSelectedId()-1];
+            crf->setText(String(int(double(vc->qmax - vc->qmin) * 0.3 + vc->qmin)),false);
         }
     }
 }
@@ -241,7 +246,9 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     Component("encodeVideoComponent"),
     preview(0),
     hasCompressionPreset(false),
-    isPreviewVisible(false)
+    isPreviewVisible(false),
+    previous_format(-1),
+    previous_codec(-1)
 {
     gopSetByUser = false;
     this->mainWindow = mainWindow;
@@ -549,7 +556,7 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
     if(isVideoEnabled)
     {
         Movie::VideoInfo video_info;
-        capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
+        capabilities::VideoCodec vc = *(capabilities::formats[format->getSelectedId()-1].getCodecs()[videoCodec->getSelectedId()-1]);
         video_info.codec_short = vc.id;
         video_info.width = videoWidth->getText().getIntValue();
         video_info.height = videoHeight->getText().getIntValue();
@@ -855,8 +862,13 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
         /* set aviable codecs */
         String previous_id_string = String::empty;
-        if(videoCodec->getSelectedId()-1>=0&&videoCodec->getSelectedId()-1<capabilities::video_codecs.size())
-            previous_id_string = capabilities::video_codecs[videoCodec->getSelectedId()-1].id;
+        vector<capabilities::VideoCodec *> video_codecs = selected_format.getCodecs();
+        if(previous_format>=0 && previous_codec>=0)
+        {
+            vector<capabilities::VideoCodec *> previous_video_codecs = capabilities::formats.at(previous_format-1).getCodecs();
+            if(previous_codec-1>=0&&previous_codec-1<previous_video_codecs.size())
+                previous_id_string = previous_video_codecs.at(previous_codec-1)->id;
+        }
         videoCodec->clear(true);
         int previous_id = 1;
         vector<capabilities::VideoCodec*> codecs = selected_format.getCodecs();
@@ -897,6 +909,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         }
 
         /* ~allow video and audio */
+
+        previous_format = format->getSelectedId();
     }
     else if (comboBoxThatHasChanged == qualityList)
     {
@@ -909,7 +923,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     {
         UpdatePreview = true;
         capabilities::Format &current_format = capabilities::formats[format->getSelectedId()-1];
-        capabilities::VideoCodec vc = capabilities::video_codecs[videoCodec->getSelectedId()-1];
+        capabilities::VideoCodec vc = *(current_format.getCodecs()[videoCodec->getSelectedId()-1]);
         vector<capabilities::ResolutionPreset> resolutions = vc.getResolutions(current_format);
         int selected_id = resolutionList->getSelectedId();
         bool selected_id_present = false;
@@ -1010,6 +1024,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         }
         rateControl->setSelectedId(rate_control_selected_id,true);
         /* ~Update Rate Control */
+
+        previous_codec = videoCodec->getSelectedId();
 
     }
     else if (comboBoxThatHasChanged == resolutionList)
