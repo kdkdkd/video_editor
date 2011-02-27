@@ -131,10 +131,12 @@ void _UpdatePreview(void * object)
         o->dirty = true;
     }
 }
+
 void videoPreviewComponent::UpdatePreview()
 {
     _UpdatePreview(this);
 }
+
 void  videoPreviewComponent::timerCallback()
 {
 
@@ -171,6 +173,7 @@ void  videoPreviewComponent::timerCallback()
     }
 
 }
+
 videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Component(), Thread ("PreviewThread")
 {
     this->parent = parent;
@@ -184,6 +187,7 @@ videoPreviewComponent::videoPreviewComponent(encodeVideoComponent* parent):Compo
     label_loading_int = 0;
     UpdatePreview();
 }
+
 videoPreviewComponent::~videoPreviewComponent()
 {
     stopTimer();

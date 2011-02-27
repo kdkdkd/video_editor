@@ -10,6 +10,7 @@
 #include "ContainerBox.h"
 #include "encodeVideo.h"
 #include "events.h"
+#include "taskTab.h"
 
 class AskJumpDestanation;
 class encodeVideo;
@@ -62,7 +63,8 @@ public:
         commandPrevSecond           = 0x200D,
         commandRemoveMovie          = 0x200E,
         commandSplit                = 0x200F,
-        commandRemoveSpaces         = 0x2010
+        commandRemoveSpaces         = 0x2010,
+        commandShowTasks            = 0x2011
 
 
     };
@@ -146,6 +148,8 @@ public:
 
     EventList AfterChangePosition;
     void GotoSecondAndRead(double second);
+
+    taskTab * tasks;
 
 };
 

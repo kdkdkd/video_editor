@@ -10,7 +10,7 @@
 
 class encodeVideoComponent;
 
-class videoPreview  : DocumentWindow
+class videoPreview : DocumentWindow
 {
     public:
     videoPreview(encodeVideoComponent* parent);

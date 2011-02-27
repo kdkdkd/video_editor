@@ -237,6 +237,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     //av_log_set_level(AV_LOG_DEBUG);
     capabilities::InitFormats();
 
+    tasks = new taskTab();
+
     initImageButton(String("pic\\zoomin.png"),zoomInButton);
     initImageButton(String("pic\\zoomout.png"),zoomOutButton);
 
@@ -280,7 +282,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
 }
 
-MainComponent::~MainComponent ()
+MainComponent::~MainComponent()
 {
     StopVideo();
 
@@ -314,6 +316,7 @@ MainComponent::~MainComponent ()
         encodeVideoWindow = 0;
     }
 
+    delete tasks;
     deleteAllChildren();
 
 }
@@ -750,6 +753,8 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
         menu.addCommandItem(commandManager,commandPause);
         menu.addCommandItem(commandManager,commandStop);
         menu.addSeparator();
+        menu.addCommandItem(commandManager,commandShowTasks);
+        menu.addSeparator();
         menu.addCommandItem(commandManager,commandRemoveSpaces);
         menu.addSeparator();
         menu.addCommandItem (commandManager, StandardApplicationCommandIDs::quit,MENU_QUIT);
@@ -809,6 +814,11 @@ bool MainComponent::perform (const InvocationInfo& info)
             timeline->RemoveSpaces();
             sliderValueChanged(scale_timeline);
             repaint();
+        }
+    break;
+    case commandShowTasks:
+        {
+            tasks->add();
         }
     break;
 
@@ -1022,7 +1032,8 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandPrevSecond,
                               commandRemoveMovie,
                               commandSplit,
-                              commandRemoveSpaces
+                              commandRemoveSpaces,
+                              commandShowTasks
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -1061,6 +1072,11 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         break;
     case commandRemoveSpaces:
         result.setInfo (LABEL_REMOVE_SPACES, LABEL_REMOVE_SPACES, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.setActive(isVideoReady());
+        break;
+    case commandShowTasks:
+        result.setInfo (MENU_SHOW_TASKS, MENU_SHOW_TASKS, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.addDefaultKeypress (T('T'), ModifierKeys::commandModifier);
         result.setActive(isVideoReady());
         break;
     case commandOpen:

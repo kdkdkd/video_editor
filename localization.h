@@ -14,6 +14,7 @@ extern String MENU_QUIT;
 extern String MENU_FRAME;
 extern String MENU_JUMP;
 extern String MENU_SAVE_FRAME;
+extern String MENU_SHOW_TASKS;
 
 
 extern String CANT_LOAD_FILE;
@@ -174,6 +175,7 @@ extern String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE;
 extern String LABEL_VIDEO_PREVIEW_FAILED;
 extern String LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP;
 
+extern String LABEL_TASK_TAB;
 }
 
 

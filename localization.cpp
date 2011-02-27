@@ -171,4 +171,6 @@ String LABEL_VIDEO_PREVIEW_ENCODED = T("После кодировки");
 String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE = T("Ожидаемый размер файла");
 String LABEL_VIDEO_PREVIEW_FAILED = T("Не удалось загрузить картинку");
 String LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP = T("Возможно, текущий кадр находиться за пределами фильма");
+String MENU_SHOW_TASKS = T("Задания");
+String LABEL_TASK_TAB = T("Задания");
 }
