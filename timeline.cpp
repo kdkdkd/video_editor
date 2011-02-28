@@ -521,4 +521,34 @@ bool Timeline::IsEmpty()
     return intervals.size()==0;
 }
 
+Timeline* Timeline::CloneIntervals()
+{
+    Timeline* res = new Timeline();
+    res->disposeIntervals = true;
+    res->disposeMovies = true;
 
+    for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        Interval *in = new Interval(*it);
+        bool found = false;
+        for(vector<Movie*>::iterator itm = movies_internal.begin(); itm!=movies_internal.end(); itm++)
+        {
+            if(in->movie->filename == (*itm)->filename)
+            {
+                found = true;
+                in->movie = *itm;
+                break;
+            }
+        }
+        if(!found)
+        {
+            Movie *movie = new Movie();
+            movie ->filename = in->movie->filename;
+            in->movie = movie;
+            movies_internal.push_back(movie);
+        }
+
+        res->intervals.push_back(in);
+    }
+
+}

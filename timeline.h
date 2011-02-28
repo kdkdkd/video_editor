@@ -93,6 +93,8 @@ public:
     String Render(const Movie::Info & info);
     Image RenderImage(const Movie::Info & info);
     bool IsEmpty();
+
+    Timeline* CloneIntervals();
 };
 
 

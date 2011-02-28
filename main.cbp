@@ -85,6 +85,8 @@
 		<Unit filename="movie.h" />
 		<Unit filename="taskTab.cpp" />
 		<Unit filename="taskTab.h" />
+		<Unit filename="tasks.cpp" />
+		<Unit filename="tasks.h" />
 		<Unit filename="timeline.cpp" />
 		<Unit filename="timeline.h" />
 		<Unit filename="toolbox.cpp" />

@@ -1,5 +1,5 @@
 #include "taskTab.h"
-
+#include "tasks.h"
 
 taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWindow::closeButton)
 {
