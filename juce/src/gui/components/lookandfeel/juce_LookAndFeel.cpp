@@ -2519,7 +2519,7 @@ void LookAndFeel::drawTableHeaderColumn (Graphics& g, const String& columnName, 
     }
 
     g.setColour (Colours::black);
-    g.setFont (height * 0.5f, Font::bold);
+    g.setFont (height * 0.5f, Font::italic);
     const int textX = 4;
     g.drawFittedText (columnName, textX, 0, rightOfText - textX, height, Justification::centredLeft, 1);
 }
