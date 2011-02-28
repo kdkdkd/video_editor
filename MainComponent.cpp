@@ -286,8 +286,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 MainComponent::~MainComponent()
 {
     StopVideo();
-
-
+    OnChangeList.clear();
+    AfterChangePosition.clear();
     Component *container = movies_list->getViewedComponent();
     int container_num = container->getNumChildComponents();
     for(int i=0; i<container_num; ++i)

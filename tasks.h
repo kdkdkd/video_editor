@@ -13,17 +13,17 @@ class task : public Thread
         Encoding,
         Panorama
     }type;
-    String description;
+    String status;
+    String filename;
     Timeline * timeline;
     Movie::Info info;
     int id;
-    task(Timeline * timeline, TaskType type, int id, Movie::Info info,String description);
-    task(const task& clone_task);
-    task operator=(const task& clone_task);
+    task(Timeline * timeline, TaskType type, int id, Movie::Info info,String filename, String status);
     ~task();
     void run();
 
 };
+extern CriticalSection tasks_list_critical;
 int AddEncodingTask(Timeline * timeline, Movie::Info info);
 void RemoveTask(int id);
 task* FindTaskById(int id);

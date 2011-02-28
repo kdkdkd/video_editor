@@ -177,7 +177,8 @@ String LABEL_TASK_TAB = T("Задания");
 String LABEL_TASK_TAB_TYPE = T("Тип");
 String LABEL_TASK_TAB_TYPE_ENCODING = T("Кодирование");
 String LABEL_TASK_TAB_TYPE_PANORAMA = T("Панорама");
-String LABEL_TASK_TAB_DESCRPTION = T("Описание");
-String LABEL_TASK_TAB_PROGRESS = T("Завершено");
+String LABEL_TASK_TAB_DESCRPTION = T("Имя файла");
+String LABEL_TASK_TAB_TIME_LEFT = T("Осталось");
+String LABEL_TASK_TAB_PROGRESS = T("Сатус");
 
 }

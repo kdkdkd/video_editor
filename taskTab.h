@@ -17,6 +17,7 @@ class taskTab : DocumentWindow, public TableListBoxModel
     void paintCell (Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected);
     bool isVisible;
     void refresh();
+    void resized();
 };
 
 #endif
