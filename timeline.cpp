@@ -531,7 +531,7 @@ Timeline* Timeline::CloneIntervals()
     {
         Interval *in = new Interval(*it);
         bool found = false;
-        for(vector<Movie*>::iterator itm = movies_internal.begin(); itm!=movies_internal.end(); itm++)
+        for(vector<Movie*>::iterator itm = res->movies_internal.begin(); itm!=res->movies_internal.end(); itm++)
         {
             if(in->movie->filename == (*itm)->filename)
             {
@@ -543,12 +543,12 @@ Timeline* Timeline::CloneIntervals()
         if(!found)
         {
             Movie *movie = new Movie();
-            movie ->filename = in->movie->filename;
+            movie->filename = in->movie->filename;
             in->movie = movie;
-            movies_internal.push_back(movie);
+            res->movies_internal.push_back(movie);
         }
 
         res->intervals.push_back(in);
     }
-
+    return res;
 }

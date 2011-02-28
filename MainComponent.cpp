@@ -4,6 +4,7 @@
 #include "DrawableButtonAndDrag.h"
 #include "encodeVideo.h"
 #include "capabilities.h"
+#include "tasks.h"
 #include <math.h>
 #define VIDEO_TIMELINE_SIZE 98
 #define AUDIO_TIMELINE_SIZE 30
@@ -319,6 +320,7 @@ MainComponent::~MainComponent()
     delete tasks;
     deleteAllChildren();
 
+    CleanupTasks();
 }
 
 

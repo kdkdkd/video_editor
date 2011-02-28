@@ -1,7 +1,7 @@
 #include "localization.h"
 #define upDetailed 50
 #include "capabilities.h"
-
+#include "tasks.h"
 #include "encodeVideo.h"
 encodeVideo::encodeVideo (MainComponent* mainWindow):DocumentWindow(LABEL_SAVE_VIDEO,Colours::whitesmoke,DocumentWindow::closeButton)
 {
@@ -1194,10 +1194,12 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
             return;
         }
 
-        const Movie::Info &info = GetMovieInfo();
-        String render_result = timeline->Render(info);
-        if(render_result!=String::empty)
-            AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
+        Movie::Info info = GetMovieInfo();
+        AddEncodingTask(timeline,info);
+
+        //String render_result = timeline->Render(info);
+        //if(render_result!=String::empty)
+        //    AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
 
         getParentComponent()->removeFromDesktop();
         path->setCurrentFile(getCurrentFileName(),false);
@@ -1205,6 +1207,8 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         mainWindow->repaint();
         if(isPreviewVisible)
             preview->remove();
+
+
     }
     else if (buttonThatWasClicked == cancel)
     {
