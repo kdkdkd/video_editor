@@ -317,9 +317,9 @@ MainComponent::~MainComponent()
     }
 
     delete tasks;
+    CleanupTasks();
     deleteAllChildren();
 
-    CleanupTasks();
 }
 
 

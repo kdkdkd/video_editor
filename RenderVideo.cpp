@@ -1185,11 +1185,13 @@ public:
     {
         if(video_st)
         {
+            const ScopedLock myScopedLock (avcodec_critical);
             avcodec_close(video_st->codec);
             video_st = 0;
         }
         if(audio_st)
         {
+            const ScopedLock myScopedLock (avcodec_critical);
             avcodec_close(audio_st->codec);
             audio_st = 0;
         }

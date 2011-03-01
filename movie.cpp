@@ -204,6 +204,7 @@ double Movie::ToSeconds(int internals)
 
 void Movie::Dispose()
 {
+    const ScopedLock myScopedLock (avcodec_critical);
     if(loaded)
     {
 
