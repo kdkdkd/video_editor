@@ -1219,7 +1219,9 @@ public:
     }
 };
 
-String Timeline::Render(const Movie::Info & info)
+
+
+String Timeline::Render(const Movie::Info & info, task * thread, void (* reportProgress)(task*,double))
 {
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
@@ -1340,6 +1342,18 @@ String Timeline::Render(const Movie::Info & info)
 
         for(;;)
         {
+            if(reportProgress)
+            {
+                double pos = ((double)rcp->pts * (double)deleter.video_st->r_frame_rate.num / (double)deleter.video_st->r_frame_rate.den);
+                if(pos>0.1)
+                {
+                    reportProgress(thread, pos / duration);
+                }
+            }
+
+            if(thread && thread->threadShouldExit())
+                return localization::LABEL_SAVE_VIDEO_SUSPENDED;
+
             /* compute current audio and video time */
             if (deleter.audio_st)
                 audio_pts = (double)deleter.audio_st->pts.val * deleter.audio_st->time_base.num / deleter.audio_st->time_base.den;
@@ -1388,33 +1402,5 @@ String Timeline::Render(const Movie::Info & info)
     return String::empty;
 }
 
-Image Timeline::RenderImage(const Movie::Info & info)
-{
-    Movie::Info info_copy(info);
 
-    info_copy.filename = File::createTempFile("tmp").getFullPathName();
-
-    String res = Render(info_copy);
-    if(res!=String::empty)
-        return Image();
-
-    Movie movie;
-    movie.Load(info_copy.filename,true);
-    if(!movie.loaded)
-        return Image();
-    for(int i = 0;i<80;++i)
-        movie.SkipFrame();
-
-    while(movie.pFrame->key_frame)
-        movie.SkipFrame();
-    movie.DecodeFrame();
-    Image res_image = *movie.image;
-    movie.image = 0;
-    movie.Dispose();
-    File f(info_copy.filename);
-    if(f.exists())
-        f.deleteFile();
-
-    return res_image;
-}
 

@@ -3,12 +3,13 @@
 
 #include "juce/juce.h"
 #include "movie.h"
+#include "tasks.h"
 #include <vector>
 
 using namespace std;
 
 extern Image black_image;
-
+class task;
 class Timeline
 {
 private:
@@ -90,8 +91,7 @@ public:
     void Split();
     bool IsNearMovieBoundary();
 
-    String Render(const Movie::Info & info);
-    Image RenderImage(const Movie::Info & info);
+    String Render(const Movie::Info & info, task * thread, void (* reportProgress)(task*,double));
     bool IsEmpty();
 
     Timeline* CloneIntervals();

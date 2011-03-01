@@ -5,6 +5,7 @@
 #include "events.h"
 #include <vector>
 using namespace std;
+class Timeline;
 class task : public Thread
 {
     public:
@@ -19,6 +20,8 @@ class task : public Thread
     Movie::Info info;
     int id;
     task(Timeline * timeline, TaskType type, int id, Movie::Info info,String filename, String status);
+    task();
+    void copy(task*copy_task);
     ~task();
     void run();
 

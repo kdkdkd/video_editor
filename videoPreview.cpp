@@ -56,7 +56,7 @@ void videoPreviewComponent::run()
     timeline_copy->GotoSecondAndRead(0.0,true);
     timeline_copy->SkipFrame();
     timeline_copy->GotoSecondAndRead(0.0,true);
-    String res = timeline_copy->Render(info_copy);
+    String res = timeline_copy->Render(info_copy,0,0);
     if(res!=String::empty)
     {
         const MessageManagerLock mml (Thread::getCurrentThread());

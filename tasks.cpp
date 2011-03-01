@@ -1,5 +1,6 @@
 #include "tasks.h"
-
+#include "localization.h"
+using namespace localization;
 
 vector<task *> tasks_list;
 EventList OnChangeList;
@@ -16,19 +17,38 @@ task::task(Timeline * timeline, TaskType type, int id, Movie::Info info,String f
     this->status = status;
 }
 
+task::task():Thread("task thread")
+{
+
+}
+
+void task::copy(task*copy_task)
+{
+    this->type = copy_task->type;
+    this->id = copy_task->id;
+    this->filename = copy_task->filename;
+    this->status = copy_task->status;
+}
 
 task::~task()
 {
 
 }
 
-
+void _ReportProgress(task* thread,double progress)
+{
+    {
+        const ScopedLock myScopedLock (tasks_list_critical);
+        thread->status = "    " + String(int(progress*100.0)) + "%";
+    }
+    CallEventList(OnChangeList);
+}
 
 void task::run()
 {
     if(type == Encoding)
     {
-        for(vector<Timeline::Interval *>::iterator it = timeline->intervals.begin();it!=timeline->intervals.end();it++)
+        for(vector<Timeline::Interval *>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
         {
             Movie * movie = (*it)->movie;
             if(!movie->loaded)
@@ -38,27 +58,29 @@ void task::run()
                 {
 
 
-                {
-                    const ScopedLock myScopedLock (tasks_list_critical);
-                    status = T("failed. can't load ") + movie->filename;
+                    {
+                        const ScopedLock myScopedLock (tasks_list_critical);
+                        status = LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE + movie->filename;
 
-                }
-                CallEventList(OnChangeList);
-                return;
+                    }
+                    CallEventList(OnChangeList);
+                    return;
                 }
 
             }
         }
+        timeline->RecalculateDuration();
 
-        String render_result = timeline->Render(info);
+        String render_result = timeline->Render(info,this,_ReportProgress);
         if(render_result==String::empty)
         {
             const ScopedLock myScopedLock (tasks_list_critical);
-            status = T("done. ");
-        }else
+            status = LABEL_TASK_TAB_DONE;
+        }
+        else
         {
             const ScopedLock myScopedLock (tasks_list_critical);
-            status = T("failed. ") + render_result;
+            status = LABEL_TASK_TAB_ERROR_CUSTOM + " " + render_result;
         }
         CallEventList(OnChangeList);
     }
@@ -66,37 +88,43 @@ void task::run()
 
 int AddEncodingTask(Timeline * timeline, Movie::Info info)
 {
-    const ScopedLock myScopedLock (tasks_list_critical);
     int id = 0;
-    for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
+    task *new_task = 0;
     {
-        if((*it)->id>id)
+        const ScopedLock myScopedLock (tasks_list_critical);
+        for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
         {
-            id = (*it)->id;
+            if((*it)->id>id)
+            {
+                id = (*it)->id;
+            }
         }
+        new_task = new task(timeline->CloneIntervals(),task::Encoding,++id,info,info.filename,LABEL_TASK_TAB_BEGIN);
+        tasks_list.push_back(new_task);
     }
-    task *new_task = new task(timeline->CloneIntervals(),task::Encoding,++id,info,info.filename,"start");
     new_task->startThread();
-    tasks_list.push_back(new_task);
     CallEventList(OnChangeList);
     return id;
 }
 
 void RemoveTask(int id)
 {
-    const ScopedLock myScopedLock (tasks_list_critical);
-    for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
     {
-        if((*it)->id==id)
+        const ScopedLock myScopedLock (tasks_list_critical);
+        for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
         {
-            tasks_list.erase(it);
-            if((*it)->isThreadRunning())
-                (*it)->stopThread(20000);
-            delete (*it)->timeline;
-            delete *it;
-            CallEventList(OnChangeList);
+            if((*it)->id==id)
+            {
+                tasks_list.erase(it);
+                if((*it)->isThreadRunning())
+                    (*it)->stopThread(20000);
+                delete (*it)->timeline;
+                delete *it;
+
+            }
         }
     }
+    CallEventList(OnChangeList);
 }
 
 task* FindTaskById(int id)

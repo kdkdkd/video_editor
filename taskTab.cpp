@@ -3,11 +3,16 @@
 
 void _RepaintTaskTab(void * object)
 {
+    MessageManagerLock mml (Thread::getCurrentThread());
+
+    if (! mml.lockWasGained())
+        return;
     taskTab * o = (taskTab *)object;
     if(!o->isVisible)
         o->add();
 
     o->table.updateContent();
+    o->refresh();
 }
 void taskTab::resized()
 {
@@ -78,15 +83,19 @@ void taskTab::paintRowBackground (Graphics& g, int rowNumber, int width, int hei
 
 void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
-    const ScopedLock myScopedLock (tasks_list_critical);
-    task *t = FindTaskByNumber(rowNumber);
+    task t_copy;
+    {
+        const ScopedLock myScopedLock (tasks_list_critical);
+        task *t = FindTaskByNumber(rowNumber);
+        t_copy.copy(t);
+    }
     if(columnId == 6)
     {
-        g.drawText (t->status, 2, 0, width - 4, height, Justification::centredLeft, true);
-    }
+        g.drawText (t_copy.status, 2, 0, width - 4, height, Justification::centredLeft, true);
+    }else
     if(columnId == 4)
     {
-        g.drawText (t->filename, 2, 0, width - 4, height, Justification::centredLeft, true);
+        g.drawText (t_copy.filename, 2, 0, width - 4, height, Justification::centredLeft, true);
     }
     g.setColour (Colours::black.withAlpha (0.2f));
     g.fillRect (width - 1, 0, 1, height);

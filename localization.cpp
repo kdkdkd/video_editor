@@ -180,5 +180,11 @@ String LABEL_TASK_TAB_TYPE_PANORAMA = T("Панорама");
 String LABEL_TASK_TAB_DESCRPTION = T("Имя файла");
 String LABEL_TASK_TAB_TIME_LEFT = T("Осталось");
 String LABEL_TASK_TAB_PROGRESS = T("Сатус");
+String LABEL_SAVE_VIDEO_SUSPENDED = T("Сохранение прервано");
+
+String LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE = T("Ошибка. Невозможно загрузить файл ");
+String LABEL_TASK_TAB_ERROR_CUSTOM = T("Ошибка.");
+String LABEL_TASK_TAB_DONE = T("Завершено.");
+String LABEL_TASK_TAB_BEGIN = T("Начинаю...");
 
 }
