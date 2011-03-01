@@ -129,11 +129,14 @@ void RemoveTask(int id)
 
 task* FindTaskById(int id)
 {
-    for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
     {
-        if((*it)->id==id)
+        const ScopedLock myScopedLock (tasks_list_critical);
+        for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
         {
-            return *it;
+            if((*it)->id==id)
+            {
+                return *it;
+            }
         }
     }
 }
@@ -151,11 +154,14 @@ int GetTaskLength()
 
 void CleanupTasks()
 {
-    for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
     {
-        if((*it)->isThreadRunning())
-            (*it)->stopThread(20000);
-        delete (*it)->timeline;
-        delete *it;
+        const ScopedLock myScopedLock (tasks_list_critical);
+        for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
+        {
+            if((*it)->isThreadRunning())
+                (*it)->stopThread(20000);
+            delete (*it)->timeline;
+            delete *it;
+        }
     }
 }
