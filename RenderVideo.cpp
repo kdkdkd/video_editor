@@ -757,11 +757,14 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
             c->stats_in = const_cast<char *>(rc->pass_info.toCString());
         }
     }
-    if(avcodec_open(c, codec)<0)
     {
-        rc->error = true;
-        rc->errorText =  "Could not open video codec";
-        return st;
+        const ScopedLock myScopedLock (avcodec_critical);
+        if(avcodec_open(c, codec)<0)
+        {
+            rc->error = true;
+            rc->errorText =  "Could not open video codec";
+            return st;
+        }
     }
 
     return st;
@@ -816,13 +819,15 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     }
 
     /* open it */
-    if(avcodec_open(c, codec) < 0)
     {
-        rc->error = true;
-        rc->errorText =  "Could not open audio codec";
-        return;
+        const ScopedLock myScopedLock (avcodec_critical);
+        if(avcodec_open(c, codec) < 0)
+        {
+            rc->error = true;
+            rc->errorText =  "Could not open audio codec";
+            return;
+        }
     }
-
     /* init signal generator */
     rc->t = 0;
     rc->tincr = 2 * M_PI * 110.0 / c->sample_rate;
@@ -982,7 +987,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 
 
     int scale_res = sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
-              0, movie->height, pict->data, pict->linesize);
+                              0, movie->height, pict->data, pict->linesize);
 
 }
 
@@ -1025,7 +1030,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
         /* encode the image */
 
         //if(rc->is_codec_x264)
-            rc->picture->pts = rc->pts++;
+        rc->picture->pts = rc->pts++;
         for(;;)
         {
             /* flushing buffers */

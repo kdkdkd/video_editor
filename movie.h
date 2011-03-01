@@ -1,6 +1,7 @@
 #ifndef MOVIE_H
 #define	MOVIE_H
-
+#include "juce/juce.h"
+extern CriticalSection avcodec_critical;
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -8,7 +9,7 @@ extern "C" {
 
 }
 
-#include "juce/juce.h"
+
 #include <vector>
 using namespace std;
 class Movie

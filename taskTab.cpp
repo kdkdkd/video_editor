@@ -1,18 +1,10 @@
 #include "taskTab.h"
 #include "tasks.h"
 
-void _RepaintTaskTab(void * object)
+void taskTab::timerCallback()
 {
-    MessageManagerLock mml (Thread::getCurrentThread());
-
-    if (! mml.lockWasGained())
-        return;
-    taskTab * o = (taskTab *)object;
-    if(!o->isVisible)
-        o->add();
-
-    o->table.updateContent();
-    o->refresh();
+    table.updateContent();
+    repaint();
 }
 void taskTab::resized()
 {
@@ -24,7 +16,7 @@ taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWin
     setTitleBarHeight (20);
     setResizable (true, false);
     setBounds(30,30,800,600);
-    setResizeLimits(800,600,8000,6000);
+    setResizeLimits(100,100,8000,6000);
     setContentComponent(&table);
 
     table.setModel (this);
@@ -45,7 +37,7 @@ taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWin
 
     isVisible = false;
 
-    AddEvent(OnChangeList,this,_RepaintTaskTab);
+
 
 }
 void taskTab::add()
@@ -53,6 +45,7 @@ void taskTab::add()
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar || ComponentPeer::windowIsResizable);
     isVisible = true;
+    startTimer(1000);
 }
 
 void taskTab::refresh()
@@ -64,6 +57,7 @@ void taskTab::remove()
 {
     removeFromDesktop();
     isVisible = false;
+    stopTimer();
 }
 
 taskTab::~taskTab()
@@ -87,6 +81,8 @@ void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, in
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         task *t = FindTaskByNumber(rowNumber);
+        if(!t)
+            return;
         t_copy.copy(t);
     }
     if(columnId == 6)

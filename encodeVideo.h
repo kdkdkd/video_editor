@@ -59,6 +59,7 @@ public:
     bool isPreviewVisible;
     MainComponent* mainWindow;
     Movie::Info GetMovieInfo();
+    bool needUpdateFileName;
 private:
 
     GroupComponent* groupComponent;
@@ -93,6 +94,7 @@ private:
     bool isAudioEnabled;
     int previous_format;
     int previous_codec;
+
 };
 
 

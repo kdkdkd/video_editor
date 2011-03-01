@@ -3,7 +3,7 @@
 #include "juce/juce.h"
 #include "localization.h"
 using namespace localization;
-class taskTab : DocumentWindow, public TableListBoxModel
+class taskTab : DocumentWindow, public TableListBoxModel, public Timer
 {
     public:
     TableListBox table;
@@ -18,6 +18,7 @@ class taskTab : DocumentWindow, public TableListBoxModel
     bool isVisible;
     void refresh();
     void resized();
+    void timerCallback();
 };
 
 #endif

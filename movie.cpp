@@ -10,6 +10,8 @@ Movie::Movie()
     image_preview=new Image();
     info = 0;
 };
+CriticalSection avcodec_critical;
+
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
 {
@@ -115,9 +117,11 @@ bool Movie::Load(String &filename, bool soft)
         pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;*/
 
     // Open codec
-    if(avcodec_open(pCodecCtx, pCodec)<0)
-        return false; // Could not open codec
-
+    {
+        const ScopedLock myScopedLock (avcodec_critical);
+        if(avcodec_open(pCodecCtx, pCodec)<0)
+            return false; // Could not open codec
+    }
     // Allocate video frame
     pFrame=avcodec_alloc_frame();
 

@@ -33,6 +33,13 @@ void encodeVideo::add()
         child->recalculateCRF();
     setVisible(true);
     addToDesktop(ComponentPeer::windowHasCloseButton || ComponentPeer::windowHasTitleBar);
+    if(child->needUpdateFileName)
+    {
+        child->path->setCurrentFile(child->getCurrentFileName(),false);
+        child->UpdateFileExtension(true);
+        child->needUpdateFileName = false;
+    }
+
 }
 void encodeVideoComponent::UpdateFileExtension(bool forse_extension)
 {
@@ -250,6 +257,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     previous_format(-1),
     previous_codec(-1)
 {
+    needUpdateFileName = false;
     gopSetByUser = false;
     this->mainWindow = mainWindow;
     this->timeline = mainWindow->timeline;
@@ -1197,13 +1205,11 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         Movie::Info info = GetMovieInfo();
         AddEncodingTask(timeline,info);
 
-        //String render_result = timeline->Render(info);
-        //if(render_result!=String::empty)
-        //    AlertWindow::showMessageBox (AlertWindow::WarningIcon,LABEL_VIDEO_SAVE_FAILED,info.filename + "\n" + render_result);
+        if(!mainWindow->tasks->isVisible)
+            mainWindow->tasks->add();
 
+        needUpdateFileName = true;
         getParentComponent()->removeFromDesktop();
-        path->setCurrentFile(getCurrentFileName(),false);
-        UpdateFileExtension(true);
         mainWindow->repaint();
         if(isPreviewVisible)
             preview->remove();

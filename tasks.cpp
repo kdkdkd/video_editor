@@ -3,8 +3,8 @@
 using namespace localization;
 
 vector<task *> tasks_list;
-EventList OnChangeList;
 CriticalSection tasks_list_critical;
+bool cleaning = false;
 
 
 task::task(Timeline * timeline, TaskType type, int id, Movie::Info info,String filename, String status):Thread("task thread")
@@ -37,11 +37,12 @@ task::~task()
 
 void _ReportProgress(task* thread,double progress)
 {
+    if(cleaning)
+        return;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         thread->status = "    " + String(int(progress*100.0)) + "%";
     }
-    CallEventList(OnChangeList);
 }
 
 void task::run()
@@ -56,14 +57,10 @@ void task::run()
                 movie->Load(movie->filename,true);
                 if(!movie->loaded)
                 {
-
-
                     {
                         const ScopedLock myScopedLock (tasks_list_critical);
                         status = LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE + movie->filename;
-
                     }
-                    CallEventList(OnChangeList);
                     return;
                 }
 
@@ -82,12 +79,13 @@ void task::run()
             const ScopedLock myScopedLock (tasks_list_critical);
             status = LABEL_TASK_TAB_ERROR_CUSTOM + " " + render_result;
         }
-        CallEventList(OnChangeList);
     }
 }
 
 int AddEncodingTask(Timeline * timeline, Movie::Info info)
 {
+    if(cleaning)
+        return -1;
     int id = 0;
     task *new_task = 0;
     {
@@ -103,12 +101,13 @@ int AddEncodingTask(Timeline * timeline, Movie::Info info)
         tasks_list.push_back(new_task);
     }
     new_task->startThread();
-    CallEventList(OnChangeList);
     return id;
 }
 
 void RemoveTask(int id)
 {
+    if(cleaning)
+        return;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
@@ -124,11 +123,12 @@ void RemoveTask(int id)
             }
         }
     }
-    CallEventList(OnChangeList);
 }
 
 task* FindTaskById(int id)
 {
+    if(cleaning)
+        return 0;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
@@ -143,19 +143,23 @@ task* FindTaskById(int id)
 
 task* FindTaskByNumber(int number)
 {
+    if(cleaning)
+        return 0;
     return tasks_list.at(number);
 }
 
 int GetTaskLength()
 {
+    if(cleaning)
+        return false;
     const ScopedLock myScopedLock (tasks_list_critical);
     return tasks_list.size();
 }
 
 void CleanupTasks()
 {
+    cleaning = true;
     {
-        const ScopedLock myScopedLock (tasks_list_critical);
         for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
         {
             if((*it)->isThreadRunning())
