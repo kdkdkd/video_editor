@@ -834,7 +834,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     /* increment frequency by 110 Hz per second */
     rc->tincr2 = 2 * M_PI * 110.0 / c->sample_rate / c->sample_rate;
 
-    rc->audio_outbuf_size = 1000000;
+    rc->audio_outbuf_size = 262144;
     rc->audio_outbuf = (uint8_t *)av_malloc(rc->audio_outbuf_size);
     if(!rc->audio_outbuf)
     {
@@ -908,7 +908,8 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
     rc->video_outbuf = NULL;
     if (!oc->oformat || !(oc->oformat->flags & AVFMT_RAWPICTURE))
     {
-        rc->video_outbuf_size = 20000000;
+        int video_outbuf_size_candidate = 6 * c->width * c->height + 200;
+        rc->video_outbuf_size = (video_outbuf_size_candidate>262144)?video_outbuf_size_candidate:262144;
         rc->video_outbuf = (uint8_t *)av_malloc(rc->video_outbuf_size);
         if(!rc->video_outbuf)
         {
@@ -1238,7 +1239,6 @@ String Timeline::Render(const Movie::Info & info, task * thread, void (* reportP
 
 
     rcp->all_pass = (video_enabled)?info.videos[0].pass:1;
-
     for(rcp->current_pass=1; rcp->current_pass<=rcp->all_pass; ++rcp->current_pass)
     {
         CloseRender deleter;
@@ -1349,13 +1349,15 @@ String Timeline::Render(const Movie::Info & info, task * thread, void (* reportP
 
         for(;;)
         {
-            if(reportProgress)
+            if(reportProgress && rcp->pts % 100 == 0)
             {
                 double pos = ((double)rcp->pts * (double)deleter.video_st->r_frame_rate.num / (double)deleter.video_st->r_frame_rate.den);
-                if(pos>0.1)
-                {
+                if(rcp->all_pass==1)
                     reportProgress(thread, pos / duration);
-                }
+                else if(rcp->current_pass==2)
+                    reportProgress(thread, (pos + duration) / (2.0 * duration));
+                else
+                    reportProgress(thread, (pos) / (2.0 * duration));
             }
 
             if(thread && thread->threadShouldExit())
