@@ -572,7 +572,7 @@ Movie::Info encodeVideoComponent::GetMovieInfo()
         video_info.compressionPreset = -1;
         video_info.is_bitrate_or_crf = rateControl->getSelectedId()==1;
 
-        video_info.pass = (video_info.is_bitrate_or_crf)?1:passList->getSelectedId();
+        video_info.pass = (video_info.is_bitrate_or_crf)?passList->getSelectedId():1;
         if(vc.hasCompressionPreset())
             video_info.compressionPreset = compressionPreset->getSelectedId();
 
