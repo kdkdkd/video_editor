@@ -1349,7 +1349,7 @@ String Timeline::Render(const Movie::Info & info, task * thread, void (* reportP
 
         for(;;)
         {
-            if(reportProgress && rcp->pts % 100 == 0)
+            if(reportProgress && rcp->pts % 10 == 0)
             {
                 double pos = ((double)rcp->pts * (double)deleter.video_st->r_frame_rate.num / (double)deleter.video_st->r_frame_rate.den);
                 if(rcp->all_pass==1)

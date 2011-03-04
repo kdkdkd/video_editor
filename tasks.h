@@ -24,7 +24,9 @@ class task : public Thread
     void copy(task*copy_task);
     ~task();
     void run();
-
+    int64 millis_start;
+    int64 millis_worked;
+    int64 millis_left;
 };
 extern CriticalSection tasks_list_critical;
 int AddEncodingTask(Timeline * timeline, Movie::Info info);

@@ -15,6 +15,8 @@ task::task(Timeline * timeline, TaskType type, int id, Movie::Info info,String f
     this->info = info;
     this->filename = filename;
     this->status = status;
+    this->millis_worked = 0;
+    this->millis_left = 0;
 }
 
 task::task():Thread("task thread")
@@ -28,6 +30,13 @@ void task::copy(task*copy_task)
     this->id = copy_task->id;
     this->filename = copy_task->filename;
     this->status = copy_task->status;
+
+    this->millis_start = copy_task->millis_start;
+    this->millis_worked = copy_task->millis_worked;
+    this->millis_left = copy_task->millis_left;
+
+    if(!copy_task->isThreadRunning())
+        this->millis_left = 0;
 }
 
 task::~task()
@@ -41,6 +50,10 @@ void _ReportProgress(task* thread,double progress)
         return;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
+        if(progress>0.01)
+            thread->millis_left = ((double)(thread->millis_worked + Time::currentTimeMillis() - thread->millis_start)) * (1.0-progress) / progress;
+        else
+            thread->millis_left = 0;
         thread->status = "    " + String(int(progress*100.0)) + "%";
     }
 }
@@ -65,6 +78,10 @@ void task::run()
                 }
 
             }
+        }
+        {
+            const ScopedLock myScopedLock (tasks_list_critical);
+            millis_start = Time::currentTimeMillis();
         }
         timeline->RecalculateDuration();
 

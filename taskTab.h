@@ -19,6 +19,7 @@ class taskTab : DocumentWindow, public TableListBoxModel, public Timer
     void refresh();
     void resized();
     void timerCallback();
+    Image encoding,play,close,pause,open;
 };
 
 #endif
