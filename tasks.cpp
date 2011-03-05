@@ -4,7 +4,6 @@ using namespace localization;
 
 vector<task *> tasks_list;
 CriticalSection tasks_list_critical;
-bool cleaning = false;
 
 
 task::task(Timeline * timeline, TaskType type, int id, Movie::Info info,String filename, String status):Thread("task thread")
@@ -46,8 +45,6 @@ task::~task()
 
 void _ReportProgress(task* thread,double progress)
 {
-    if(cleaning)
-        return;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         if(progress>0.01)
@@ -85,7 +82,7 @@ void task::run()
         }
         timeline->RecalculateDuration();
 
-        String render_result = timeline->Render(info,this,_ReportProgress);
+        String render_result = timeline->Render(info,this,_ReportProgress,this);
         if(render_result==String::empty)
         {
             const ScopedLock myScopedLock (tasks_list_critical);
@@ -101,8 +98,6 @@ void task::run()
 
 int AddEncodingTask(Timeline * timeline, Movie::Info info)
 {
-    if(cleaning)
-        return -1;
     int id = 0;
     task *new_task = 0;
     {
@@ -123,8 +118,6 @@ int AddEncodingTask(Timeline * timeline, Movie::Info info)
 
 void RemoveTask(int id)
 {
-    if(cleaning)
-        return;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
@@ -144,8 +137,6 @@ void RemoveTask(int id)
 
 task* FindTaskById(int id)
 {
-    if(cleaning)
-        return 0;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
         for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
@@ -160,29 +151,13 @@ task* FindTaskById(int id)
 
 task* FindTaskByNumber(int number)
 {
-    if(cleaning)
-        return 0;
     return tasks_list.at(number);
 }
 
 int GetTaskLength()
 {
-    if(cleaning)
-        return false;
     const ScopedLock myScopedLock (tasks_list_critical);
     return tasks_list.size();
 }
 
-void CleanupTasks()
-{
-    cleaning = true;
-    {
-        for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
-        {
-            if((*it)->isThreadRunning())
-                (*it)->stopThread(20000);
-            delete (*it)->timeline;
-            delete *it;
-        }
-    }
-}
+

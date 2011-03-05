@@ -1229,7 +1229,7 @@ public:
 
 
 
-String Timeline::Render(const Movie::Info & info, task * thread, void (* reportProgress)(task*,double))
+String Timeline::Render(const Movie::Info & info, Thread * thread, void (* reportProgress)(task*,double),task* t)
 {
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
@@ -1349,15 +1349,15 @@ String Timeline::Render(const Movie::Info & info, task * thread, void (* reportP
 
         for(;;)
         {
-            if(reportProgress && rcp->pts % 10 == 0)
+            if(reportProgress && t && rcp->pts % 10 == 0)
             {
                 double pos = ((double)rcp->pts * (double)deleter.video_st->r_frame_rate.num / (double)deleter.video_st->r_frame_rate.den);
                 if(rcp->all_pass==1)
-                    reportProgress(thread, pos / duration);
+                    reportProgress(t, pos / duration);
                 else if(rcp->current_pass==2)
-                    reportProgress(thread, (pos + duration) / (2.0 * duration));
+                    reportProgress(t, (pos + duration) / (2.0 * duration));
                 else
-                    reportProgress(thread, (pos) / (2.0 * duration));
+                    reportProgress(t, (pos) / (2.0 * duration));
             }
 
             if(thread && thread->threadShouldExit())

@@ -317,9 +317,8 @@ MainComponent::~MainComponent()
     }
 
     delete tasks;
-    CleanupTasks();
     deleteAllChildren();
-
+    Thread::stopAllThreads(20000);
 }
 
 

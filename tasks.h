@@ -35,5 +35,5 @@ task* FindTaskById(int id);
 extern EventList OnChangeList;
 task* FindTaskByNumber(int number);
 int GetTaskLength();
-void CleanupTasks();
+
 #endif

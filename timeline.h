@@ -91,7 +91,7 @@ public:
     void Split();
     bool IsNearMovieBoundary();
 
-    String Render(const Movie::Info & info, task * thread, void (* reportProgress)(task*,double));
+    String Render(const Movie::Info & info, Thread * thread, void (* reportProgress)(task*,double), task* t);
     bool IsEmpty();
 
     Timeline* CloneIntervals();
