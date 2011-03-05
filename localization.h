@@ -195,7 +195,7 @@ extern String LABEL_TASK_TAB_CONFIRM_DELETE;
 extern String LABEL_YES;
 extern String LABEL_NO;
 
-
+extern String LABEL_ASK_QUIT;
 }
 
 

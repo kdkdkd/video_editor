@@ -40,9 +40,11 @@ class task : public Thread
 };
 
 void AddEncodingTask(Timeline * timeline, Movie::Info info);
-void RemoveTask(int number);
+bool RemoveTask(int number);
+bool PauseTask(int number);
+bool ResumeTask(int number);
 extern EventList OnChangeList;
-void FindTaskByNumberAndCopy(int number,task &t);
+bool FindTaskByNumberAndCopy(int number,task &t);
 int GetTaskLength();
 void FindSuspendedTaskAndLaunch();
 

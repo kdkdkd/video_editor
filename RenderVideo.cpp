@@ -1349,6 +1349,15 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
 
         for(;;)
         {
+            if(thread && thread->threadShouldExit())
+                return localization::LABEL_SAVE_VIDEO_SUSPENDED;
+
+            if(t && t->state == task::Suspended)
+            {
+                Thread::getCurrentThread()->sleep(1000);
+                continue;
+            }
+
             if(reportProgress && t && rcp->pts % 10 == 0)
             {
                 double pos = ((double)rcp->pts * (double)deleter.video_st->r_frame_rate.num / (double)deleter.video_st->r_frame_rate.den);
@@ -1360,8 +1369,6 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
                     reportProgress(t, (pos) / (2.0 * duration));
             }
 
-            if(thread && thread->threadShouldExit())
-                return localization::LABEL_SAVE_VIDEO_SUSPENDED;
 
             /* compute current audio and video time */
             if (deleter.audio_st)

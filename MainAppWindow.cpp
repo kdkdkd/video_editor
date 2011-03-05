@@ -46,5 +46,6 @@ MainAppWindow::~MainAppWindow()
 
 void MainAppWindow::closeButtonPressed()
 {
-    JUCEApplication::getInstance()->systemRequestedQuit();
+    if(AlertWindow::showOkCancelBox(AlertWindow::QuestionIcon,LABEL_ASK_QUIT,LABEL_ASK_QUIT,LABEL_YES,LABEL_NO))
+        JUCEApplication::getInstance()->systemRequestedQuit();
 }

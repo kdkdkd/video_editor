@@ -43,8 +43,11 @@ task::~task()
 
 void _ReportProgress(task* thread,double progress)
 {
+
     {
         const ScopedLock myScopedLock (tasks_list_critical);
+        if(thread->state == task::Suspended)
+            return;
         if(progress>0.01)
             thread->millis_left = ((double)(thread->millis_worked + Time::currentTimeMillis() - thread->millis_start)) * (1.0-progress) / progress;
         else
@@ -57,21 +60,20 @@ void FindSuspendedTaskAndLaunch()
     const ScopedLock myScopedLock (tasks_list_critical);
     for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
     {
-        if((*it)->state == task::NotStarted)
+        task::TaskState state = (*it)->state;
+        if(state == task::NotStarted || state == task::Suspended)
         {
             (*it)->state = task::Working;
-            (*it)->startThread();
+            if(!(*it)->isThreadRunning())
+                (*it)->startThread();
+            (*it)->millis_start = Time::currentTimeMillis();
             break;
         }
-        else if((*it)->state == task::Suspended)
-        {
-            (*it)->state = task::Working;
-            (*it)->notify();
-            break;
-        }
+
     }
 
 }
+
 void task::run()
 {
     if(type == Encoding)
@@ -142,11 +144,13 @@ void AddEncodingTask(Timeline * timeline, Movie::Info info)
 
 }
 
-void RemoveTask(int number)
+bool RemoveTask(int number)
 {
     task*t;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
+        if(tasks_list.size()<=number)
+            return false;
         vector<task*>::iterator it = tasks_list.begin() + number;
         t = *it;
         tasks_list.erase(it);
@@ -159,13 +163,44 @@ void RemoveTask(int number)
 
 
 
-void FindTaskByNumberAndCopy(int number,task & t)
+bool FindTaskByNumberAndCopy(int number,task & t)
 {
-    {
-        const ScopedLock myScopedLock (tasks_list_critical);
-        task *t_copy = tasks_list.at(number);
-        t.copy(t_copy);
-    }
+    const ScopedLock myScopedLock (tasks_list_critical);
+    if(tasks_list.size()<=number)
+        return false;
+
+    task *t_copy = tasks_list.at(number);
+    t.copy(t_copy);
+    return true;
+}
+
+bool PauseTask(int number)
+{
+    task*t;
+    const ScopedLock myScopedLock (tasks_list_critical);
+    if(tasks_list.size()<=number)
+        return false;
+    vector<task*>::iterator it = tasks_list.begin() + number;
+    t = *it;
+    t->state = task::Suspended;
+    t->millis_worked += Time::currentTimeMillis() - t->millis_start;
+    return true;
+}
+
+bool ResumeTask(int number)
+{
+    task*t;
+    const ScopedLock myScopedLock (tasks_list_critical);
+    if(tasks_list.size()<=number)
+        return false;
+    vector<task*>::iterator it = tasks_list.begin() + number;
+    t = *it;
+
+    t->state = task::Working;
+    if(!t->isThreadRunning())
+        t->startThread();
+    t->millis_start = Time::currentTimeMillis();
+    return true;
 }
 
 int GetTaskLength()

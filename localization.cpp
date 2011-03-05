@@ -185,10 +185,11 @@ String LABEL_SAVE_VIDEO_SUSPENDED = T("Сохранение прервано");
 String LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE = T("Ошибка. Невозможно загрузить файл ");
 String LABEL_TASK_TAB_ERROR_CUSTOM = T("Ошибка.");
 String LABEL_TASK_TAB_DONE = T("Завершено.");
-String LABEL_TASK_TAB_BEGIN = T("Начинаю...");
+String LABEL_TASK_TAB_BEGIN = T("В очереди...");
 
 String LABEL_TASK_TAB_CONFIRM_DELETE = T("Вы действительно хотите удалить задание");
 String LABEL_YES = T("Да");
 String LABEL_NO = T("Нет");
 
+String LABEL_ASK_QUIT = T("Вы уверены, что хотите выйти?");
 }

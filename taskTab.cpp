@@ -85,16 +85,36 @@ void taskTab::cellClicked(int rowNumber, int columnId, const MouseEvent& e)
     switch(columnId)
     {
         case 3:
+        {
             task t_copy;
-            FindTaskByNumberAndCopy(rowNumber,t_copy);
+            if(!FindTaskByNumberAndCopy(rowNumber,t_copy))
+                return;
             bool answer = true;
-            if(t_copy.state != task::Done || t_copy.state != task::Failed)
+            if(t_copy.state != task::Done && t_copy.state != task::Failed)
                 answer = AlertWindow::showOkCancelBox(AlertWindow::QuestionIcon,LABEL_TASK_TAB_CONFIRM_DELETE,t_copy.filename,LABEL_YES,LABEL_NO);
             if(answer)
             {
                 RemoveTask(rowNumber);
                 timerCallback();
             }
+        }break;
+        case 2:
+        {
+            task t_copy;
+            if(!FindTaskByNumberAndCopy(rowNumber,t_copy))
+                return;
+            switch(t_copy.state)
+            {
+                case task::Working: PauseTask(rowNumber);timerCallback();break;
+                case task::Done: break;
+                case task::Suspended: ResumeTask(rowNumber);timerCallback();break;
+                case task::NotStarted: ResumeTask(rowNumber);timerCallback();break;
+
+            }
+
+
+        }
+
         break;
 
     }
@@ -103,7 +123,8 @@ void taskTab::cellClicked(int rowNumber, int columnId, const MouseEvent& e)
 void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
     task t_copy;
-    FindTaskByNumberAndCopy(rowNumber,t_copy);
+    if(!FindTaskByNumberAndCopy(rowNumber,t_copy))
+        return;
     String text_to_draw = String::empty;
     Justification just = Justification::centredLeft;
     switch(columnId)
