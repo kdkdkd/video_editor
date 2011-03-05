@@ -20,6 +20,7 @@ class taskTab : DocumentWindow, public TableListBoxModel, public Timer
     void resized();
     void timerCallback();
     Image encoding,play,close,pause,open;
+    void cellClicked(int rowNumber, int columnId, const MouseEvent& e);
 };
 
 #endif

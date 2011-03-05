@@ -80,16 +80,30 @@ void taskTab::paintRowBackground (Graphics& g, int rowNumber, int width, int hei
             g.fillAll (Colours::lightblue);*/
 }
 
+void taskTab::cellClicked(int rowNumber, int columnId, const MouseEvent& e)
+{
+    switch(columnId)
+    {
+        case 3:
+            task t_copy;
+            FindTaskByNumberAndCopy(rowNumber,t_copy);
+            bool answer = true;
+            if(t_copy.state != task::Done || t_copy.state != task::Failed)
+                answer = AlertWindow::showOkCancelBox(AlertWindow::QuestionIcon,LABEL_TASK_TAB_CONFIRM_DELETE,t_copy.filename,LABEL_YES,LABEL_NO);
+            if(answer)
+            {
+                RemoveTask(rowNumber);
+                timerCallback();
+            }
+        break;
+
+    }
+}
+
 void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
     task t_copy;
-    {
-        const ScopedLock myScopedLock (tasks_list_critical);
-        task *t = FindTaskByNumber(rowNumber);
-        if(!t)
-            return;
-        t_copy.copy(t);
-    }
+    FindTaskByNumberAndCopy(rowNumber,t_copy);
     String text_to_draw = String::empty;
     Justification just = Justification::centredLeft;
     switch(columnId)
@@ -110,7 +124,19 @@ void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, in
         break;
         case 2:
         {
-            g.drawImage(pause,3,1,18,18,0,0,18,18);
+            Image *image;
+            bool paint = true;
+            switch(t_copy.state)
+            {
+                case task::Working: image = &pause;break;
+                case task::Done: image = &open;break;
+                case task::Failed: paint = false;break;
+                case task::Suspended: image = &play;break;
+                case task::NotStarted: image = &play;break;
+
+            }
+            if(paint)
+                g.drawImage(*image,3,1,18,18,0,0,18,18);
         }
         break;
         case 3:

@@ -191,6 +191,10 @@ extern String LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE;
 extern String LABEL_TASK_TAB_ERROR_CUSTOM;
 extern String LABEL_TASK_TAB_DONE;
 extern String LABEL_TASK_TAB_BEGIN;
+extern String LABEL_TASK_TAB_CONFIRM_DELETE;
+extern String LABEL_YES;
+extern String LABEL_NO;
+
 
 }
 

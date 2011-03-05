@@ -28,8 +28,7 @@ class task : public Thread
     String filename;
     Timeline * timeline;
     Movie::Info info;
-    int id;
-    task(Timeline * timeline, TaskType type, int id, Movie::Info info,String filename, String status);
+    task(Timeline * timeline, TaskType type, Movie::Info info,String filename, String status);
     task();
     void copy(task*copy_task);
     ~task();
@@ -40,12 +39,10 @@ class task : public Thread
     int64 millis_left;
 };
 
-extern CriticalSection tasks_list_critical;
-int AddEncodingTask(Timeline * timeline, Movie::Info info);
-void RemoveTask(int id);
-task* FindTaskById(int id);
+void AddEncodingTask(Timeline * timeline, Movie::Info info);
+void RemoveTask(int number);
 extern EventList OnChangeList;
-task* FindTaskByNumber(int number);
+void FindTaskByNumberAndCopy(int number,task &t);
 int GetTaskLength();
 void FindSuspendedTaskAndLaunch();
 

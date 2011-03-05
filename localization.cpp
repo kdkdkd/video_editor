@@ -187,4 +187,8 @@ String LABEL_TASK_TAB_ERROR_CUSTOM = T("Ошибка.");
 String LABEL_TASK_TAB_DONE = T("Завершено.");
 String LABEL_TASK_TAB_BEGIN = T("Начинаю...");
 
+String LABEL_TASK_TAB_CONFIRM_DELETE = T("Вы действительно хотите удалить задание");
+String LABEL_YES = T("Да");
+String LABEL_NO = T("Нет");
+
 }
