@@ -48,7 +48,7 @@ void _ReportProgress(task* thread,double progress)
         const ScopedLock myScopedLock (tasks_list_critical);
         if(thread->state == task::Suspended)
             return;
-        if(progress>0.01)
+        if(progress>0.001)
             thread->millis_left = ((double)(thread->millis_worked + Time::currentTimeMillis() - thread->millis_start)) * (1.0-progress) / progress;
         else
             thread->millis_left = 0;
