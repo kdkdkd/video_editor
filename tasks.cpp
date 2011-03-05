@@ -54,7 +54,25 @@ void _ReportProgress(task* thread,double progress)
         thread->status = "    " + String(int(progress*100.0)) + "%";
     }
 }
+void FindSuspendedTaskAndLaunch()
+{
+    const ScopedLock myScopedLock (tasks_list_critical);
+    for(vector<task*>::iterator it = tasks_list.begin(); it!=tasks_list.end(); it++)
+    {
+        if((*it)->state == task::NotStarted)
+        {
+            (*it)->state = task::Working;
+            (*it)->startThread();
+            break;
+        }else if((*it)->state == task::Suspended)
+        {
+            (*it)->state = task::Working;
+            (*it)->notify();
+            break;
+        }
+    }
 
+}
 void task::run()
 {
     if(type == Encoding)
@@ -87,18 +105,22 @@ void task::run()
         {
             const ScopedLock myScopedLock (tasks_list_critical);
             status = LABEL_TASK_TAB_DONE;
+            state = Done;
         }
         else
         {
             const ScopedLock myScopedLock (tasks_list_critical);
             status = LABEL_TASK_TAB_ERROR_CUSTOM + " " + render_result;
+            state = Failed;
         }
+        FindSuspendedTaskAndLaunch();
     }
 }
 
 int AddEncodingTask(Timeline * timeline, Movie::Info info)
 {
     int id = 0;
+    int number_of_working_task = 0;
     task *new_task = 0;
     {
         const ScopedLock myScopedLock (tasks_list_critical);
@@ -108,11 +130,20 @@ int AddEncodingTask(Timeline * timeline, Movie::Info info)
             {
                 id = (*it)->id;
             }
+            if((*it)->state == task::Working)
+                number_of_working_task++;
         }
         new_task = new task(timeline->CloneIntervals(),task::Encoding,++id,info,info.filename,LABEL_TASK_TAB_BEGIN);
         tasks_list.push_back(new_task);
+        if(number_of_working_task<3)
+        {
+            new_task->startThread();
+            new_task->state = task::Working;
+        }
+        else
+            new_task->state = task::NotStarted;
     }
-    new_task->startThread();
+
     return id;
 }
 

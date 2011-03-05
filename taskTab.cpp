@@ -30,7 +30,7 @@ taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWin
     table.getHeader().addColumn(String::empty,2,26,26,26,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable);
     table.getHeader().addColumn(String::empty,3,26,26,26,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable);
     table.getHeader().addColumn(LABEL_TASK_TAB_DESCRPTION,4,328,328,900,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable | TableHeaderComponent::resizable);
-    table.getHeader().addColumn(LABEL_TASK_TAB_TIME_LEFT,5,100,100,100,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable );
+    table.getHeader().addColumn(LABEL_TASK_TAB_TIME_LEFT,5,70,70,70,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable );
     table.getHeader().addColumn(LABEL_TASK_TAB_PROGRESS,6,170,170,900,TableHeaderComponent::visible | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::draggable | TableHeaderComponent::resizable);
     table.setHeaderHeight(30);
 
@@ -76,8 +76,8 @@ int taskTab::getNumRows()
 
 void taskTab::paintRowBackground (Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)
 {
-    if (rowIsSelected)
-            g.fillAll (Colours::lightblue);
+    /*if (rowIsSelected)
+            g.fillAll (Colours::lightblue);*/
 }
 
 void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)

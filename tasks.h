@@ -6,9 +6,19 @@
 #include <vector>
 using namespace std;
 class Timeline;
+
+
 class task : public Thread
 {
     public:
+    enum TaskState
+    {
+        Working,
+        Done,
+        Suspended,
+        NotStarted,
+        Failed
+    }state;
     enum TaskType
     {
         Encoding,
@@ -24,10 +34,12 @@ class task : public Thread
     void copy(task*copy_task);
     ~task();
     void run();
+
     int64 millis_start;
     int64 millis_worked;
     int64 millis_left;
 };
+
 extern CriticalSection tasks_list_critical;
 int AddEncodingTask(Timeline * timeline, Movie::Info info);
 void RemoveTask(int id);
@@ -35,5 +47,6 @@ task* FindTaskById(int id);
 extern EventList OnChangeList;
 task* FindTaskByNumber(int number);
 int GetTaskLength();
+void FindSuspendedTaskAndLaunch();
 
 #endif
