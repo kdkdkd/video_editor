@@ -151,14 +151,13 @@ bool Movie::Load(String &filename, bool soft)
         fps = ((double)pCodecCtx->time_base.den / (double)pCodecCtx->time_base.num);
     }
 
-    int duration_num = pStream->duration * pStream->time_base.num;
-    int duration_denum = pStream->time_base.den;
-
-    duration = (double)duration_num/ (double)duration_denum;
+    duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
 
     if(duration<=0.0)
     {
-        duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
+        int duration_num = pStream->duration * pStream->time_base.num;
+        int duration_denum = pStream->time_base.den;
+        duration = (double)duration_num / (double)duration_denum;
     }
 
 
