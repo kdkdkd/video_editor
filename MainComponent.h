@@ -17,7 +17,7 @@ class encodeVideo;
 
 using namespace localization;
 
-
+class MainAppWindow;
 class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener, public DragAndDropTarget
 {
 public:
