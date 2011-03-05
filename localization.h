@@ -196,6 +196,7 @@ extern String LABEL_YES;
 extern String LABEL_NO;
 
 extern String LABEL_ASK_QUIT;
+extern String LABEL_VIDEO_PREVIEW_ESTIMATED_TIME;
 }
 
 

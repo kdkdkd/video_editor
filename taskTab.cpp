@@ -16,7 +16,7 @@ taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWin
 {
     setTitleBarHeight (20);
     setResizable (true, false);
-    setBounds(30,30,800,600);
+    setBounds(30,30,800,300);
     setResizeLimits(100,100,8000,6000);
     setContentComponent(&table);
 
@@ -76,8 +76,7 @@ int taskTab::getNumRows()
 
 void taskTab::paintRowBackground (Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)
 {
-    /*if (rowIsSelected)
-            g.fillAll (Colours::lightblue);*/
+
 }
 
 void taskTab::cellClicked(int rowNumber, int columnId, const MouseEvent& e)
@@ -106,7 +105,7 @@ void taskTab::cellClicked(int rowNumber, int columnId, const MouseEvent& e)
             switch(t_copy.state)
             {
                 case task::Working: PauseTask(rowNumber);timerCallback();break;
-                case task::Done: break;
+                case task::Done: PlatformUtilities::openDocument(t_copy.filename,String::empty); break;
                 case task::Suspended: ResumeTask(rowNumber);timerCallback();break;
                 case task::NotStarted: ResumeTask(rowNumber);timerCallback();break;
 
@@ -179,6 +178,7 @@ void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, in
 
     g.setColour (Colours::black.withAlpha (0.2f));
     g.fillRect (width - 1, 0, 1, height);
+    g.fillRect (0, height-1, width, 1);
 }
 
 void taskTab::closeButtonPressed()

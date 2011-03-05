@@ -26,7 +26,7 @@ void videoPreview::UpdatePreview()
 }
 void videoPreviewComponent::run()
 {
-
+    int64 miliseconds_total = 0;
     Movie::Info info_copy;
     double timeline_second;
     {
@@ -56,7 +56,9 @@ void videoPreviewComponent::run()
     timeline_copy->GotoSecondAndRead(0.0,true);
     timeline_copy->SkipFrame();
     timeline_copy->GotoSecondAndRead(0.0,true);
+    miliseconds_total = Time::currentTimeMillis();
     String res = timeline_copy->Render(info_copy,this,0,0);
+    miliseconds_total = Time::currentTimeMillis() - miliseconds_total;
     if(res!=String::empty)
     {
         const MessageManagerLock mml (Thread::getCurrentThread());
@@ -95,8 +97,9 @@ void videoPreviewComponent::run()
     timeline_copy->GotoSecondAndRead(0.0,true);
     encodedMovie = movie;
     File f(info_copy.filename);
-
-    estimated_file_size = File::descriptionOfSizeInBytes((double)f.getSize() * parent->timeline->duration / timeline_copy->duration );
+    double coff = parent->timeline->duration / timeline_copy->duration;
+    estimated_file_size = File::descriptionOfSizeInBytes((double)f.getSize() * coff );
+    estimated_time = toolbox::format_duration_small((double)miliseconds_total * 0.001 * coff);
     repaint();
 
 }
@@ -242,17 +245,18 @@ void videoPreviewComponent::paint(Graphics& g)
         int image_width = parent->timeline->GetImage()->getWidth();
         int image_height = parent->timeline->GetImage()->getHeight();
         int aviable_width = width/2 - 3;
-        int font_height = 1.5 * (double)g.getCurrentFont().getHeight();
+        int font_height = 1.2 * (double)g.getCurrentFont().getHeight();
 
-        int aviable_height = height - 2 * font_height - 4;
+        int aviable_height = height - 3 * font_height - 12;
 
-        g.drawText(LABEL_VIDEO_PREVIEW_ORIGINAL,15,0,aviable_width,font_height,Justification::centredLeft,false);
-        g.drawText(LABEL_VIDEO_PREVIEW_ENCODED,width/2+15,0,aviable_width,font_height,Justification::centredLeft,false);
+        g.drawText(LABEL_VIDEO_PREVIEW_ORIGINAL,15,0,aviable_width,font_height+3,Justification::centredLeft,false);
+        g.drawText(LABEL_VIDEO_PREVIEW_ENCODED,width/2+15,0,aviable_width,font_height+3,Justification::centredLeft,false);
 
-        g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE + T(" : ") + estimated_file_size,15,aviable_height + font_height + 2 ,width-20,font_height,Justification::centredLeft,false);
+        g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE + T(" : ") + estimated_file_size,15,aviable_height + font_height + 8,width-20,font_height,Justification::centredLeft,false);
+        g.drawText(LABEL_VIDEO_PREVIEW_ESTIMATED_TIME + T(" : ") + estimated_time,15,aviable_height + 2 * font_height + 10,width-20,font_height,Justification::centredLeft,false);
 
         int dstX = 2;
-        int dstY = font_height + 2;
+        int dstY = font_height + 2 + 3;
         if(image_width<aviable_width)
         {
             dstX += (aviable_width - image_width)/2;
@@ -277,7 +281,7 @@ void videoPreviewComponent::paint(Graphics& g)
         image_height = encodedMovie->height;
 
         dstX = 2;
-        dstY = font_height + 2;
+        dstY = font_height + 5;
         if(image_width<aviable_width)
         {
             dstX += (aviable_width - image_width)/2;
