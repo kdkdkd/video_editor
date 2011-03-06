@@ -75,6 +75,7 @@
 		<Unit filename="..\RenderVideo.cpp" />
 		<Unit filename="..\capabilities.cpp" />
 		<Unit filename="..\capabilities.h" />
+		<Unit filename="..\config.h" />
 		<Unit filename="..\encodeVideo.cpp" />
 		<Unit filename="..\encodeVideo.h" />
 		<Unit filename="..\events.cpp" />
