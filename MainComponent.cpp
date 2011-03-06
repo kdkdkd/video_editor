@@ -1,3 +1,4 @@
+#include "config.h"
 #include "MainComponent.h"
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"

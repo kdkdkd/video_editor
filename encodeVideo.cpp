@@ -1,3 +1,4 @@
+#include "config.h"
 #include "localization.h"
 #define upDetailed 50
 #include "capabilities.h"

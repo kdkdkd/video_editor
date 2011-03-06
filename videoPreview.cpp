@@ -1,3 +1,4 @@
+#include "config.h"
 #include "videoPreview.h"
 using namespace localization;
 
@@ -127,7 +128,7 @@ void _UpdatePreview(void * object)
         }
         o->timeline_copy = new Timeline();
         o->repaint();
-        o->startThread();
+        o->startThread(THREAD_PRIORITY_PREVIEW);
     }
     else
     {

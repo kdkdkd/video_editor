@@ -1,3 +1,4 @@
+#include "config.h"
 #include "toolbox.h"
 #include "PopupWindow.h"
 namespace toolbox

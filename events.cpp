@@ -1,3 +1,4 @@
+#include "config.h"
 #include "events.h"
 
 Event::Event(void* object,void (*func)(void *))

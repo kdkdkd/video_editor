@@ -1,3 +1,4 @@
+#include "config.h"
 #include "PopupWindow.h"
 #include "juce/juce.h"
 

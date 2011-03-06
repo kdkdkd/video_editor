@@ -1,4 +1,5 @@
-﻿#include "localization.h"
+﻿#include "config.h"
+#include "localization.h"
 
 namespace localization
 {

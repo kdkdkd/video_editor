@@ -1,3 +1,4 @@
+#include "config.h"
 #include "taskTab.h"
 #include "tasks.h"
 #include "toolbox.h"

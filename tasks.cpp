@@ -1,3 +1,4 @@
+#include "config.h"
 #include "tasks.h"
 #include "localization.h"
 using namespace localization;
@@ -65,7 +66,7 @@ void FindSuspendedTaskAndLaunch()
         {
             (*it)->state = task::Working;
             if(!(*it)->isThreadRunning())
-                (*it)->startThread(7);
+                (*it)->startThread(THREAD_PRIORITY_ENCODE);
             (*it)->millis_start = Time::currentTimeMillis();
             break;
         }
@@ -134,7 +135,7 @@ void AddEncodingTask(Timeline * timeline, Movie::Info info)
         tasks_list.push_back(new_task);
         if(number_of_working_task<3)
         {
-            new_task->startThread(7);
+            new_task->startThread(THREAD_PRIORITY_ENCODE);
             new_task->state = task::Working;
         }
         else
@@ -198,7 +199,7 @@ bool ResumeTask(int number)
 
     t->state = task::Working;
     if(!t->isThreadRunning())
-        t->startThread(7);
+        t->startThread(THREAD_PRIORITY_ENCODE);
     t->millis_start = Time::currentTimeMillis();
     return true;
 }

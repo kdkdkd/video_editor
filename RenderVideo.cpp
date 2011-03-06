@@ -1,3 +1,4 @@
+#include "config.h"
 #include "timeline.h"
 #include "movie.h"
 #include "localization.h"
