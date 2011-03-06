@@ -38,11 +38,11 @@ taskTab::taskTab():DocumentWindow(LABEL_TASK_TAB,Colours::whitesmoke,DocumentWin
 
     isVisible = false;
 
-    encoding = ImageCache::getFromFile(String("pic\\taskTab\\encoding.png"));
-    play = ImageCache::getFromFile(String("pic\\taskTab\\play.png"));
-    pause = ImageCache::getFromFile(String("pic\\taskTab\\pause.png"));
-    close = ImageCache::getFromFile(String("pic\\taskTab\\close.png"));
-    open = ImageCache::getFromFile(String("pic\\taskTab\\open.png"));
+    encoding = ImageCache::getFromFile(String("..\\pic\\taskTab\\encoding.png"));
+    play = ImageCache::getFromFile(String("..\\pic\\taskTab\\play.png"));
+    pause = ImageCache::getFromFile(String("..\\pic\\taskTab\\pause.png"));
+    close = ImageCache::getFromFile(String("..\\pic\\taskTab\\close.png"));
+    open = ImageCache::getFromFile(String("..\\pic\\taskTab\\open.png"));
 
 }
 void taskTab::add()

@@ -240,15 +240,15 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     tasks = new taskTab();
 
-    initImageButton(String("pic\\zoomin.png"),zoomInButton);
-    initImageButton(String("pic\\zoomout.png"),zoomOutButton);
+    initImageButton(String("..\\pic\\zoomin.png"),zoomInButton);
+    initImageButton(String("..\\pic\\zoomout.png"),zoomOutButton);
 
-    initImageButton(String("pic\\play.png"),playButton);
-    initImageButton(String("pic\\pause.png"),pauseButton);
+    initImageButton(String("..\\pic\\play.png"),playButton);
+    initImageButton(String("..\\pic\\pause.png"),pauseButton);
 
-    initImageButton(String("pic\\prev.png"),prevFrameButton);
-    initImageButton(String("pic\\next.png"),nextFrameButton);
-    initImageButton(String("pic\\stop.png"),stopButton);
+    initImageButton(String("..\\pic\\prev.png"),prevFrameButton);
+    initImageButton(String("..\\pic\\next.png"),nextFrameButton);
+    initImageButton(String("..\\pic\\stop.png"),stopButton);
 
     timeline = new Timeline();
 
