@@ -949,12 +949,12 @@ bool MainComponent::perform (const InvocationInfo& info)
             {
                 File chosenFile = fc.getResult();
                 bool can_save = true;
-                if(chosenFile.exists())
+                if(chosenFile.existsAsFile())
                 {
                     can_save = chosenFile.deleteFile();
                 }
 
-
+                can_save = can_save && chosenFile.hasWriteAccess();
                 if(can_save)
                 {
                     JPEGImageFormat *jpeg_format = new JPEGImageFormat();
@@ -972,15 +972,22 @@ bool MainComponent::perform (const InvocationInfo& info)
                             File file_with_jpg_ext(chosenFile.getFullPathName() + ".jpg");
                             stream = file_with_jpg_ext.createOutputStream();
                         }
+
                         jpeg_format->writeImageToStream(*timeline->GetImage(),*stream);
-                        if(stream)delete stream;
+                        if(stream)
+                        {
+                            delete stream;
+                            stream = 0;
+                        }
                         delete jpeg_format;
+                        jpeg_format = 0;
                     }
                     catch(...)
                     {
                         can_save = false;
                         if(stream)delete stream;
-                        delete jpeg_format;
+                        if(jpeg_format)
+                            delete jpeg_format;
                     }
                 }
                 if(can_save)
