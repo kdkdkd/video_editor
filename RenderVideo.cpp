@@ -2,7 +2,7 @@
 #include "timeline.h"
 #include "movie.h"
 #include "localization.h"
-#define __STDC_CONSTANT_MACROS
+
 extern "C" {
 #include <libavcodec/opt.h>
 }
@@ -77,7 +77,6 @@ static int sws_flags = SWS_GAUSS;
 
 
 extern "C" {
-#define __STDC_CONSTANT_MACROS
 #include <libavutil/intreadwrite.h>
 }
 

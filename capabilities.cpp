@@ -1,7 +1,6 @@
 #include "config.h"
 #include "capabilities.h"
 extern "C" {
-#define __STDC_CONSTANT_MACROS
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>

@@ -3,7 +3,6 @@
 #include "juce/juce.h"
 extern CriticalSection avcodec_critical;
 extern "C" {
-#define __STDC_CONSTANT_MACROS
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
