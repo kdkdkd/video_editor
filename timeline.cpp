@@ -183,8 +183,8 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
         if(*it == current_interval)
         {
             it++;
-            double frame = 1.0d / GetFps();
-            double eps = frame/5.0d;
+            double frame = 1.0 / GetFps();
+            double eps = frame/5.0;
             if(it != intervals.end() && fabs((*it)->absolute_start - current_interval->GetAbsoluteEnd())<eps)
             {
                 current_interval = *it;
@@ -219,10 +219,10 @@ bool Timeline::SkipFrame(bool jump_to_next)
 
 bool Timeline::GoBack(int frames)
 {
-    double frame = 1.0d / GetFps();
-    double eps = frame/5.0d;
+    double frame = 1.0 / GetFps();
+    double eps = frame/5.0;
     double desired = current - ((double)frames) * frame;
-    double guess = desired - 3.0d*frame;
+    double guess = desired - 3.0*frame;
     if(guess<0.0)
         guess = 0.0;
     GotoSecondAndRead(guess,false);
@@ -375,7 +375,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
     interval->color=Timeline::Interval::dragg;
     Timeline *timeline_preview = new Timeline;
     timeline_preview->disposeMovies = false;
-    double diff = 0.0d;
+    double diff = 0.0;
     vector<Timeline::Interval*>::iterator it = intervals.begin();
     Timeline::Interval * interval_current = 0;
     bool end = false;

@@ -106,7 +106,7 @@ void  MainComponent::timerCallback()
     int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
     if(miliseconds_start<0)
         spend = 0;
-    int need = 1000.0d / timeline->GetFps();
+    int need = 1000.0 / timeline->GetFps();
 
     int timer = need - spend;
 
@@ -426,17 +426,17 @@ void MainComponent::paint (Graphics& g)
         double display_interval = 120.0 / second_to_pixel ;
         if(display_interval<60.0)
         {
-            display_interval = ((int)display_interval/10) * 10.0d;
+            display_interval = ((int)display_interval/10) * 10.0;
             number_of_lines = 5;
         }
         else if(display_interval<600.0)
         {
-            display_interval = ((int)display_interval/60) * 60.0d;
+            display_interval = ((int)display_interval/60) * 60.0;
             number_of_lines = 4;
         }
         else
         {
-            display_interval = ((int)display_interval/600) * 600.0d;
+            display_interval = ((int)display_interval/600) * 600.0;
             number_of_lines = 3;
         }
 
@@ -905,7 +905,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextSecond:
     {
         StopVideo();
-        timeline->GotoSecondAndRead(timeline->current+1.0d);
+        timeline->GotoSecondAndRead(timeline->current+1.0);
         repaint();
 
     }
@@ -914,7 +914,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandPrevSecond:
     {
         StopVideo();
-        timeline->GotoSecondAndRead(timeline->current-1.0d);
+        timeline->GotoSecondAndRead(timeline->current-1.0);
         repaint();
 
     }

@@ -48,7 +48,7 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
 bool Movie::Load(String &filename, bool soft)
 {
     File f(filename);
-    if(!f.exists())
+    if(!f.existsAsFile())
         return false;
 
     pDataBuffer = new unsigned char[lSize];
@@ -317,8 +317,8 @@ bool Movie::GotoSecondAndRead(double dest,bool decode, bool accurate)
     if(dest == current)return true;
     if(dest>duration)
         dest = duration;
-    if(dest<0.0d)
-        dest = 0.0d;
+    if(dest<0.0)
+        dest = 0.0;
 
     if(dest ==0.)
     {
@@ -410,10 +410,10 @@ bool Movie::SkipFrame()
 
 bool Movie::GoBack(int frames)
 {
-    double frame = 1.0d / fps;
-    double eps = frame/5.0d;
+    double frame = 1.0 / fps;
+    double eps = frame/5.0;
     double desired = current - ((double)frames) * frame;
-    double guess = desired - 3.0d*frame;
+    double guess = desired - 3.0*frame;
     if(guess<0.0)
         guess = 0.0;
     GotoSecondAndRead(guess,false);

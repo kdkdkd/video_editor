@@ -179,7 +179,7 @@
     Unless you specifically want to disable this, it's best to leave this option turned on.
 */
 #ifndef JUCE_USE_XINERAMA
-  #define JUCE_USE_XINERAMA 0
+  #define JUCE_USE_XINERAMA 1
 #endif
 
 /** JUCE_USE_XSHM: Enables X shared memory for faster rendering on Linux. This is best left
@@ -192,7 +192,7 @@
 /** JUCE_USE_XRENDER: Uses XRender to allow semi-transparent windowing on Linux.
 */
 #ifndef JUCE_USE_XRENDER
-  #define JUCE_USE_XRENDER 0
+  #define JUCE_USE_XRENDER 1
 #endif
 
 /** JUCE_USE_XCURSOR: Uses XCursor to allow ARGB cursor on Linux. This is best left turned on
