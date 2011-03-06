@@ -5,6 +5,7 @@ extern "C" {
 #include <libavcodec/opt.h>
 }
 #define INT64_C __INT64_C
+using namespace localization;
 class RenderContext
 {
 public:
@@ -762,7 +763,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
         if(avcodec_open(c, codec)<0)
         {
             rc->error = true;
-            rc->errorText =  "Could not open video codec";
+            rc->errorText =  LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
             return st;
         }
     }
@@ -824,7 +825,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
         if(avcodec_open(c, codec) < 0)
         {
             rc->error = true;
-            rc->errorText =  "Could not open audio codec";
+            rc->errorText =  LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC;
             return;
         }
     }
@@ -839,7 +840,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if(!rc->audio_outbuf)
     {
         rc->error = true;
-        rc->errorText = "Could not allocate audio buffer size";
+        rc->errorText = LABEL_SAVE_VIDEO_ERROR_MEMORY;
         return;
     }
     /* ugly hack for PCM codecs (will be removed ASAP with new PCM
@@ -868,7 +869,7 @@ static void open_audio(AVFormatContext *oc, AVStream *st,RenderContext *rc)
     if(!rc->samples)
     {
         rc->error = true;
-        rc->errorText =  "Could not alocate audio buffer size";
+        rc->errorText =  LABEL_SAVE_VIDEO_ERROR_MEMORY;
         return;
     }
 }
@@ -914,7 +915,7 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
         if(!rc->video_outbuf)
         {
             rc->error = true;
-            rc->errorText =  "Could not alocate video buffer";
+            rc->errorText =  LABEL_SAVE_VIDEO_ERROR_MEMORY;
             return;
         }
     }
@@ -923,7 +924,7 @@ static void open_video(AVFormatContext *oc, AVStream *st, RenderContext* rc)
     if(!rc->picture)
     {
         rc->error = true;
-        rc->errorText = "Could not allocate picture";
+        rc->errorText = LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE;
         return;
     }
 }
@@ -1021,7 +1022,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
         if(av_interleaved_write_frame(oc, &pkt)<0)
         {
-            rc->errorText =  "Error while writing video packet";
+            rc->errorText =  LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET;
             rc->error = true;
             return false;
         }
@@ -1042,7 +1043,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
 
             if (out_size < 0)
             {
-                rc->errorText =  "Error while encoding video packet";
+                rc->errorText =  LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET;
                 rc->error = true;
                 return false;
             }
@@ -1064,7 +1065,7 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
             /* write the compressed frame in the media file */
             if(av_interleaved_write_frame(oc, &pkt)<0)
             {
-                rc->errorText =  "Error while writing video packet";
+                rc->errorText =  LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET;
                 rc->error = true;
                 return false;
             }
@@ -1111,7 +1112,7 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     pkt.size = avcodec_encode_audio(c, rc->audio_outbuf, rc->audio_outbuf_size, rc->samples);
     if(pkt.size<0)
     {
-        rc->errorText =  "Error while encoding audio packet";
+        rc->errorText =  LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET;
         rc->error = true;
         return false;
     }
@@ -1124,7 +1125,7 @@ static bool write_audio_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     /* write the compressed frame in the media file */
     if (av_interleaved_write_frame(oc, &pkt) <0)
     {
-        rc->errorText =  "Error while writing audio packet";
+        rc->errorText =  LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET;
         rc->error = true;
         return false;
     }
@@ -1306,12 +1307,12 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
         {
             if(!f.deleteFile())
             {
-                return "Not able to delete file";
+                return LABEL_SAVE_VIDEO_ERROR_WRITTING;
             }
         }
         if(!f.hasWriteAccess())
         {
-            return "No write access";
+            return LABEL_SAVE_VIDEO_ERROR_WRITTING;
         }
 
 
@@ -1326,7 +1327,7 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
         catch(std::bad_alloc& ex)
         {
             deleter.ByteIOCtx = 0;
-            return "Memory allocation error";
+            return LABEL_SAVE_VIDEO_ERROR_MEMORY;
         }
 
         try
@@ -1336,7 +1337,7 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
         catch(std::bad_alloc& ex)
         {
             deleter.pDataBuffer = 0;
-            return "Memory allocation error";
+            return LABEL_SAVE_VIDEO_ERROR_MEMORY;
         }
 
         init_put_byte(deleter.ByteIOCtx, deleter.pDataBuffer, lSize, 1, deleter.fs, NULL, _WritePacket, _SeekWithOutputStream);
@@ -1344,13 +1345,13 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
 
         if(av_write_header(deleter.oc))
         {
-            return "Can't write header";
+            return LABEL_SAVE_VIDEO_ERROR_HEADER;
         }
 
         for(;;)
         {
             if(thread && thread->threadShouldExit())
-                return localization::LABEL_SAVE_VIDEO_SUSPENDED;
+                return LABEL_SAVE_VIDEO_SUSPENDED;
 
             if(t && t->state == task::Suspended)
             {
@@ -1409,7 +1410,7 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
 
         if(av_write_trailer(deleter.oc))
         {
-            return "Can't write trailer";
+            return LABEL_SAVE_VIDEO_ERROR_TRAILER;
         }
 
 

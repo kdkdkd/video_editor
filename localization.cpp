@@ -193,4 +193,18 @@ String LABEL_YES = T("Да");
 String LABEL_NO = T("Нет");
 
 String LABEL_ASK_QUIT = T("Вы уверены, что хотите выйти?");
+
+String LABEL_SAVE_VIDEO_ERROR_WRITTING = T("Невозможно записать файл");
+String LABEL_SAVE_VIDEO_ERROR_MEMORY = T("Недостаточно свободной оперативной памяти");
+String LABEL_SAVE_VIDEO_ERROR_HEADER = T("Неправильный заголовок");
+String LABEL_SAVE_VIDEO_ERROR_TRAILER = T("Неправильный трейлер");
+String LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET = T("Невозможно записать аудио пакет");
+String LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET = T("Невозможно записать видео пакет");
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET = T("Невозможно кодировать аудио пакет");
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET = T("Невозможно кодировать видео пакет");
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE = T("Невозможно создать изображение");
+String LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC = T("Невозможно открыть аудио кодек");
+String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC = T("Невозможно открыть видео кодек");
+
+String LABEL_SAVE_VIDEO_PAUSED = T("Остановлено");
 }

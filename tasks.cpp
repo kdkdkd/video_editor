@@ -65,7 +65,7 @@ void FindSuspendedTaskAndLaunch()
         {
             (*it)->state = task::Working;
             if(!(*it)->isThreadRunning())
-                (*it)->startThread();
+                (*it)->startThread(7);
             (*it)->millis_start = Time::currentTimeMillis();
             break;
         }
@@ -134,7 +134,7 @@ void AddEncodingTask(Timeline * timeline, Movie::Info info)
         tasks_list.push_back(new_task);
         if(number_of_working_task<3)
         {
-            new_task->startThread();
+            new_task->startThread(7);
             new_task->state = task::Working;
         }
         else
@@ -198,7 +198,7 @@ bool ResumeTask(int number)
 
     t->state = task::Working;
     if(!t->isThreadRunning())
-        t->startThread();
+        t->startThread(7);
     t->millis_start = Time::currentTimeMillis();
     return true;
 }

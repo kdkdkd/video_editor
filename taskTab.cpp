@@ -128,7 +128,13 @@ void taskTab::paintCell (Graphics& g, int rowNumber, int columnId, int width, in
     Justification just = Justification::centredLeft;
     switch(columnId)
     {
-        case 6:text_to_draw = t_copy.status;break;
+        case 6:
+            text_to_draw = t_copy.status;
+            if(t_copy.state == task::Suspended)
+            {
+                text_to_draw = text_to_draw + " (" + LABEL_SAVE_VIDEO_PAUSED + ")";
+            };
+        break;
         case 4:text_to_draw = t_copy.filename;break;
         case 1:
         {
