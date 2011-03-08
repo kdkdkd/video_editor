@@ -954,6 +954,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         resolutionList->addItem(LABEL_VIDEO_SAVE_SIZE_OTHER,-100);
         if(selected_id_present)
             resolutionList->setSelectedId(selected_id);
+        else if(selected_id == -100)
+            resolutionList->setSelectedId(-100,true);
         else
             resolutionList->setSelectedId(1);
 
@@ -1084,7 +1086,8 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     else if (comboBoxThatHasChanged == audioCodec)
     {
 
-    }else if (comboBoxThatHasChanged == passList)
+    }
+    else if (comboBoxThatHasChanged == passList)
     {
         UpdatePreview = true;
     }
@@ -1132,7 +1135,7 @@ bool encodeVideoComponent::Validate()
     }
 
     int width_int = videoWidth->getText().getIntValue();
-    if(width_int<5)
+    if(width_int<5 || width_int % 4 != 0)
     {
         videoWidth->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         videoWidth->setTooltip(VALIDATION_SAVE_WIDTH);
@@ -1141,7 +1144,7 @@ bool encodeVideoComponent::Validate()
     }
 
     int height_int = videoHeight->getText().getIntValue();
-    if(height_int<5)
+    if(height_int<5 || height_int % 4 != 0)
     {
         videoHeight->setColour(TextEditor::textColourId,Colour::fromRGB(255,0,0));
         videoHeight->setTooltip(VALIDATION_SAVE_HEIGHT);
@@ -1184,16 +1187,30 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         isPreviewVisible = !isPreviewVisible;
         if(isPreviewVisible)
         {
-            if(!preview)
-                preview = new videoPreview(this);
+            clearValidation();
+            if(Validate())
+            {
+                if(!preview)
+                    preview = new videoPreview(this);
+                else
+                    preview->add();
+            }
             else
-                preview->add();
-        }else
+            {
+                showPreview->setToggleState(false,true);
+                if(!isAdvancedMode)
+                    advancedMode->setToggleState(true,true);
+            }
+        }
+        else
         {
-            preview->remove();
+            if(preview)
+                preview->remove();
         }
 
-    }else if (buttonThatWasClicked == ok)
+
+    }
+    else if (buttonThatWasClicked == ok)
     {
         clearValidation();
         if(!Validate())

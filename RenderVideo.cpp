@@ -28,6 +28,14 @@ public:
     SwsContext *img_convert_ctx;
     bool error;
     String errorText;
+    int srcW;
+    int srcH;
+    int dstW;
+    int dstH;
+    double coff;
+    int location;
+    PixelFormat srcFormat;
+    PixelFormat dstFormat;
     RenderContext()
     {
         picture = 0;
@@ -83,12 +91,7 @@ extern "C" {
 
 
 
-int srcW = 0;
-int srcH = 0;
-int dstW = 0;
-int dstH = 0;
-PixelFormat srcFormat;
-PixelFormat dstFormat;
+
 
 
 static void setCompressionPreset(AVCodecContext *c, int preset,int pass_number,RenderContext *rc)
@@ -935,51 +938,76 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 {
 
     Movie::VideoInfo video_info = info.videos[0];
+    int dstW_candidate = video_info.width;
+    int dstH_candidate = video_info.height;
+
     if(!timeline->current_interval)
     {
-        //Make black image
-
-        int height = video_info.height;
-        int width = video_info.width;
-
-        /* Y */
-        memset(pict->data[0],0,(height-1) * pict->linesize[0] + width-1);
-        /* U */
-        memset(pict->data[1],128,(height/2-1) * pict->linesize[1] + width/2-1);
-        /* V */
-        memset(pict->data[2],128,(height/2-1) * pict->linesize[2] + width/2-1);
+        memset(pict->data[0],0,pict->linesize[0] * dstH_candidate);
+        memset(pict->data[1],128,(dstH_candidate/2) * pict->linesize[1]);
+        memset(pict->data[2],128,(dstH_candidate/2) * pict->linesize[2]);
 
         rc->end_writing = !timeline->SkipFrame();
         return;
     }
     Movie * movie = timeline->current_interval->movie;
 
+    int srcW_candidate = movie->width;
+    int srcH_candidate = movie->height;
+
+    PixelFormat srcFormat_candidate = movie->GetMovieInfo()->videos[0].pix_fmt;
+    PixelFormat dstFormat_candidate = pix_fmt;
     if(
         rc->img_convert_ctx == NULL
-        || srcW != movie->width
-        || srcH != movie->height
-        || dstW != video_info.width
-        || dstH != video_info.height
-        || srcFormat != movie->GetMovieInfo()->videos[0].pix_fmt
-        || dstFormat != pix_fmt
+        || rc->srcW != srcW_candidate
+        || rc->srcH != srcH_candidate
+        || rc->dstW != dstW_candidate
+        || rc->dstH != dstH_candidate
+        || rc->srcFormat != srcFormat_candidate
+        || rc->dstFormat != dstFormat_candidate
     )
     {
-        srcW = movie->width;
-        srcH = movie->height;
-        dstW = video_info.width;
-        dstH = video_info.height;
-        srcFormat = movie->GetMovieInfo()->videos[0].pix_fmt;
-        dstFormat = pix_fmt;
+        rc->srcW = srcW_candidate;
+        rc->srcH = srcH_candidate;
+        rc->dstW = dstW_candidate;
+        rc->dstH = dstH_candidate;
+        rc->srcFormat = srcFormat_candidate;
+        rc->dstFormat = dstFormat_candidate;
+        double c1 = (double)dstW_candidate / (double)srcW_candidate;
+        double c2 = (double)dstH_candidate / (double)srcH_candidate;
+
+
+        if(dstW_candidate*srcH_candidate == dstH_candidate*srcW_candidate)
+        {
+            rc->location = 0;
+            rc->coff = c1;
+        }else if(c1 > c2)
+        {
+            rc->coff = c2;
+            rc->location = 1;
+        }else if(c1 < c2)
+        {
+            rc->coff = c1;
+            rc->location = -1;
+        }
+
+        if(rc->location!=0)
+        {
+            memset(pict->data[0],0,pict->linesize[0] * dstH_candidate);
+            memset(pict->data[1],128,(dstH_candidate/2) * pict->linesize[1]);
+            memset(pict->data[2],128,(dstH_candidate/2) * pict->linesize[2]);
+        }
 
         if(rc->img_convert_ctx != NULL )
         {
             sws_freeContext(rc->img_convert_ctx);
             rc->img_convert_ctx = NULL;
         }
-        rc->img_convert_ctx = sws_getContext(srcW, srcH,
-                                             srcFormat,
-                                             dstW, dstH,
-                                             dstFormat,
+
+        rc->img_convert_ctx = sws_getContext(rc->srcW, rc->srcH,
+                                             rc->srcFormat,
+                                             rc->coff*rc->srcW, rc->coff*rc->srcH,
+                                             rc->dstFormat,
                                              sws_flags, NULL, NULL, NULL);
         if (rc->img_convert_ctx == NULL)
         {
@@ -988,10 +1016,41 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
             return;
         }
     }
+    uint8_t *data_real0 = pict->data[0],*data_real1=pict->data[1],*data_real2=pict->data[2];
+    int linesize0 = pict->linesize[0],linesize1 = pict->linesize[1],linesize2 = pict->linesize[2];
+    if(rc->location<0)
+    {
+        int realH = (int)(rc->coff*rc->srcH);
+        int diff_o = (rc->dstH - realH);
+        int diff = (linesize0)*(diff_o/2);
 
+        pict->data[0] = pict->data[0] + diff;
+
+        int diff2 = (linesize1)*(diff_o/4);
+
+        pict->data[1] = pict->data[1] + diff2;
+
+        pict->data[2] = pict->data[2] + diff2;
+
+    }else if(rc->location>0)
+    {
+        int realW = (int)(rc->coff*rc->srcW);
+        int diff = (rc->dstW - realW)/2;
+        pict->data[0] = pict->data[0] + diff;
+        pict->data[1] = pict->data[1] + diff/2;
+        pict->data[2] = pict->data[2] + diff/2;
+
+    }
 
     int scale_res = sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
                               0, movie->height, pict->data, pict->linesize);
+
+    if(rc->location!=0)
+    {
+        pict->data[0] = data_real0;
+        pict->data[1] = data_real1;
+        pict->data[2] = data_real2;
+    }
 
 }
 
@@ -1234,8 +1293,14 @@ public:
 
 String Timeline::Render(const Movie::Info & info, Thread * thread, void (* reportProgress)(task*,double),task* t)
 {
+
     bool video_enabled = info.videos.size()>0;
     RenderContext rc,*rcp = &rc;
+    rcp->srcW = 0;
+    rcp->srcH = 0;
+    rcp->dstW = 0;
+    rcp->dstH = 0;
+
     rcp->pass_info=String::empty;
     rcp->is_codec_x264 = false;
     rcp->error = false;
