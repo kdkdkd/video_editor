@@ -1,3 +1,4 @@
+#include "config.h"
 #include "movie.h"
 #include "localization.h"
 #include "toolbox.h"
@@ -8,7 +9,10 @@ Movie::Movie()
     image = new Image();
     bitmapData = 0;
     image_preview=new Image();
+    info = 0;
 };
+CriticalSection avcodec_critical;
+
 
 int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
 {
@@ -42,10 +46,10 @@ int64_t _Seek(void* cookie, int64_t offset, int whence)
     return offset;
 }
 
-bool Movie::Load(String &filename)
+bool Movie::Load(String &filename, bool soft)
 {
     File f(filename);
-    if(!f.exists())
+    if(!f.existsAsFile())
         return false;
 
     pDataBuffer = new unsigned char[lSize];
@@ -114,9 +118,11 @@ bool Movie::Load(String &filename)
         pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;*/
 
     // Open codec
-    if(avcodec_open(pCodecCtx, pCodec)<0)
-        return false; // Could not open codec
-
+    {
+        const ScopedLock myScopedLock (avcodec_critical);
+        if(avcodec_open(pCodecCtx, pCodec)<0)
+            return false; // Could not open codec
+    }
     // Allocate video frame
     pFrame=avcodec_alloc_frame();
 
@@ -146,14 +152,13 @@ bool Movie::Load(String &filename)
         fps = ((double)pCodecCtx->time_base.den / (double)pCodecCtx->time_base.num);
     }
 
-    int duration_num = pStream->duration * pStream->time_base.num;
-    int duration_denum = pStream->time_base.den;
-
-    duration = (double)duration_num/ (double)duration_denum;
+    duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
 
     if(duration<=0.0)
     {
-        duration = (double)pFormatCtx->duration / (double)AV_TIME_BASE;
+        int duration_num = pStream->duration * pStream->time_base.num;
+        int duration_denum = pStream->time_base.den;
+        duration = (double)duration_num / (double)duration_denum;
     }
 
 
@@ -162,11 +167,14 @@ bool Movie::Load(String &filename)
     height = pCodecCtx->height;
 
     //Generate preview
-    GotoRatioAndRead(.1,true,false);
+    if(!soft)
+    {
+        GotoRatioAndRead(.1,true,false);
 
-    image_preview = GeneratePreview();
+        image_preview = GeneratePreview();
 
-    GotoSecondAndRead(.0);
+        GotoSecondAndRead(.0);
+    }
     //~Generate preview
 
     loaded = true;
@@ -196,6 +204,7 @@ double Movie::ToSeconds(int internals)
 
 void Movie::Dispose()
 {
+    const ScopedLock myScopedLock (avcodec_critical);
     if(loaded)
     {
 
@@ -219,12 +228,17 @@ void Movie::Dispose()
         delete fs;
 
         delete ByteIOCtx;
+        if(info)
+            delete info;
     }
-    delete image;
+
+
+    if(image)
+        delete image;
 
     //delete image_preview;
-
-    delete bitmapData;
+    if(bitmapData)
+        delete bitmapData;
 
     loaded = false;
 }
@@ -304,8 +318,8 @@ bool Movie::GotoSecondAndRead(double dest,bool decode, bool accurate)
     if(dest == current)return true;
     if(dest>duration)
         dest = duration;
-    if(dest<0.0d)
-        dest = 0.0d;
+    if(dest<0.0)
+        dest = 0.0;
 
     if(dest ==0.)
     {
@@ -356,6 +370,7 @@ AVPacket* Movie::ReadFrame()
                 avcodec_decode_video2( pCodecCtx, pFrame, &frameFinished, packet);
                 if ( frameFinished )
                 {
+
                     current = ToSeconds(packet->dts - pStream->start_time);
                     return packet;
                 }
@@ -396,10 +411,10 @@ bool Movie::SkipFrame()
 
 bool Movie::GoBack(int frames)
 {
-    double frame = 1.0d / fps;
-    double eps = frame/5.0d;
+    double frame = 1.0 / fps;
+    double eps = frame/5.0;
     double desired = current - ((double)frames) * frame;
-    double guess = desired - 3.0d*frame;
+    double guess = desired - 3.0*frame;
     if(guess<0.0)
         guess = 0.0;
     GotoSecondAndRead(guess,false);
@@ -427,17 +442,114 @@ void Movie::DecodeFrame()
 
 }
 
-
-String Movie::GetMovieInfo()
+Movie::Info* Movie::GetMovieInfo()
 {
+    if(!loaded)return 0;
+    if(info)return info;
+
+    Movie::Info * res = new Movie::Info;
+    File f(filename);
+    res->filename = f.getFileName();
+    res->duration = duration;
+    res->size = fs->getFile().getSize();
+    res->bit_rate = pFormatCtx->bit_rate / 1000;
+    res->format_long = pFormatCtx->iformat->long_name;
+    res->format_short = pFormatCtx->iformat->name;
+
+    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    {
+        AVStream * stream = pFormatCtx->streams[i];
+        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
+        {
+            VideoInfo video_info;
+            AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
+            video_info.codec_long = codec->long_name;
+            video_info.codec_short = codec->name;
+
+            char * buf = new char[12];
+            av_get_codec_tag_string(buf,12,stream->codec->codec_tag);
+            video_info.codec_tag = String(buf);
+            if(video_info.codec_tag.indexOf("[")>=0)
+                video_info.codec_tag = String::empty;
+            delete []buf;
+            video_info.width = stream->codec->width;
+            video_info.height = stream->codec->height;
+            video_info.bit_rate = stream->codec->bit_rate/1000;
+            video_info.fps = ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den);
+            video_info.pix_fmt = stream->codec->pix_fmt;
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+
+            if(lang)
+                video_info.language = String::fromUTF8(lang->value);
+            else
+                video_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                video_info.title = String::fromUTF8(title->value);
+            else
+                video_info.language = String::empty;
+            res->videos.push_back(video_info);
+        }else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
+        {
+            AudioInfo audio_info;
+            AVCodec* codec = avcodec_find_decoder(stream->codec->codec_id);
+
+            audio_info.codec_long = codec->long_name;
+            audio_info.codec_short = codec->name;
+
+            char * buf = new char[12];
+            av_get_codec_tag_string(buf,12,stream->codec->codec_tag);
+            audio_info.codec_tag = String(buf);
+            if(audio_info.codec_tag.indexOf("[")>=0)
+                audio_info.codec_tag = String::empty;
+            delete []buf;
+
+            audio_info.bit_rate = -1;
+            audio_info.sample_rate = stream->codec->sample_rate;
+            audio_info.channels = stream->codec->channels;
+
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                audio_info.language = String::fromUTF8(lang->value);
+            else
+                audio_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                audio_info.title = String::fromUTF8(title->value);
+            else
+                audio_info.language = String::empty;
+
+            res->audios.push_back(audio_info);
+        }else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
+        {
+            SubInfo sub_info;
+            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
+            if(lang)
+                sub_info.language = String::fromUTF8(lang->value);
+            else
+                sub_info.language = String::empty;
+            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
+            if(title)
+                sub_info.title = String::fromUTF8(title->value);
+            else
+                sub_info.language = String::empty;
+            res->subs.push_back(sub_info);
+        }
+    }
+    return res;
+}
+
+String Movie::PrintMovieInfo()
+{
+    Info * inf = GetMovieInfo();
+
     String text;
 
-    File f(filename);
-    text<<"["<<LABEL_FILE<<"] "<<f.getFileName()<<"\n";
-    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(duration)<<"\n";
-    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(fs->getFile().getSize())<<"\n";
+    text<<"["<<LABEL_FILE<<"] "<<inf->filename<<"\n";
+    text<<"["<<LABEL_DURATION<<"] "<<toolbox::format_duration(inf->duration)<<"\n";
+    text<<"["<<LABEL_SIZE<<"] "<<File::descriptionOfSizeInBytes(inf->size)<<"\n";
     String bit_rate;
-    int bit_rate_int = pFormatCtx->bit_rate / 1000;
+    int bit_rate_int = inf->bit_rate;
     if(bit_rate_int)
     {
         bit_rate = String(bit_rate_int) + " " +  LABEL_KB_PER_SECOND;
@@ -447,56 +559,62 @@ String Movie::GetMovieInfo()
         bit_rate = LABEL_NOT_AVIABLE;
     }
     text<<"["<<LABEL_BITRATE<<"] "<<bit_rate<<"\n";
-    text<<"["<<LABEL_FORMAT<<"] "<<pFormatCtx->iformat->long_name<<"\n\n";
+    text<<"["<<LABEL_FORMAT<<"] "<<inf->format_short<<","<<inf->format_long<<"\n\n";
 
     int display_index = 1;
-    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+    for(vector<VideoInfo>::iterator it = inf->videos.begin();it!=inf->videos.end();it++)
     {
-        AVStream * stream = pFormatCtx->streams[i];
-        bool displayed = false;
-        if(stream->codec->codec_type==CODEC_TYPE_VIDEO)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_VIDEO<<")"<<"\n";
-            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
-            text<<"   ["<<LABEL_RESOLUTION<<"] "<<stream->codec->width<<"x"<<stream->codec->height<<"\n";
-            text<<"   ["<<LABEL_FPS<<"] "<< ((double)stream->r_frame_rate.num / (double)stream->r_frame_rate.den)<<"\n";
-            if(stream->codec->bit_rate)
-                text<<"   ["<<LABEL_BITRATE<<"] "<<stream->codec->bit_rate/1000<<" "<<LABEL_KB_PER_SECOND<<"\n";
+        text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_VIDEO<<")"<<"\n";
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short;
+        if(it->codec_tag!=String::empty)
+            text<<" ("<<it->codec_tag<<") ";
+        text<<","<<it->codec_long<<"\n";
 
-            displayed = true;
-            display_index++;
-        }
+        text<<"   ["<<LABEL_RESOLUTION<<"] "<<it->width<<"x"<<it->height<<"\n";
+        text<<"   ["<<LABEL_FPS<<"] "<<it->fps<<"\n";
+        if(it->bit_rate)
+            text<<"   ["<<LABEL_BITRATE<<"] "<<it->bit_rate<<" "<<LABEL_KB_PER_SECOND<<"\n";
 
-        else if(stream->codec->codec_type==CODEC_TYPE_AUDIO)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_AUDIO<<")"<<"\n";
-            text<<"   ["<<LABEL_CODEC<<"] "<<avcodec_find_decoder(stream->codec->codec_id)->long_name<<"\n";
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
 
-            text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<stream->codec->sample_rate<<" Hz"<<"\n";
-            text<<"   ["<<LABEL_CHANNELS<<"] "<<stream->codec->channels<<"\n";
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
 
-            displayed = true;
-            display_index++;
-        }
-        else if(stream->codec->codec_type==CODEC_TYPE_SUBTITLE)
-        {
-            text<<LABEL_STREAM<<" #"<<display_index<<" ("<<LABEL_SUBTITLES<<")"<<"\n";
-            displayed = true;
-            display_index++;
-        }
-        if(displayed)
-        {
-            AVMetadataTag *lang = av_metadata_get(stream->metadata, "language", NULL, 0);
-            if(lang)
-                text<<"   ["<<LABEL_LANG<<"] "<<String::fromUTF8(lang->value)<<"\n";
+        text<<"\n";
+    }
 
-            AVMetadataTag *title = av_metadata_get(stream->metadata, "title", NULL, 0);
-            if(title)
-                text<<"   ["<<LABEL_COMMENT<<"] "<<String::fromUTF8(title->value)<<"\n";
-            text<<"\n";
+    for(vector<AudioInfo>::iterator it = inf->audios.begin();it!=inf->audios.end();it++)
+    {
 
-        }
+        text<<LABEL_STREAM<<" #"<<display_index++<<" ("<<LABEL_AUDIO<<")"<<"\n";
 
+        text<<"   ["<<LABEL_CODEC<<"] "<<it->codec_short;
+        if(it->codec_tag!=String::empty)
+            text<<" ("<<it->codec_tag<<") ";
+        text<<","<<it->codec_long<<"\n";
+
+        text<<"   ["<<LABEL_SAMPLE_RATE<<"] "<<it->sample_rate<<" Hz"<<"\n";
+        text<<"   ["<<LABEL_CHANNELS<<"] "<<it->channels<<"\n";
+
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
+
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
+
+        text<<"\n";
+    }
+
+    for(vector<SubInfo>::iterator it = inf->subs.begin();it!=inf->subs.end();it++)
+    {
+        if(it->language!=String::empty)
+            text<<"   ["<<LABEL_LANG<<"] "<<it->language<<"\n";
+
+        if(it->title!=String::empty)
+            text<<"   ["<<LABEL_COMMENT<<"] "<<it->title<<"\n";
+
+        text<<"\n";
     }
     return text;
 

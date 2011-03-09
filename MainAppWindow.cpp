@@ -1,9 +1,10 @@
+#include "config.h"
 #include "MainAppWindow.h"
-#include "MainComponent.h"
+
 
 #include "localization.h"
 using namespace localization;
-//==============================================================================
+
 MainAppWindow::MainAppWindow()
     :
 
@@ -25,7 +26,7 @@ MainAppWindow::MainAppWindow()
     setTitleBarHeight (20);
 
 
-    MainComponent* contentComponent = new MainComponent (this);
+    contentComponent = new MainComponent (this);
 
     commandManager->registerAllCommandsForTarget (contentComponent);
     commandManager->registerAllCommandsForTarget (JUCEApplication::getInstance());
@@ -46,5 +47,6 @@ MainAppWindow::~MainAppWindow()
 
 void MainAppWindow::closeButtonPressed()
 {
-    JUCEApplication::getInstance()->systemRequestedQuit();
+    if(!contentComponent->timeline || !contentComponent->timeline->loaded || AlertWindow::showOkCancelBox(AlertWindow::QuestionIcon,LABEL_ASK_QUIT,LABEL_ASK_QUIT,LABEL_YES,LABEL_NO))
+        JUCEApplication::getInstance()->systemRequestedQuit();
 }

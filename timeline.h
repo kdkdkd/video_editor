@@ -3,29 +3,30 @@
 
 #include "juce/juce.h"
 #include "movie.h"
+#include "tasks.h"
 #include <vector>
 
 using namespace std;
 
 extern Image black_image;
-
+class task;
 class Timeline
 {
 private:
 
-    void RecalculateDuration();
-    void RecalculateCurrent();
+
     bool disposeMovies;
     bool disposeIntervals;
 
 public:
-
+    void RecalculateDuration();
+    void RecalculateCurrent();
     vector<Movie*> movies;
     vector<Movie*> movies_internal;
     bool loaded;
     double duration;
     double current;
-    Movie* Load(String &filename);
+    Movie* Load(String &filename,bool soft);
     void Dispose();
     ~Timeline();
     bool SkipFrame(bool jump_to_next = true);
@@ -90,6 +91,10 @@ public:
     void Split();
     bool IsNearMovieBoundary();
 
+    String Render(const Movie::Info & info, Thread * thread, void (* reportProgress)(task*,double), task* t);
+    bool IsEmpty();
+
+    Timeline* CloneIntervals();
 };
 
 

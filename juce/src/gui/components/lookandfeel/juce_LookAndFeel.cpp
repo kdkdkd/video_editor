@@ -523,8 +523,8 @@ void LookAndFeel::drawToggleButton (Graphics& g,
 {
     if (button.hasKeyboardFocus (true))
     {
-        g.setColour (button.findColour (TextEditor::focusedOutlineColourId));
-        g.drawRect (0, 0, button.getWidth(), button.getHeight());
+        /*g.setColour (button.findColour (TextEditor::focusedOutlineColourId));
+        g.drawRect (0, 0, button.getWidth(), button.getHeight());*/
     }
 
     float fontSize = jmin (15.0f, button.getHeight() * 0.75f);
@@ -2519,7 +2519,7 @@ void LookAndFeel::drawTableHeaderColumn (Graphics& g, const String& columnName, 
     }
 
     g.setColour (Colours::black);
-    g.setFont (height * 0.5f, Font::bold);
+    g.setFont (height * 0.5f, Font::italic);
     const int textX = 4;
     g.drawFittedText (columnName, textX, 0, rightOfText - textX, height, Justification::centredLeft, 1);
 }

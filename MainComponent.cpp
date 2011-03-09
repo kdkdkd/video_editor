@@ -1,7 +1,11 @@
+#include "config.h"
 #include "MainComponent.h"
 #include "PopupWindow.h"
 #include "AskJumpDestanation.h"
 #include "DrawableButtonAndDrag.h"
+#include "encodeVideo.h"
+#include "capabilities.h"
+#include "tasks.h"
 #include <math.h>
 #define VIDEO_TIMELINE_SIZE 98
 #define AUDIO_TIMELINE_SIZE 30
@@ -13,7 +17,7 @@ void MainComponent::changeFileName(String new_filename)
 {
     bool loaded_local = false;
 
-    Movie * movie = timeline->Load(new_filename);
+    Movie * movie = timeline->Load(new_filename,false);
     loaded_local = movie;
     if(loaded_local)
     {
@@ -103,7 +107,7 @@ void  MainComponent::timerCallback()
     int spend = Time::getCurrentTime().toMilliseconds()-miliseconds_start;
     if(miliseconds_start<0)
         spend = 0;
-    int need = 1000.0d / timeline->GetFps();
+    int need = 1000.0 / timeline->GetFps();
 
     int timer = need - spend;
 
@@ -162,7 +166,7 @@ void MainComponent::buttonClicked (Button* button)
             switch(result)
             {
             case 1000:
-                toolbox::show_info_popup(LABEL_INFO,movie->GetMovieInfo(),this);
+                toolbox::show_info_popup(LABEL_INFO,movie->PrintMovieInfo(),this);
                 break;
             case 1001:
                 Component *viewed = button->getParentComponent();
@@ -232,16 +236,20 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     mainWindow = mainWindow_;
 
     av_register_all();
+    //av_log_set_level(AV_LOG_DEBUG);
+    capabilities::InitFormats();
 
-    initImageButton(String("pic\\zoomin.png"),zoomInButton);
-    initImageButton(String("pic\\zoomout.png"),zoomOutButton);
+    tasks = new taskTab();
 
-    initImageButton(String("pic\\play.png"),playButton);
-    initImageButton(String("pic\\pause.png"),pauseButton);
+    initImageButton(String("..\\pic\\zoomin.png"),zoomInButton);
+    initImageButton(String("..\\pic\\zoomout.png"),zoomOutButton);
 
-    initImageButton(String("pic\\prev.png"),prevFrameButton);
-    initImageButton(String("pic\\next.png"),nextFrameButton);
-    initImageButton(String("pic\\stop.png"),stopButton);
+    initImageButton(String("..\\pic\\play.png"),playButton);
+    initImageButton(String("..\\pic\\pause.png"),pauseButton);
+
+    initImageButton(String("..\\pic\\prev.png"),prevFrameButton);
+    initImageButton(String("..\\pic\\next.png"),nextFrameButton);
+    initImageButton(String("..\\pic\\stop.png"),stopButton);
 
     timeline = new Timeline();
 
@@ -272,14 +280,14 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     current_drag_x = -1;
     timeline_original = 0;
+    encodeVideoWindow = 0;
 
 }
 
-MainComponent::~MainComponent ()
+MainComponent::~MainComponent()
 {
     StopVideo();
-
-
+    AfterChangePosition.clear();
     Component *container = movies_list->getViewedComponent();
     int container_num = container->getNumChildComponents();
     for(int i=0; i<container_num; ++i)
@@ -303,8 +311,15 @@ MainComponent::~MainComponent ()
         ask_jump_target = 0;
     }
 
-    deleteAllChildren();
+    if(encodeVideoWindow)
+    {
+        delete encodeVideoWindow;
+        encodeVideoWindow = 0;
+    }
 
+    delete tasks;
+    deleteAllChildren();
+    Thread::stopAllThreads(20000);
 }
 
 
@@ -412,17 +427,17 @@ void MainComponent::paint (Graphics& g)
         double display_interval = 120.0 / second_to_pixel ;
         if(display_interval<60.0)
         {
-            display_interval = ((int)display_interval/10) * 10.0d;
+            display_interval = ((int)display_interval/10) * 10.0;
             number_of_lines = 5;
         }
         else if(display_interval<600.0)
         {
-            display_interval = ((int)display_interval/60) * 60.0d;
+            display_interval = ((int)display_interval/60) * 60.0;
             number_of_lines = 4;
         }
         else
         {
-            display_interval = ((int)display_interval/600) * 600.0d;
+            display_interval = ((int)display_interval/600) * 600.0;
             number_of_lines = 3;
         }
 
@@ -672,10 +687,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
         if(NeedDrawArrow())
         {
             int position = GetArrowPosition();
-            timeline->GotoSecondAndRead(GetPositionSecond(position));
-            ResizeViewport();
-            repaint();
-
+            GotoSecondAndRead(GetPositionSecond(position));
         }
         if(!timeline_original)
         {
@@ -737,11 +749,12 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
     {
         menu.addCommandItem(commandManager,commandOpen);
         menu.addCommandItem(commandManager,commandSave);
-        menu.addCommandItem(commandManager,commandEncode);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
         menu.addCommandItem(commandManager,commandPause);
         menu.addCommandItem(commandManager,commandStop);
+        menu.addSeparator();
+        menu.addCommandItem(commandManager,commandShowTasks);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandRemoveSpaces);
         menu.addSeparator();
@@ -788,6 +801,10 @@ bool MainComponent::perform (const InvocationInfo& info)
         if(interval)
         {
             StopVideo();
+            if(timeline->intervals.size()==1 && encodeVideoWindow)
+            {
+                encodeVideoWindow->closeButtonPressed();
+            }
             timeline->InsertIntervalIn(interval,-2.0);
             repaint();
         }
@@ -798,6 +815,11 @@ bool MainComponent::perform (const InvocationInfo& info)
             timeline->RemoveSpaces();
             sliderValueChanged(scale_timeline);
             repaint();
+        }
+    break;
+    case commandShowTasks:
+        {
+            tasks->add();
         }
     break;
 
@@ -884,7 +906,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandNextSecond:
     {
         StopVideo();
-        timeline->GotoSecondAndRead(timeline->current+1.0d);
+        timeline->GotoSecondAndRead(timeline->current+1.0);
         repaint();
 
     }
@@ -893,7 +915,7 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandPrevSecond:
     {
         StopVideo();
-        timeline->GotoSecondAndRead(timeline->current-1.0d);
+        timeline->GotoSecondAndRead(timeline->current-1.0);
         repaint();
 
     }
@@ -902,15 +924,18 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSave:
     {
         StopVideo();
+        if(!encodeVideoWindow)
+        {
+            encodeVideoWindow = new encodeVideo(this);
+        }else
+        {
+            encodeVideoWindow->add();
+        }
+
+
     }
 
 
-    break;
-
-    case commandEncode:
-    {
-        StopVideo();
-    }
     break;
 
     case commandSaveFrame:
@@ -924,12 +949,12 @@ bool MainComponent::perform (const InvocationInfo& info)
             {
                 File chosenFile = fc.getResult();
                 bool can_save = true;
-                if(chosenFile.exists())
+                if(chosenFile.existsAsFile())
                 {
                     can_save = chosenFile.deleteFile();
                 }
 
-
+                can_save = can_save && chosenFile.hasWriteAccess();
                 if(can_save)
                 {
                     JPEGImageFormat *jpeg_format = new JPEGImageFormat();
@@ -947,15 +972,22 @@ bool MainComponent::perform (const InvocationInfo& info)
                             File file_with_jpg_ext(chosenFile.getFullPathName() + ".jpg");
                             stream = file_with_jpg_ext.createOutputStream();
                         }
+
                         jpeg_format->writeImageToStream(*timeline->GetImage(),*stream);
-                        if(stream)delete stream;
+                        if(stream)
+                        {
+                            delete stream;
+                            stream = 0;
+                        }
                         delete jpeg_format;
+                        jpeg_format = 0;
                     }
                     catch(...)
                     {
                         can_save = false;
                         if(stream)delete stream;
-                        delete jpeg_format;
+                        if(jpeg_format)
+                            delete jpeg_format;
                     }
                 }
                 if(can_save)
@@ -995,7 +1027,6 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
 {
     const CommandID ids[] = { commandOpen,
                               commandSave,
-                              commandEncode,
                               commandSaveFrame,
                               commandJump,
                               commandPlay,
@@ -1009,7 +1040,8 @@ void MainComponent::getAllCommands (Array <CommandID>& commands)
                               commandPrevSecond,
                               commandRemoveMovie,
                               commandSplit,
-                              commandRemoveSpaces
+                              commandRemoveSpaces,
+                              commandShowTasks
                             };
 
     commands.addArray (ids, numElementsInArray (ids));
@@ -1050,6 +1082,11 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         result.setInfo (LABEL_REMOVE_SPACES, LABEL_REMOVE_SPACES, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.setActive(isVideoReady());
         break;
+    case commandShowTasks:
+        result.setInfo (MENU_SHOW_TASKS, MENU_SHOW_TASKS, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
+        result.addDefaultKeypress (T('T'), ModifierKeys::commandModifier);
+        result.setActive(isVideoReady());
+        break;
     case commandOpen:
         result.setInfo (MENU_FILE_OPEN, MENU_FILE_OPEN, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('O'), ModifierKeys::commandModifier);
@@ -1057,12 +1094,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
     case commandSave:
         result.setInfo (MENU_FILE_SAVE, MENU_FILE_SAVE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
         result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
-        result.setActive(false);
-        break;
-    case commandEncode:
-        result.setInfo (MENU_FILE_ENCODE, MENU_FILE_ENCODE, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.addDefaultKeypress (T('E'), ModifierKeys::commandModifier);
-        result.setActive(false);
+        result.setActive(isVideoReady() && !timeline->IsEmpty());
         break;
     case commandSaveFrame:
         result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
@@ -1151,6 +1183,11 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         }
         current_drag_x = -1;
         delete timeline;
+        if(timeline_original->intervals.size()==0 && encodeVideoWindow)
+        {
+            encodeVideoWindow->closeButtonPressed();
+        }
+
         timeline = timeline_original;
         timeline_original = 0;
         sliderValueChanged(scale_timeline);
@@ -1244,3 +1281,10 @@ void MainComponent::mouseExit(const MouseEvent& e)
         itemDropped(String(""),0,e.x, e.y);
 }
 
+void MainComponent::GotoSecondAndRead(double second)
+{
+    timeline->GotoSecondAndRead(second);
+    CallEventList(AfterChangePosition);
+    ResizeViewport();
+    repaint();
+}

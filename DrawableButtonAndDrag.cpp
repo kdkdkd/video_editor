@@ -1,3 +1,4 @@
+#include "config.h"
 #include "DrawableButtonAndDrag.h"
 
 DrawableButtonAndDrag::DrawableButtonAndDrag(const String& buttonName,ButtonStyle buttonStyle,Timeline* timeline,ContainerBox * box,MainComponent * main):DrawableButton(buttonName,buttonStyle)

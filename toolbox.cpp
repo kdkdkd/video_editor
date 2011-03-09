@@ -1,3 +1,4 @@
+#include "config.h"
 #include "toolbox.h"
 #include "PopupWindow.h"
 namespace toolbox
@@ -42,6 +43,7 @@ void show_info_popup(String label,String text,Component *center_component)
 
 
     PopupWindow *doc = new PopupWindow(label,Colours::whitesmoke,DocumentWindow::closeButton,true);
+    doc->setTitleBarHeight(20);
     doc->setResizable(false, false);
     doc->centreAroundComponent(center_component,width_text_editor,height_text_editor);
 

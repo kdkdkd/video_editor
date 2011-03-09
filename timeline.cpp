@@ -1,3 +1,4 @@
+#include "config.h"
 #include "timeline.h"
 #include "movie.h"
 #include "localization.h"
@@ -19,10 +20,10 @@ Timeline::Timeline()
 
 
 
-Movie* Timeline::Load(String &filename)
+Movie* Timeline::Load(String &filename, bool soft)
 {
     Movie *movie = new Movie();
-    movie->Load(filename);
+    movie->Load(filename,soft);
     bool loaded_local = movie->loaded;
     if(loaded_local)
     {
@@ -183,9 +184,9 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
         if(*it == current_interval)
         {
             it++;
-            double frame = 1.0d / GetFps();
-            double eps = frame/5.0d;
-            if(it != intervals.end() && (*it)->absolute_start - current_interval->GetAbsoluteEnd()<eps)
+            double frame = 1.0 / GetFps();
+            double eps = frame/5.0;
+            if(it != intervals.end() && fabs((*it)->absolute_start - current_interval->GetAbsoluteEnd())<eps)
             {
                 current_interval = *it;
                 current_interval->movie->GotoSecondAndRead(current_interval->start);
@@ -219,10 +220,10 @@ bool Timeline::SkipFrame(bool jump_to_next)
 
 bool Timeline::GoBack(int frames)
 {
-    double frame = 1.0d / GetFps();
-    double eps = frame/5.0d;
+    double frame = 1.0 / GetFps();
+    double eps = frame/5.0;
     double desired = current - ((double)frames) * frame;
-    double guess = desired - 3.0d*frame;
+    double guess = desired - 3.0*frame;
     if(guess<0.0)
         guess = 0.0;
     GotoSecondAndRead(guess,false);
@@ -254,7 +255,7 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, double inse
     }
     for(vector<Timeline::Interval*>::iterator it = timeline_preview->intervals.begin(); it!=timeline_preview->intervals.end(); it++)
     {
-       (*it)->color = Timeline::Interval::usual;
+        (*it)->color = Timeline::Interval::usual;
         this->intervals.push_back(*it);
     }
     this->current_interval = timeline_preview->current_interval;
@@ -277,7 +278,7 @@ void Timeline::RemoveSpaces()
     double prev_end = 0.0;
     for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
     {
-       (*it)->absolute_start = prev_end;
+        (*it)->absolute_start = prev_end;
         prev_end = (*it)->GetAbsoluteEnd();
     }
     RecalculateDuration();
@@ -375,7 +376,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, double
     interval->color=Timeline::Interval::dragg;
     Timeline *timeline_preview = new Timeline;
     timeline_preview->disposeMovies = false;
-    double diff = 0.0d;
+    double diff = 0.0;
     vector<Timeline::Interval*>::iterator it = intervals.begin();
     Timeline::Interval * interval_current = 0;
     bool end = false;
@@ -516,4 +517,39 @@ Timeline::Interval* Timeline::FindSelectedOrOver()
     return over;
 }
 
+bool Timeline::IsEmpty()
+{
+    return intervals.size()==0;
+}
 
+Timeline* Timeline::CloneIntervals()
+{
+    Timeline* res = new Timeline();
+    res->disposeIntervals = true;
+    res->disposeMovies = true;
+
+    for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
+    {
+        Interval *in = new Interval(*it);
+        bool found = false;
+        for(vector<Movie*>::iterator itm = res->movies_internal.begin(); itm!=res->movies_internal.end(); itm++)
+        {
+            if(in->movie->filename == (*itm)->filename)
+            {
+                found = true;
+                in->movie = *itm;
+                break;
+            }
+        }
+        if(!found)
+        {
+            Movie *movie = new Movie();
+            movie->filename = in->movie->filename;
+            in->movie = movie;
+            res->movies_internal.push_back(movie);
+        }
+
+        res->intervals.push_back(in);
+    }
+    return res;
+}

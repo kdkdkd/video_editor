@@ -8,11 +8,16 @@
 #include "localization.h"
 #include "toolbox.h"
 #include "ContainerBox.h"
+#include "encodeVideo.h"
+#include "events.h"
+#include "taskTab.h"
 
 class AskJumpDestanation;
+class encodeVideo;
 
 using namespace localization;
 
+class MainAppWindow;
 class MainComponent : public Component, public MenuBarModel, public ApplicationCommandTarget, public Timer, public ButtonListener, public DragAndDropContainer, public SliderListener, public ScrollBarListener, public DragAndDropTarget
 {
 public:
@@ -45,7 +50,6 @@ public:
     {
         commandOpen                 = 0x2000,
         commandSave                 = 0x2001,
-        commandEncode               = 0x2002,
         commandJump                 = 0x2003,
         commandSaveFrame            = 0x2004,
         commandPlay                 = 0x2005,
@@ -59,7 +63,8 @@ public:
         commandPrevSecond           = 0x200D,
         commandRemoveMovie          = 0x200E,
         commandSplit                = 0x200F,
-        commandRemoveSpaces         = 0x2010
+        commandRemoveSpaces         = 0x2010,
+        commandShowTasks            = 0x2011
 
 
     };
@@ -138,6 +143,13 @@ public:
     void cleanAfterDrag();
 
     int dragIntervalOffset;
+
+    encodeVideo * encodeVideoWindow;
+
+    EventList AfterChangePosition;
+    void GotoSecondAndRead(double second);
+
+    taskTab * tasks;
 
 };
 

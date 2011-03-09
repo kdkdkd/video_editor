@@ -2,7 +2,7 @@
 #define _DrawableButtonAndDrag_H__
 
 #include "juce/juce.h"
-#include "Timeline.h"
+#include "timeline.h"
 #include "ContainerBox.h"
 #include "MainComponent.h"
 

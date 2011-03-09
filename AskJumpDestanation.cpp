@@ -1,3 +1,4 @@
+#include "config.h"
 #include "AskJumpDestanation.h"
 #include "MainComponent.h"
 #include "localization.h"
@@ -86,11 +87,10 @@ void AskJumpDestanation::buttonClicked (Button* button)
 {
     if(button==okButton)
     {
-        double input = (double)(input_hours->getText().getIntValue())*3600.0d + (double)(input_minutes->getText().getIntValue())*60.0d + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0d;
-        if(fabs(mainWindow->timeline->current - input) > 0.01d)
+        double input = (double)(input_hours->getText().getIntValue())*3600.0 + (double)(input_minutes->getText().getIntValue())*60.0 + (double)(input_seconds->getText().getIntValue()) + (double)(input_microseconds->getText().getIntValue())/1000.0;
+        if(fabs(mainWindow->timeline->current - input) > 0.01)
         {
-            mainWindow->timeline->GotoSecondAndRead(input);
-            mainWindow->repaint();
+            mainWindow->GotoSecondAndRead(input);
         }
     }
     exitModalState(0);

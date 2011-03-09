@@ -5,6 +5,18 @@ namespace toolbox
 {
 String format_duration(double duration);
 String format_duration_small(double duration);
+template< typename T > T GCD(T a, T b)
+{
+    for(;;)
+    {
+        a = a % b;
+		if( a == 0 )
+			return b;
+		b = b % a;
+        if( b == 0 )
+			return a;
+    }
+}
 
 void show_info_popup(String label,String text,Component *center_component);
 
