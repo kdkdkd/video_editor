@@ -32,8 +32,10 @@ public:
     int srcH;
     int dstW;
     int dstH;
-    double coff;
+    double fpsr;
     int location;
+    uint8_t *data_original0,*data_original1,*data_original2;
+    uint8_t *data_real0,*data_real1,*data_real2;
     PixelFormat srcFormat;
     PixelFormat dstFormat;
     RenderContext()
@@ -732,6 +734,7 @@ static AVStream *add_video_stream(AVFormatContext *oc,const Movie::Info & info,R
 
     if (codec->supported_framerates)
         fps = codec->supported_framerates[av_find_nearest_q_idx(fps, codec->supported_framerates)];
+    rc->fpsr = (double)fps.den/(double)fps.num;
     swapVariables(fps.num,fps.den);
     c->time_base = st->time_base = st->r_frame_rate = fps;
 
@@ -977,17 +980,18 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
         double c2 = (double)dstH_candidate / (double)srcH_candidate;
 
 
+        double coff;
         if(dstW_candidate*srcH_candidate == dstH_candidate*srcW_candidate)
         {
             rc->location = 0;
-            rc->coff = c1;
+            coff = c1;
         }else if(c1 > c2)
         {
-            rc->coff = c2;
+            coff = c2;
             rc->location = 1;
         }else if(c1 < c2)
         {
-            rc->coff = c1;
+            coff = c1;
             rc->location = -1;
         }
 
@@ -1006,7 +1010,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
 
         rc->img_convert_ctx = sws_getContext(rc->srcW, rc->srcH,
                                              rc->srcFormat,
-                                             rc->coff*rc->srcW, rc->coff*rc->srcH,
+                                             coff*rc->srcW, coff*rc->srcH,
                                              rc->dstFormat,
                                              sws_flags, NULL, NULL, NULL);
         if (rc->img_convert_ctx == NULL)
@@ -1015,41 +1019,50 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
             rc->error = true;
             return;
         }
+        /* centering image */
+        rc->data_original0 = pict->data[0];
+        rc->data_original1 = pict->data[1];
+        rc->data_original2 = pict->data[2];
+        int linesize0 = pict->linesize[0],linesize1 = pict->linesize[1],linesize2 = pict->linesize[2];
+        if(rc->location<0)
+        {
+            int realH = (int)(coff*rc->srcH);
+            int diff_o = (rc->dstH - realH);
+            int diff = (linesize0)*(diff_o/2);
+
+            rc->data_real0 = pict->data[0] + diff;
+
+            int diff2 = (linesize1)*(diff_o/4);
+
+            rc->data_real1 = pict->data[1] + diff2;
+
+            rc->data_real2 = pict->data[2] + diff2;
+
+        }else if(rc->location>0)
+        {
+            int realW = (int)(coff*rc->srcW);
+            int diff = (rc->dstW - realW)/2;
+            rc->data_real0 = pict->data[0] + diff;
+            rc->data_real1 = pict->data[1] + diff/2;
+            rc->data_real2 = pict->data[2] + diff/2;
+
+        }
+        /* ~centering image */
     }
-    uint8_t *data_real0 = pict->data[0],*data_real1=pict->data[1],*data_real2=pict->data[2];
-    int linesize0 = pict->linesize[0],linesize1 = pict->linesize[1],linesize2 = pict->linesize[2];
-    if(rc->location<0)
+    if(rc->location!=0)
     {
-        int realH = (int)(rc->coff*rc->srcH);
-        int diff_o = (rc->dstH - realH);
-        int diff = (linesize0)*(diff_o/2);
-
-        pict->data[0] = pict->data[0] + diff;
-
-        int diff2 = (linesize1)*(diff_o/4);
-
-        pict->data[1] = pict->data[1] + diff2;
-
-        pict->data[2] = pict->data[2] + diff2;
-
-    }else if(rc->location>0)
-    {
-        int realW = (int)(rc->coff*rc->srcW);
-        int diff = (rc->dstW - realW)/2;
-        pict->data[0] = pict->data[0] + diff;
-        pict->data[1] = pict->data[1] + diff/2;
-        pict->data[2] = pict->data[2] + diff/2;
-
+        pict->data[0] = rc->data_real0;
+        pict->data[1] = rc->data_real1;
+        pict->data[2] = rc->data_real2;
     }
 
     int scale_res = sws_scale(rc->img_convert_ctx, movie->pFrame->data, movie->pFrame->linesize,
                               0, movie->height, pict->data, pict->linesize);
-
     if(rc->location!=0)
     {
-        pict->data[0] = data_real0;
-        pict->data[1] = data_real1;
-        pict->data[2] = data_real2;
+        pict->data[0] = rc->data_original0;
+        pict->data[1] = rc->data_original1;
+        pict->data[2] = rc->data_original2;
     }
 
 }
@@ -1060,9 +1073,13 @@ static bool write_video_frame(AVFormatContext *oc, AVStream *st, const Movie::In
     int out_size;
     AVCodecContext *c;
     c = st->codec;
-
-    fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
-    rc->end_writing = !timeline->SkipFrame();
+    while((double)rc->pts * rc->fpsr>timeline->current)
+    {
+        fill_frame(rc->picture, rc->frame_count, info, timeline, c->pix_fmt, rc);
+        rc->end_writing = !timeline->SkipFrame();
+        if(rc->end_writing)
+            break;
+    }
 
     if(rc->error)
     {
@@ -1313,7 +1330,7 @@ String Timeline::Render(const Movie::Info & info, Thread * thread, void (* repor
 
         bool audio_enabled = info.audios.size()>0 && rcp->all_pass==rcp->current_pass;
 
-        rcp->pts = 0;
+        rcp->pts = 1;
 
         rcp->end_writing = false;
         AVOutputFormat *fmt;
