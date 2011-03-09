@@ -37,6 +37,7 @@ void videoPreviewComponent::run()
         if(!parent->timeline->current_interval)
             return;
         info_copy = parent->GetMovieInfo();
+        info_copy.videos[0].fps = parent->timeline->current_interval->movie->fps;
         info_copy.audios.clear();
         timeline_second = parent->timeline->current - parent->timeline->current_interval->absolute_start + parent->timeline->current_interval->start;
         timeline_copy->Load(parent->timeline->current_interval->movie->filename,true);
