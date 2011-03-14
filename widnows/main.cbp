@@ -94,6 +94,9 @@
 		<Unit filename="..\toolbox.h" />
 		<Unit filename="..\videoPreview.cpp" />
 		<Unit filename="..\videoPreview.h" />
+		<Unit filename="resources.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
