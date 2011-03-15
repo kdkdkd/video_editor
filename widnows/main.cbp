@@ -84,6 +84,8 @@
 		<Unit filename="..\localization.h" />
 		<Unit filename="..\movie.cpp" />
 		<Unit filename="..\movie.h" />
+		<Unit filename="..\soundOutput.cpp" />
+		<Unit filename="..\soundOutput.h" />
 		<Unit filename="..\taskTab.cpp" />
 		<Unit filename="..\taskTab.h" />
 		<Unit filename="..\tasks.cpp" />

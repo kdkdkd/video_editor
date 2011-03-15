@@ -1,6 +1,6 @@
 #ifndef _MAINCOMPONENT_H_
 #define _MAINCOMPONENT_H_
-
+#include "soundOutput.h"
 
 #include "MainAppWindow.h"
 #include "juce/juce.h"

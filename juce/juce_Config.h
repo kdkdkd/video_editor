@@ -83,7 +83,7 @@
 /** JUCE_DIRECTSOUND: Enables DirectSound audio (MS Windows only).
 */
 #ifndef JUCE_DIRECTSOUND
-  #define JUCE_DIRECTSOUND 0
+  #define JUCE_DIRECTSOUND 1
 #endif
 
 /** JUCE_ALSA: Enables ALSA audio devices (Linux only). */

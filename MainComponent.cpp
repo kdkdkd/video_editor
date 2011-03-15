@@ -287,6 +287,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 MainComponent::~MainComponent()
 {
     StopVideo();
+    close_sound();
     AfterChangePosition.clear();
     Component *container = movies_list->getViewedComponent();
     int container_num = container->getNumChildComponents();
@@ -832,6 +833,7 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandOpen:
     {
+        init_sound();
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
         if (fc.browseForFileToOpen())
         {
