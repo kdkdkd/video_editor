@@ -1885,10 +1885,10 @@ void LookAndFeel::drawDocumentWindowTitleBar (DocumentWindow& window,
     if (icon != 0)
     {
         g.setOpacity (isActive ? 1.0f : 0.6f);
-        g.drawImageWithin (*icon, textX, (h - iconH) / 2, iconW, iconH,
+        g.drawImageWithin (*icon, 2, (h - iconH) / 2, iconW, iconH,
                            RectanglePlacement::centred, false);
-        textX += iconW;
-        textW -= iconW;
+        //textX += iconW;
+        //textW -= iconW;
     }
 
     if (window.isColourSpecified (DocumentWindow::textColourId) || isColourSpecified (DocumentWindow::textColourId))

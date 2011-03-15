@@ -26,6 +26,9 @@ MainAppWindow::MainAppWindow()
     setTitleBarHeight (20);
 
 
+    setIcon(ImageCache::getFromFile(File("../pic/taskTab/encoding.png")));
+
+
     contentComponent = new MainComponent (this);
 
     commandManager->registerAllCommandsForTarget (contentComponent);
