@@ -151,6 +151,8 @@ public:
 
     taskTab * tasks;
 
+    TabbedComponent* tabs_data;
+
 };
 
 #endif//_MAINCOMPONENT_H_

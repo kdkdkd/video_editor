@@ -79,6 +79,7 @@ void MainComponent::SetVisibleButtons(bool visible)
     stopButton->setVisible(visible);
     movies_list->setVisible(visible);
     scale_timeline->setVisible(visible);
+    tabs_data->setVisible(visible);
 }
 
 void MainComponent::ResizeViewport()
@@ -89,7 +90,7 @@ void MainComponent::ResizeViewport()
     {
         movies_border = GetMoviesBorder();
     }
-    movies_list->setBounds(13,10 + 18,movies_border-15,height_current - 230 - 10 - 18 - 1 - TIMELINE_OFFSET);
+    tabs_data->setBounds(13,1,movies_border-15,height_current - 232 - TIMELINE_OFFSET);
 
 }
 
@@ -254,7 +255,11 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     timeline = new Timeline();
 
     movies_list = new ContainerBox("movies_list");
-    addChildComponent(movies_list);
+    tabs_data = new TabbedComponent(TabbedButtonBar::TabsAtTop);
+    addChildComponent(tabs_data);
+    tabs_data->addTab(LABEL_MOVIES,Colours::whitesmoke,movies_list,false);
+    tabs_data->addTab(LABEL_SOUNDS,Colours::whitesmoke,new Component(),false);
+    tabs_data->addTab(LABEL_PICTURES,Colours::whitesmoke,new Component(),false);
 
 
 
@@ -304,6 +309,7 @@ MainComponent::~MainComponent()
         movies_list->getViewedComponent()->removeChildComponent(viewed);
         delete viewed;
     }
+    delete movies_list;
 
     delete timeline;
     if(ask_jump_target)
@@ -403,24 +409,6 @@ void MainComponent::paint (Graphics& g)
         g.drawHorizontalLine(height_current-37- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE - 50 + AUDIO_TIMELINE_SIZE - 20,10,40);
 
         g.drawText(LABEL_TIME + String("   ") + toolbox::format_duration(timeline->current) + String(" / ") + toolbox::format_duration(timeline->duration),width_current-520,height_current-125-30 - TIMELINE_OFFSET,400,20,Justification::centredRight,true);
-
-        // Draw movie list
-        Font f = g.getCurrentFont();
-        Font f_copy = f;
-        f.setItalic(true);
-        f.setHeight(18);
-        g.setFont(f);
-        int text_height = f.getHeight();
-        int text_width = f.getStringWidth(LABEL_MOVIES);
-        g.drawText(LABEL_MOVIES,30,10,text_width,text_height,Justification::centred,true);
-        int end_height = GetMoviesBorder();
-        g.drawHorizontalLine(10 + text_height/2,30 + text_width + 3,end_height);
-        g.drawHorizontalLine(10 + text_height/2,10,27);
-        g.drawHorizontalLine(height_current - 230 - TIMELINE_OFFSET,10,end_height);
-        g.drawVerticalLine(10,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
-        g.drawVerticalLine(end_height,10 +text_height/2,height_current - 230 - TIMELINE_OFFSET);
-        g.setFont(f_copy);
-        //~Draw movie list
 
         double timeline_duration = (double)(width_current-65-1)/second_to_pixel;
         //TimeLine

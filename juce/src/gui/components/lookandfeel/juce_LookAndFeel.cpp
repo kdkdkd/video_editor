@@ -2408,8 +2408,8 @@ void LookAndFeel::drawTabAreaBehindFrontButton (Graphics& g,
     g.setGradientFill (ColourGradient (Colours::black.withAlpha (tabBar.isEnabled() ? 0.3f : 0.15f), x1, y1,
                                        Colours::transparentBlack, x2, y2, false));
 
-    shadowRect.expand (2, 2);
-    g.fillRect (shadowRect);
+    //shadowRect.expand (2, 2);
+    //g.fillRect (shadowRect);
 
     g.setColour (Colour (0x80000000));
 

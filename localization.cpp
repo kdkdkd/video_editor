@@ -77,6 +77,8 @@ String LABEL_AUDIO = T("Аудио");
 String LABEL_SUBTITLES = T("Субтитры");
 
 String LABEL_MOVIES = T("Ролики");
+String LABEL_SOUNDS = T("Звуки");
+String LABEL_PICTURES = T("Картинки");
 
 String LABEL_SCALE = T("Масштаб");
 
