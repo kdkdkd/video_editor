@@ -11,6 +11,7 @@
 #include "encodeVideo.h"
 #include "events.h"
 #include "taskTab.h"
+#include "firstPage.h"
 
 class AskJumpDestanation;
 class encodeVideo;
@@ -152,6 +153,8 @@ public:
     taskTab * tasks;
 
     TabbedComponent* tabs_data;
+
+    firstPage* first;
 
 };
 

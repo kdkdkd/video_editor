@@ -21,6 +21,11 @@ void MainComponent::changeFileName(String new_filename)
     loaded_local = movie;
     if(loaded_local)
     {
+        if(first)
+        {
+            delete first;
+            first = 0;
+        }
         SetVisibleButtons(true);
         AddMovieToList(movie);
         sliderValueChanged(scale_timeline);
@@ -287,6 +292,8 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
     timeline_original = 0;
     encodeVideoWindow = 0;
 
+    first = new firstPage();
+    addAndMakeVisible(first);
 }
 
 MainComponent::~MainComponent()
@@ -347,7 +354,8 @@ void MainComponent::resized ()
     timeline_scrollbar->setBounds ( 40, height_current-25, width_current - 65, 18);
     ResizeViewport();
 
-
+    if(first)
+        first->setBounds(0,0,width_current,height_current);
 }
 
 int MainComponent::GetMoviesBorder()

@@ -1,5 +1,6 @@
 #ifndef SOUND_OUTPUT
 #define SOUND_OUTPUT
+#include "config.h"
 #include "juce/juce.h"
 
 

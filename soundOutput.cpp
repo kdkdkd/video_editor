@@ -135,7 +135,7 @@ void init_sound()
     audioSourcePlayer.setSource (&synthAudioSource);
     sound_manager.addAudioCallback (&audioSourcePlayer);
 
-    voice.startNote(80,1.0,0,0);
+    //voice.startNote(80,1.0,0,0);
 
 }
 
