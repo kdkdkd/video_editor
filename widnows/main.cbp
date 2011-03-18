@@ -80,6 +80,7 @@
 		<Unit filename="..\encodeVideo.h" />
 		<Unit filename="..\events.cpp" />
 		<Unit filename="..\events.h" />
+		<Unit filename="..\firstPage.cpp" />
 		<Unit filename="..\localization.cpp" />
 		<Unit filename="..\localization.h" />
 		<Unit filename="..\movie.cpp" />

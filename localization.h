@@ -15,6 +15,7 @@ extern String MENU_FRAME;
 extern String MENU_JUMP;
 extern String MENU_SAVE_FRAME;
 extern String MENU_SHOW_TASKS;
+extern String MENU_RECENT;
 
 
 extern String CANT_LOAD_FILE;

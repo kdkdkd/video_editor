@@ -65,9 +65,8 @@ public:
         commandRemoveMovie          = 0x200E,
         commandSplit                = 0x200F,
         commandRemoveSpaces         = 0x2010,
-        commandShowTasks            = 0x2011
-
-
+        commandShowTasks            = 0x2011,
+        commandRecent               = 0x9000
     };
 
     MainAppWindow* mainWindow;
@@ -155,6 +154,8 @@ public:
     TabbedComponent* tabs_data;
 
     firstPage* first;
+    PropertiesFile properties;
+    RecentlyOpenedFilesList recent;
 
 };
 

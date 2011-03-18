@@ -16,11 +16,12 @@
 void MainComponent::changeFileName(String new_filename)
 {
     bool loaded_local = false;
-
     Movie * movie = timeline->Load(new_filename,false);
     loaded_local = movie;
     if(loaded_local)
     {
+        recent.addFile(new_filename);
+        properties.setValue("recent",recent.toString());
         if(first)
         {
             delete first;
@@ -237,7 +238,7 @@ void MainComponent::sliderValueChanged(Slider* slider)
 }
 
 
-MainComponent::MainComponent (MainAppWindow* mainWindow_)
+MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\config\\config.xml"),0,PropertiesFile::storeAsXML,0)
 {
     mainWindow = mainWindow_;
 
@@ -294,12 +295,15 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_)
 
     first = new firstPage();
     addAndMakeVisible(first);
+
+    recent.restoreFromString(properties.getValue("recent",""));
 }
 
 MainComponent::~MainComponent()
 {
     StopVideo();
     close_sound();
+
     AfterChangePosition.clear();
     Component *container = movies_list->getViewedComponent();
     int container_num = container->getNumChildComponents();
@@ -745,6 +749,9 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
     case 0:
     {
         menu.addCommandItem(commandManager,commandOpen);
+        PopupMenu sub_recent;
+        recent.createPopupMenuItems(sub_recent,commandRecent,true,true);
+        menu.addSubMenu(MENU_RECENT,sub_recent);
         menu.addCommandItem(commandManager,commandSave);
         menu.addSeparator();
         menu.addCommandItem(commandManager,commandPlay);
@@ -785,7 +792,14 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
 
 void MainComponent::menuItemSelected (int menuItemID, int topLevelMenuIndex)
 {
-
+    if(menuItemID>=commandRecent)
+    {
+        int num = menuItemID - commandRecent;
+        if(num<recent.getNumFiles())
+        {
+            changeFileName(recent.getAllFilenames()[num]);
+        }
+    }
 }
 
 bool MainComponent::perform (const InvocationInfo& info)
@@ -1286,3 +1300,4 @@ void MainComponent::GotoSecondAndRead(double second)
     ResizeViewport();
     repaint();
 }
+

@@ -11,6 +11,7 @@ String MENU_QUIT = T("Выход");
 String MENU_FRAME = T("Кадр");
 String MENU_JUMP = T("Перейти к...");
 String MENU_SAVE_FRAME = T("Скриншот");
+String MENU_RECENT = T("Открыть последние");
 
 
 String CANT_LOAD_FILE = T("Не удается открыть файл");

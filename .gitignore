@@ -6,3 +6,4 @@ debug_new
 lib
 *.dll
 distr
+config.xml
