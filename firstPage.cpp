@@ -1,12 +1,14 @@
 #include "firstPage.h"
 
-Image border;
+
 
 class SpecialButton : public Button
 {
     public:
-    SpecialButton(const String& buttonName):Button(buttonName)
+    Image border;
+    SpecialButton(const String& buttonName, Image& border):Button(buttonName)
     {
+        this->border = border;
         setMouseCursor (MouseCursor::PointingHandCursor);
     }
 
@@ -46,20 +48,20 @@ firstPage::firstPage(MainComponent* main)
     this->main = main;
     StringArray files = main->recent.getAllFilenames();
     int size = files.size();
+    border = ImageCache::getFromFile(String("../pic/border.png"));
+    logo = ImageCache::getFromFile(String("../pic/logo.png"));
 
     for(int i = 0;i<size;++i)
     {
         if(File(files[i]).exists())
         {
-            SpecialButton * new_button = new SpecialButton(files[i]);
+            SpecialButton * new_button = new SpecialButton(files[i],border);
             new_button->setButtonText(File(files[i]).getFileName());
             addAndMakeVisible(new_button);
             new_button->addListener(this);
             recent_list.add(new_button);
         }
     }
-    logo = ImageCache::getFromFile(String("../pic/logo.png"));
-    border = ImageCache::getFromFile(String("../pic/border.png"));
 
 }
 void firstPage::buttonClicked(Button* button)

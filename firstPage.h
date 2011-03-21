@@ -17,7 +17,7 @@ class firstPage:public Component,public ButtonListener
         Array<SpecialButton*> recent_list;
         void resized();
         Image logo;
-
+        Image border;
 
 };
 
