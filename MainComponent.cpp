@@ -241,6 +241,7 @@ void MainComponent::sliderValueChanged(Slider* slider)
 MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\config\\config.xml"),0,PropertiesFile::storeAsXML,0)
 {
     mainWindow = mainWindow_;
+    recent.restoreFromString(properties.getValue("recent",""));
 
     av_register_all();
     //av_log_set_level(AV_LOG_DEBUG);
@@ -293,10 +294,10 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\c
     timeline_original = 0;
     encodeVideoWindow = 0;
 
-    first = new firstPage();
+    first = new firstPage(this);
     addAndMakeVisible(first);
 
-    recent.restoreFromString(properties.getValue("recent",""));
+
 }
 
 MainComponent::~MainComponent()
@@ -750,7 +751,7 @@ const PopupMenu MainComponent::getMenuForIndex (int menuIndex,
     {
         menu.addCommandItem(commandManager,commandOpen);
         PopupMenu sub_recent;
-        recent.createPopupMenuItems(sub_recent,commandRecent,true,true);
+        recent.createPopupMenuItems(sub_recent,commandRecent,false,true);
         menu.addSubMenu(MENU_RECENT,sub_recent);
         menu.addCommandItem(commandManager,commandSave);
         menu.addSeparator();

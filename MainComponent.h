@@ -15,6 +15,7 @@
 
 class AskJumpDestanation;
 class encodeVideo;
+class firstPage;
 
 using namespace localization;
 
