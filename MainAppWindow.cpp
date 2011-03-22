@@ -9,12 +9,14 @@ MainAppWindow::MainAppWindow()
     :
 
     DocumentWindow (
-        LABEL_PROGRAMM_CAPTION,
+        "Video Editor",
         Colours::whitesmoke,
         DocumentWindow::allButtons,
         true
     )
 {
+    load_locale("ru");
+
 
     commandManager = new ApplicationCommandManager();
 

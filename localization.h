@@ -5,7 +5,7 @@
 
 namespace localization
 {
-extern String LABEL_PROGRAMM_CAPTION;
+
 
 extern String MENU_FILE;
 extern String MENU_FILE_OPEN;
@@ -213,6 +213,7 @@ extern String LABEL_SAVE_VIDEO_PAUSED;
 extern String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
 extern String LABEL_SOUNDS;
 extern String LABEL_PICTURES;
+void load_locale(String name);
 }
 
 

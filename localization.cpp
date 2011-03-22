@@ -3,212 +3,330 @@
 
 namespace localization
 {
-String LABEL_PROGRAMM_CAPTION = T("Редактор Видео");
-String MENU_FILE = T("Файл");
-String MENU_FILE_OPEN = T("Открыть");
-String MENU_FILE_SAVE = T("Сохранить");
-String MENU_QUIT = T("Выход");
-String MENU_FRAME = T("Кадр");
-String MENU_JUMP = T("Перейти к...");
-String MENU_SAVE_FRAME = T("Скриншот");
-String MENU_RECENT = T("Открыть последние");
+String MENU_FILE;
+String MENU_FILE_OPEN;
+String MENU_FILE_SAVE;
+String MENU_QUIT;
+String MENU_FRAME;
+String MENU_JUMP;
+String MENU_SAVE_FRAME;
+String MENU_RECENT;
+String CANT_LOAD_FILE;
+String DIALOG_CHOOSE_FILE_TO_OPEN;
+String DIALOG_CHOOSE_SCREENSHOT_TO_SAVE;
+String LABEL_FRAMES;
+String LABEL_TIME;
+String LABEL_ESTIMATE;
+String LABEL_CHOOSE_JUMP;
+String LABEL_TOTAL_TIME;
+String LABEL_OK;
+String LABEL_CANCEL;
+String FILE_SAVED;
+String FILE_NOT_SAVED;
+String LABEL_PLAY;
+String LABEL_PAUSE;
+String LABEL_STOP;
+String LABEL_NEXT_FRAME;
+String LABEL_PREV_FRAME;
+String LABEL_NEXT_FIVE_FRAME;
+String LABEL_PREV_FIVE_FRAME;
+String LABEL_NEXT_SECOND;
+String LABEL_PREV_SECOND;
+String LABEL_SPECIFIC_TIME;
+String LABEL_HOURS;
+String LABEL_MINUTES;
+String LABEL_SECONDS;
+String LABEL_MINI_SECONDS;
+String LABEL_INFO;
+String LABEL_FILE;
+String LABEL_DURATION;
+String LABEL_SIZE;
+String LABEL_FORMAT;
+String LABEL_CODEC;
+String LABEL_RESOLUTION;
+String LABEL_FPS;
+String LABEL_SAMPLE_RATE;
+String LABEL_CHANNELS;
+String LABEL_LANG;
+String LABEL_COMMENT;
+String LABEL_BITRATE;
+String LABEL_NOT_AVIABLE;
+String LABEL_KB_PER_SECOND;
+String LABEL_STREAM;
+String LABEL_VIDEO;
+String LABEL_AUDIO;
+String LABEL_SUBTITLES;
+String LABEL_MOVIES;
+String LABEL_SOUNDS;
+String LABEL_PICTURES;
+String LABEL_SCALE;
+String MENU_VIDEO_PART;
+String LABEL_DELETE;
+String LABEL_DELETE_VIDEO_PART;
+String LABEL_SPLIT;
+String LABEL_REMOVE_SPACES;
+String LABEL_SAVE_VIDEO;
+String LABEL_SAVE;
+String LABEL_VIDEO_SAVE_PATH;
+String LABEL_VIDEO_SAVE_FORMAT;
+String LABEL_VIDEO_SAVE_CODEC;
+String LABEL_VIDEO_SAVE_SIZE;
+String LABEL_VIDEO_SAVE_QUALITY;
+String LABEL_VIDEO_SAVE_COMPRESSION;
+String LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST;
+String LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST;
+String LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST;
+String LABEL_VIDEO_SAVE_COMPRESSION_FASTER;
+String LABEL_VIDEO_SAVE_COMPRESSION_FAST;
+String LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM;
+String LABEL_VIDEO_SAVE_COMPRESSION_SLOW;
+String LABEL_VIDEO_SAVE_COMPRESSION_SLOWER;
+String LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW;
+String LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO;
+String LABEL_VIDEO_SAVE_QUALITY_BEST;
+String LABEL_VIDEO_SAVE_QUALITY_BETTER;
+String LABEL_VIDEO_SAVE_QUALITY_GOOD;
+String LABEL_VIDEO_SAVE_QUALITY_NORMAL;
+String LABEL_VIDEO_SAVE_QUALITY_BAD;
+String LABEL_VIDEO_SAVE_QUALITY_WORSE;
+String LABEL_VIDEO_SAVE_QUALITY_WORST;
+String LABEL_VIDEO_SAVE_QUALITY_OTHER;
+String LABEL_VIDEO_SAVE_SIZE_OTHER;
+String LABEL_VIDEO_SAVE_PASS;
+String LABEL_VIDEO_SAVE_ADVANCED_MODE;
+String LABEL_VIDEO_SAVE_BITRATE;
+String LABEL_VIDEO_SAVE_FPS;
+String LABEL_VIDEO_SAVE_RESOLUTION;
+String LABEL_VIDEO_SAVE_AUTO;
+String LABEL_VIDEO_GOP;
+String LABEL_VIDEO_SAVE_PASS_ONE;
+String LABEL_VIDEO_SAVE_PASS_TWO;
+String LABEL_AUDIO_SAVE_CODEC;
+String LABEL_AUDIO_SAVE_BITRATE;
+String LABEL_AUDIO_SAVE_SAMPLE_RATE;
+String LABEL_AUDIO_SAVE_CHANNELS;
+String MENU_HEADER_PC;
+String MENU_HEADER_WEB;
+String MENU_HEADER_CELL_PHONE;
+String MENU_HEADER_AUDIO;
+String MENU_HEADER_IPOD;
+String VALIDATION_SAVE_FPS;
+String VALIDATION_SAVE_WIDTH;
+String VALIDATION_SAVE_HEIGHT;
+String VALIDATION_SAVE_BITRATE;
+String VALIDATION_SAVE_CRF_MAIN;
+String VALIDATION_SAVE_CRF_TO;
+String LABEL_VIDEO_SAVE_ENABLE_VIDEO;
+String LABEL_VIDEO_SAVE_ENABLE_AUDIO;
+String LABEL_VIDEO_SAVE_RATE_CONTROL;
+String LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE;
+String LABEL_VIDEO_SAVE_RATE_CONTROL_CRF;
+String LABEL_VIDEO_SAVE_RATE_CONTROL_CQ;
+String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF;
+String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP;
+String LABEL_VIDEO_SAVE_FAILED;
+String LABEL_PREVIEW_VIDEO;
+String LABEL_VIDEO_SAVE_PREVIEW;
+String LABEL_LOADING;
+String LABEL_VIDEO_PREVIEW_ORIGINAL;
+String LABEL_VIDEO_PREVIEW_ENCODED;
+String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE;
+String LABEL_VIDEO_PREVIEW_ESTIMATED_TIME;
+String LABEL_VIDEO_PREVIEW_FAILED;
+String LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP;
+String MENU_SHOW_TASKS;
+String LABEL_TASK_TAB;
+String LABEL_TASK_TAB_TYPE;
+String LABEL_TASK_TAB_TYPE_ENCODING;
+String LABEL_TASK_TAB_TYPE_PANORAMA;
+String LABEL_TASK_TAB_DESCRPTION;
+String LABEL_TASK_TAB_TIME_LEFT;
+String LABEL_TASK_TAB_PROGRESS;
+String LABEL_SAVE_VIDEO_SUSPENDED;
+String LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE;
+String LABEL_TASK_TAB_ERROR_CUSTOM;
+String LABEL_TASK_TAB_DONE;
+String LABEL_TASK_TAB_BEGIN;
+String LABEL_TASK_TAB_CONFIRM_DELETE;
+String LABEL_YES;
+String LABEL_NO;
+String LABEL_ASK_QUIT;
+String LABEL_SAVE_VIDEO_ERROR_WRITTING;
+String LABEL_SAVE_VIDEO_ERROR_MEMORY;
+String LABEL_SAVE_VIDEO_ERROR_HEADER;
+String LABEL_SAVE_VIDEO_ERROR_TRAILER;
+String LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET;
+String LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET;
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET;
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET;
+String LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE;
+String LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC;
+String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
+String LABEL_SAVE_VIDEO_PAUSED;
 
+    void load_locale(String name)
+    {
+            PropertiesFile video_editor_localization(File("../localization/" + name + "/translate.xml"),0,PropertiesFile::storeAsXML,0);
+            MENU_FILE = video_editor_localization.getValue("MENU_FILE");
+            MENU_FILE_OPEN = video_editor_localization.getValue("MENU_FILE_OPEN");
+            MENU_FILE_SAVE = video_editor_localization.getValue("MENU_FILE_SAVE");
+            MENU_QUIT = video_editor_localization.getValue("MENU_QUIT");
+            MENU_FRAME = video_editor_localization.getValue("MENU_FRAME");
+            MENU_JUMP = video_editor_localization.getValue("MENU_JUMP");
+            MENU_SAVE_FRAME = video_editor_localization.getValue("MENU_SAVE_FRAME");
+            MENU_RECENT = video_editor_localization.getValue("MENU_RECENT");
+            CANT_LOAD_FILE = video_editor_localization.getValue("CANT_LOAD_FILE");
+            DIALOG_CHOOSE_FILE_TO_OPEN = video_editor_localization.getValue("DIALOG_CHOOSE_FILE_TO_OPEN");
+            DIALOG_CHOOSE_SCREENSHOT_TO_SAVE = video_editor_localization.getValue("DIALOG_CHOOSE_SCREENSHOT_TO_SAVE");
+            LABEL_FRAMES = video_editor_localization.getValue("LABEL_FRAMES");
+            LABEL_TIME = video_editor_localization.getValue("LABEL_TIME");
+            LABEL_ESTIMATE = video_editor_localization.getValue("LABEL_ESTIMATE");
+            LABEL_CHOOSE_JUMP = video_editor_localization.getValue("LABEL_CHOOSE_JUMP");
+            LABEL_TOTAL_TIME = video_editor_localization.getValue("LABEL_TOTAL_TIME");
+            LABEL_OK = video_editor_localization.getValue("LABEL_OK");
+            LABEL_CANCEL = video_editor_localization.getValue("LABEL_CANCEL");
+            FILE_SAVED = video_editor_localization.getValue("FILE_SAVED");
+            FILE_NOT_SAVED = video_editor_localization.getValue("FILE_NOT_SAVED");
+            LABEL_PLAY = video_editor_localization.getValue("LABEL_PLAY");
+            LABEL_PAUSE = video_editor_localization.getValue("LABEL_PAUSE");
+            LABEL_STOP = video_editor_localization.getValue("LABEL_STOP");
+            LABEL_NEXT_FRAME = video_editor_localization.getValue("LABEL_NEXT_FRAME");
+            LABEL_PREV_FRAME = video_editor_localization.getValue("LABEL_PREV_FRAME");
+            LABEL_NEXT_FIVE_FRAME = video_editor_localization.getValue("LABEL_NEXT_FIVE_FRAME");
+            LABEL_PREV_FIVE_FRAME = video_editor_localization.getValue("LABEL_PREV_FIVE_FRAME");
+            LABEL_NEXT_SECOND = video_editor_localization.getValue("LABEL_NEXT_SECOND");
+            LABEL_PREV_SECOND = video_editor_localization.getValue("LABEL_PREV_SECOND");
+            LABEL_SPECIFIC_TIME = video_editor_localization.getValue("LABEL_SPECIFIC_TIME");
+            LABEL_HOURS = video_editor_localization.getValue("LABEL_HOURS");
+            LABEL_MINUTES = video_editor_localization.getValue("LABEL_MINUTES");
+            LABEL_SECONDS = video_editor_localization.getValue("LABEL_SECONDS");
+            LABEL_MINI_SECONDS = video_editor_localization.getValue("LABEL_MINI_SECONDS");
+            LABEL_INFO = video_editor_localization.getValue("LABEL_INFO");
+            LABEL_FILE = video_editor_localization.getValue("LABEL_FILE");
+            LABEL_DURATION = video_editor_localization.getValue("LABEL_DURATION");
+            LABEL_SIZE = video_editor_localization.getValue("LABEL_SIZE");
+            LABEL_FORMAT = video_editor_localization.getValue("LABEL_FORMAT");
+            LABEL_CODEC = video_editor_localization.getValue("LABEL_CODEC");
+            LABEL_RESOLUTION = video_editor_localization.getValue("LABEL_RESOLUTION");
+            LABEL_FPS = video_editor_localization.getValue("LABEL_FPS");
+            LABEL_SAMPLE_RATE = video_editor_localization.getValue("LABEL_SAMPLE_RATE");
+            LABEL_CHANNELS = video_editor_localization.getValue("LABEL_CHANNELS");
+            LABEL_LANG = video_editor_localization.getValue("LABEL_LANG");
+            LABEL_COMMENT = video_editor_localization.getValue("LABEL_COMMENT");
+            LABEL_BITRATE = video_editor_localization.getValue("LABEL_BITRATE");
+            LABEL_NOT_AVIABLE = video_editor_localization.getValue("LABEL_NOT_AVIABLE");
+            LABEL_KB_PER_SECOND = video_editor_localization.getValue("LABEL_KB_PER_SECOND");
+            LABEL_STREAM = video_editor_localization.getValue("LABEL_STREAM");
+            LABEL_VIDEO = video_editor_localization.getValue("LABEL_VIDEO");
+            LABEL_AUDIO = video_editor_localization.getValue("LABEL_AUDIO");
+            LABEL_SUBTITLES = video_editor_localization.getValue("LABEL_SUBTITLES");
+            LABEL_MOVIES = video_editor_localization.getValue("LABEL_MOVIES");
+            LABEL_SOUNDS = video_editor_localization.getValue("LABEL_SOUNDS");
+            LABEL_PICTURES = video_editor_localization.getValue("LABEL_PICTURES");
+            LABEL_SCALE = video_editor_localization.getValue("LABEL_SCALE");
+            MENU_VIDEO_PART = video_editor_localization.getValue("MENU_VIDEO_PART");
+            LABEL_DELETE = video_editor_localization.getValue("LABEL_DELETE");
+            LABEL_DELETE_VIDEO_PART = video_editor_localization.getValue("LABEL_DELETE_VIDEO_PART");
+            LABEL_SPLIT = video_editor_localization.getValue("LABEL_SPLIT");
+            LABEL_REMOVE_SPACES = video_editor_localization.getValue("LABEL_REMOVE_SPACES");
+            LABEL_SAVE_VIDEO = video_editor_localization.getValue("LABEL_SAVE_VIDEO");
+            LABEL_SAVE = video_editor_localization.getValue("LABEL_SAVE");
+            LABEL_VIDEO_SAVE_PATH = video_editor_localization.getValue("LABEL_VIDEO_SAVE_PATH");
+            LABEL_VIDEO_SAVE_FORMAT = video_editor_localization.getValue("LABEL_VIDEO_SAVE_FORMAT");
+            LABEL_VIDEO_SAVE_CODEC = video_editor_localization.getValue("LABEL_VIDEO_SAVE_CODEC");
+            LABEL_VIDEO_SAVE_SIZE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_SIZE");
+            LABEL_VIDEO_SAVE_QUALITY = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY");
+            LABEL_VIDEO_SAVE_COMPRESSION = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION");
+            LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST");
+            LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST");
+            LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST");
+            LABEL_VIDEO_SAVE_COMPRESSION_FASTER = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_FASTER");
+            LABEL_VIDEO_SAVE_COMPRESSION_FAST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_FAST");
+            LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM");
+            LABEL_VIDEO_SAVE_COMPRESSION_SLOW = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_SLOW");
+            LABEL_VIDEO_SAVE_COMPRESSION_SLOWER = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_SLOWER");
+            LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW");
+            LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO = video_editor_localization.getValue("LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO");
+            LABEL_VIDEO_SAVE_QUALITY_BEST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_BEST");
+            LABEL_VIDEO_SAVE_QUALITY_BETTER = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_BETTER");
+            LABEL_VIDEO_SAVE_QUALITY_GOOD = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_GOOD");
+            LABEL_VIDEO_SAVE_QUALITY_NORMAL = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_NORMAL");
+            LABEL_VIDEO_SAVE_QUALITY_BAD = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_BAD");
+            LABEL_VIDEO_SAVE_QUALITY_WORSE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_WORSE");
+            LABEL_VIDEO_SAVE_QUALITY_WORST = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_WORST");
+            LABEL_VIDEO_SAVE_QUALITY_OTHER = video_editor_localization.getValue("LABEL_VIDEO_SAVE_QUALITY_OTHER");
+            LABEL_VIDEO_SAVE_SIZE_OTHER = video_editor_localization.getValue("LABEL_VIDEO_SAVE_SIZE_OTHER");
+            LABEL_VIDEO_SAVE_PASS = video_editor_localization.getValue("LABEL_VIDEO_SAVE_PASS");
+            LABEL_VIDEO_SAVE_ADVANCED_MODE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_ADVANCED_MODE");
+            LABEL_VIDEO_SAVE_BITRATE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_BITRATE");
+            LABEL_VIDEO_SAVE_FPS = video_editor_localization.getValue("LABEL_VIDEO_SAVE_FPS");
+            LABEL_VIDEO_SAVE_RESOLUTION = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RESOLUTION");
+            LABEL_VIDEO_SAVE_AUTO = video_editor_localization.getValue("LABEL_VIDEO_SAVE_AUTO");
+            LABEL_VIDEO_GOP = video_editor_localization.getValue("LABEL_VIDEO_GOP");
+            LABEL_VIDEO_SAVE_PASS_ONE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_PASS_ONE");
+            LABEL_VIDEO_SAVE_PASS_TWO = video_editor_localization.getValue("LABEL_VIDEO_SAVE_PASS_TWO");
+            LABEL_AUDIO_SAVE_CODEC = video_editor_localization.getValue("LABEL_AUDIO_SAVE_CODEC");
+            LABEL_AUDIO_SAVE_BITRATE = video_editor_localization.getValue("LABEL_AUDIO_SAVE_BITRATE");
+            LABEL_AUDIO_SAVE_SAMPLE_RATE = video_editor_localization.getValue("LABEL_AUDIO_SAVE_SAMPLE_RATE");
+            LABEL_AUDIO_SAVE_CHANNELS = video_editor_localization.getValue("LABEL_AUDIO_SAVE_CHANNELS");
+            MENU_HEADER_PC = video_editor_localization.getValue("MENU_HEADER_PC");
+            MENU_HEADER_WEB = video_editor_localization.getValue("MENU_HEADER_WEB");
+            MENU_HEADER_CELL_PHONE = video_editor_localization.getValue("MENU_HEADER_CELL_PHONE");
+            MENU_HEADER_AUDIO = video_editor_localization.getValue("MENU_HEADER_AUDIO");
+            MENU_HEADER_IPOD = video_editor_localization.getValue("MENU_HEADER_IPOD");
+            VALIDATION_SAVE_FPS = video_editor_localization.getValue("VALIDATION_SAVE_FPS");
+            VALIDATION_SAVE_WIDTH = video_editor_localization.getValue("VALIDATION_SAVE_WIDTH");
+            VALIDATION_SAVE_HEIGHT = video_editor_localization.getValue("VALIDATION_SAVE_HEIGHT");
+            VALIDATION_SAVE_BITRATE = video_editor_localization.getValue("VALIDATION_SAVE_BITRATE");
+            VALIDATION_SAVE_CRF_MAIN = video_editor_localization.getValue("VALIDATION_SAVE_CRF_MAIN");
+            VALIDATION_SAVE_CRF_TO = video_editor_localization.getValue("VALIDATION_SAVE_CRF_TO");
+            LABEL_VIDEO_SAVE_ENABLE_VIDEO = video_editor_localization.getValue("LABEL_VIDEO_SAVE_ENABLE_VIDEO");
+            LABEL_VIDEO_SAVE_ENABLE_AUDIO = video_editor_localization.getValue("LABEL_VIDEO_SAVE_ENABLE_AUDIO");
+            LABEL_VIDEO_SAVE_RATE_CONTROL = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL");
+            LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE");
+            LABEL_VIDEO_SAVE_RATE_CONTROL_CRF = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL_CRF");
+            LABEL_VIDEO_SAVE_RATE_CONTROL_CQ = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL_CQ");
+            LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF");
+            LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP = video_editor_localization.getValue("LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP");
+            LABEL_VIDEO_SAVE_FAILED = video_editor_localization.getValue("LABEL_VIDEO_SAVE_FAILED");
+            LABEL_PREVIEW_VIDEO = video_editor_localization.getValue("LABEL_PREVIEW_VIDEO");
+            LABEL_VIDEO_SAVE_PREVIEW = video_editor_localization.getValue("LABEL_VIDEO_SAVE_PREVIEW");
+            LABEL_LOADING = video_editor_localization.getValue("LABEL_LOADING");
+            LABEL_VIDEO_PREVIEW_ORIGINAL = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_ORIGINAL");
+            LABEL_VIDEO_PREVIEW_ENCODED = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_ENCODED");
+            LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE");
+            LABEL_VIDEO_PREVIEW_ESTIMATED_TIME = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_ESTIMATED_TIME");
+            LABEL_VIDEO_PREVIEW_FAILED = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_FAILED");
+            LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP = video_editor_localization.getValue("LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP");
+            MENU_SHOW_TASKS = video_editor_localization.getValue("MENU_SHOW_TASKS");
+            LABEL_TASK_TAB = video_editor_localization.getValue("LABEL_TASK_TAB");
+            LABEL_TASK_TAB_TYPE = video_editor_localization.getValue("LABEL_TASK_TAB_TYPE");
+            LABEL_TASK_TAB_TYPE_ENCODING = video_editor_localization.getValue("LABEL_TASK_TAB_TYPE_ENCODING");
+            LABEL_TASK_TAB_TYPE_PANORAMA = video_editor_localization.getValue("LABEL_TASK_TAB_TYPE_PANORAMA");
+            LABEL_TASK_TAB_DESCRPTION = video_editor_localization.getValue("LABEL_TASK_TAB_DESCRPTION");
+            LABEL_TASK_TAB_TIME_LEFT = video_editor_localization.getValue("LABEL_TASK_TAB_TIME_LEFT");
+            LABEL_TASK_TAB_PROGRESS = video_editor_localization.getValue("LABEL_TASK_TAB_PROGRESS");
+            LABEL_SAVE_VIDEO_SUSPENDED = video_editor_localization.getValue("LABEL_SAVE_VIDEO_SUSPENDED");
+            LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE = video_editor_localization.getValue("LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE");
+            LABEL_TASK_TAB_ERROR_CUSTOM = video_editor_localization.getValue("LABEL_TASK_TAB_ERROR_CUSTOM");
+            LABEL_TASK_TAB_DONE = video_editor_localization.getValue("LABEL_TASK_TAB_DONE");
+            LABEL_TASK_TAB_BEGIN = video_editor_localization.getValue("LABEL_TASK_TAB_BEGIN");
+            LABEL_TASK_TAB_CONFIRM_DELETE = video_editor_localization.getValue("LABEL_TASK_TAB_CONFIRM_DELETE");
+            LABEL_YES = video_editor_localization.getValue("LABEL_YES");
+            LABEL_NO = video_editor_localization.getValue("LABEL_NO");
+            LABEL_ASK_QUIT = video_editor_localization.getValue("LABEL_ASK_QUIT");
+            LABEL_SAVE_VIDEO_ERROR_WRITTING = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_WRITTING");
+            LABEL_SAVE_VIDEO_ERROR_MEMORY = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_MEMORY");
+            LABEL_SAVE_VIDEO_ERROR_HEADER = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_HEADER");
+            LABEL_SAVE_VIDEO_ERROR_TRAILER = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_TRAILER");
+            LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET");
+            LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET");
+            LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET");
+            LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET");
+            LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE");
+            LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC");
+            LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC");
+            LABEL_SAVE_VIDEO_PAUSED = video_editor_localization.getValue("LABEL_SAVE_VIDEO_PAUSED");
+    }
 
-String CANT_LOAD_FILE = T("Не удается открыть файл");
-String DIALOG_CHOOSE_FILE_TO_OPEN = T("Выберите видео файл");
-String DIALOG_CHOOSE_SCREENSHOT_TO_SAVE = T("Сохранить скриншот");
-String LABEL_FRAMES = T("Кадры");
-String LABEL_TIME = T("Время");
-String LABEL_ESTIMATE = T("Осталось");
-
-
-String LABEL_CHOOSE_JUMP = T("Введите время для перехода");
-String LABEL_TOTAL_TIME = T("Длина видео");
-
-String LABEL_OK = T("Принять");
-String LABEL_CANCEL = T("Отменить");
-
-String FILE_SAVED = T("Сохранено");
-String FILE_NOT_SAVED = T("Запись не удалась");
-
-
-String LABEL_PLAY = T("Воспроизвести");
-String LABEL_PAUSE = T("Пауза");
-
-String LABEL_STOP = T("Остановить");
-String LABEL_NEXT_FRAME = T("+1 кадр");
-String LABEL_PREV_FRAME = T("-1 кадр");
-
-String LABEL_NEXT_FIVE_FRAME = T("+5 кадров");
-String LABEL_PREV_FIVE_FRAME = T("-5 кадров");
-
-String LABEL_NEXT_SECOND = T("+1 секунда");
-String LABEL_PREV_SECOND = T("-1 секунда");
-
-String LABEL_SPECIFIC_TIME = T("Задать время");
-
-
-String LABEL_HOURS = T("час.");
-String LABEL_MINUTES = T("мин.");
-String LABEL_SECONDS = T("сек.");
-String LABEL_MINI_SECONDS = T("мсек.");
-
-String LABEL_INFO = T("Информация о файле");
-String LABEL_FILE = T("файл");
-String LABEL_DURATION = T("продолжительность");
-String LABEL_SIZE = T("размер");
-String LABEL_FORMAT = T("формат");
-
-
-String LABEL_CODEC = T("кодек");
-String LABEL_RESOLUTION = T("разрешение");
-String LABEL_FPS = T("част. кадров");
-String LABEL_SAMPLE_RATE = T("част. дискетизации");
-String LABEL_CHANNELS = T("каналы");
-String LABEL_LANG = T("язык");
-String LABEL_COMMENT = T("коммент");
-
-
-String LABEL_BITRATE = T("битрейт");
-String LABEL_NOT_AVIABLE = T("Не доступен");
-String LABEL_KB_PER_SECOND = T("кб/с");
-String LABEL_STREAM = T("Поток");
-String LABEL_VIDEO = T("Видео");
-String LABEL_AUDIO = T("Аудио");
-String LABEL_SUBTITLES = T("Субтитры");
-
-String LABEL_MOVIES = T("Ролики");
-String LABEL_SOUNDS = T("Звуки");
-String LABEL_PICTURES = T("Картинки");
-
-String LABEL_SCALE = T("Масштаб");
-
-String MENU_VIDEO_PART = T("Фрагмент");
-String LABEL_DELETE = T("Удалить");
-String LABEL_DELETE_VIDEO_PART = T("Удалить фрагмент");
-String LABEL_SPLIT = T("Разделить");
-String LABEL_REMOVE_SPACES = T("Убрать пробелы");
-
-String LABEL_SAVE_VIDEO = T("Сохранить видео");
-String LABEL_SAVE = T("Сохранить");
-
-
-String LABEL_VIDEO_SAVE_PATH = T("Путь");
-String LABEL_VIDEO_SAVE_FORMAT = T("Формат");
-
-String LABEL_VIDEO_SAVE_CODEC = T("Кодек");
-String LABEL_VIDEO_SAVE_SIZE = T("Размер");
-String LABEL_VIDEO_SAVE_QUALITY = T("Качество");
-
-String LABEL_VIDEO_SAVE_COMPRESSION = T("Cжатие");
-String LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST = T("Максимум скорости");
-String LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST = T("Супер быстро");
-String LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST = T("Очень быстро");
-String LABEL_VIDEO_SAVE_COMPRESSION_FASTER = T("Быстрее");
-String LABEL_VIDEO_SAVE_COMPRESSION_FAST = T("Быстро");
-String LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM = T("Нормально");
-String LABEL_VIDEO_SAVE_COMPRESSION_SLOW = T("Медленно");
-String LABEL_VIDEO_SAVE_COMPRESSION_SLOWER = T("Медленнее");
-String LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW = T("Очень медленно");
-String LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO = T("Максимум качества");
-
-
-
-String LABEL_VIDEO_SAVE_QUALITY_BEST = T("Лучшее");
-String LABEL_VIDEO_SAVE_QUALITY_BETTER = T("Очень хорошее");
-String LABEL_VIDEO_SAVE_QUALITY_GOOD = T("Хорошее");
-String LABEL_VIDEO_SAVE_QUALITY_NORMAL = T("Нормальное");
-String LABEL_VIDEO_SAVE_QUALITY_BAD = T("Плохое");
-String LABEL_VIDEO_SAVE_QUALITY_WORSE = T("Очень плохое");
-String LABEL_VIDEO_SAVE_QUALITY_WORST = T("Худшее");
-String LABEL_VIDEO_SAVE_QUALITY_OTHER = T("Другое");
-String LABEL_VIDEO_SAVE_SIZE_OTHER = T("Другой");
-
-
-String LABEL_VIDEO_SAVE_PASS = T("Количество проходов");
-String LABEL_VIDEO_SAVE_ADVANCED_MODE = T("Дополнительные настройки");
-String LABEL_VIDEO_SAVE_BITRATE = T("Битрейт");
-String LABEL_VIDEO_SAVE_FPS = T("Частота кадров");
-String LABEL_VIDEO_SAVE_RESOLUTION = T("Разрешение");
-String LABEL_VIDEO_SAVE_AUTO = T("Авто");
-String LABEL_VIDEO_GOP = T("Кадров в группе(gop)");
-String LABEL_VIDEO_SAVE_PASS_ONE = T("1 - один");
-String LABEL_VIDEO_SAVE_PASS_TWO = T("2 - два");
-
-String LABEL_AUDIO_SAVE_CODEC = T("Кодек");
-String LABEL_AUDIO_SAVE_BITRATE = T("Битрейт");
-String LABEL_AUDIO_SAVE_SAMPLE_RATE = T("Частота дискретизации");
-String LABEL_AUDIO_SAVE_CHANNELS = T("Каналы");
-
-String MENU_HEADER_PC = T("Пк");
-String MENU_HEADER_WEB = T("Веб");
-String MENU_HEADER_CELL_PHONE = T("Мобильный");
-String MENU_HEADER_AUDIO = T("Аудио");
-String MENU_HEADER_IPOD = T("Ipod");
-
-String VALIDATION_SAVE_FPS = T("Частота кадров может быть в пределах от 5 до 60");
-String VALIDATION_SAVE_WIDTH = T("Высота видео должна быть не меньше 5 и делиться на 4");
-String VALIDATION_SAVE_HEIGHT = T("Ширина видео должна быть не меньше 5 и делиться на 4");
-String VALIDATION_SAVE_BITRATE = T("Битрейт не должен быть нулевым");
-String VALIDATION_SAVE_CRF_MAIN = T("Коэффициент может быть в пределах от ");
-String VALIDATION_SAVE_CRF_TO = T(" до ");
-
-String LABEL_VIDEO_SAVE_ENABLE_VIDEO = T("Сохранить видео");
-String LABEL_VIDEO_SAVE_ENABLE_AUDIO = T("Сохранить аудио");
-
-String LABEL_VIDEO_SAVE_RATE_CONTROL = T("Управление качеством");
-String LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE = T("Битрейт");
-String LABEL_VIDEO_SAVE_RATE_CONTROL_CRF = T("Постоянное качество(crf)");
-String LABEL_VIDEO_SAVE_RATE_CONTROL_CQ = T("Постоянное качество(cqp)");
-String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF = T("Коэффициент (crf)");
-String LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP = T("Коэффициент (cqp)");
-
-String LABEL_VIDEO_SAVE_FAILED = T("Не удалось сохранить видео");
-
-String LABEL_PREVIEW_VIDEO = T("Оценка качества");
-String LABEL_VIDEO_SAVE_PREVIEW = T("Предпросмотр");
-String LABEL_LOADING = T("Загрузка");
-
-String LABEL_VIDEO_PREVIEW_ORIGINAL = T("Оригинал");
-String LABEL_VIDEO_PREVIEW_ENCODED = T("После кодировки");
-
-String LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE = T("Ожидаемый размер файла");
-String LABEL_VIDEO_PREVIEW_ESTIMATED_TIME = T("Ожидаемoe время кодировки");
-String LABEL_VIDEO_PREVIEW_FAILED = T("Не удалось загрузить картинку");
-String LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP = T("Возможно, текущий кадр находиться за пределами фильма");
-String MENU_SHOW_TASKS = T("Задания");
-String LABEL_TASK_TAB = T("Задания");
-
-String LABEL_TASK_TAB_TYPE = T("Тип");
-String LABEL_TASK_TAB_TYPE_ENCODING = T("Кодирование");
-String LABEL_TASK_TAB_TYPE_PANORAMA = T("Панорама");
-String LABEL_TASK_TAB_DESCRPTION = T("Имя файла");
-String LABEL_TASK_TAB_TIME_LEFT = T("Осталось");
-String LABEL_TASK_TAB_PROGRESS = T("Сатус");
-String LABEL_SAVE_VIDEO_SUSPENDED = T("Сохранение прервано");
-
-String LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE = T("Ошибка. Невозможно загрузить файл ");
-String LABEL_TASK_TAB_ERROR_CUSTOM = T("Ошибка.");
-String LABEL_TASK_TAB_DONE = T("Завершено.");
-String LABEL_TASK_TAB_BEGIN = T("В очереди...");
-
-String LABEL_TASK_TAB_CONFIRM_DELETE = T("Вы действительно хотите удалить задание");
-String LABEL_YES = T("Да");
-String LABEL_NO = T("Нет");
-
-String LABEL_ASK_QUIT = T("Вы уверены, что хотите выйти?");
-
-String LABEL_SAVE_VIDEO_ERROR_WRITTING = T("Невозможно записать файл");
-String LABEL_SAVE_VIDEO_ERROR_MEMORY = T("Недостаточно свободной оперативной памяти");
-String LABEL_SAVE_VIDEO_ERROR_HEADER = T("Неправильный заголовок");
-String LABEL_SAVE_VIDEO_ERROR_TRAILER = T("Неправильный трейлер");
-String LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET = T("Невозможно записать аудио пакет");
-String LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET = T("Невозможно записать видео пакет");
-String LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET = T("Невозможно кодировать аудио пакет");
-String LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET = T("Невозможно кодировать видео пакет");
-String LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE = T("Невозможно создать изображение");
-String LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC = T("Невозможно открыть аудио кодек");
-String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC = T("Невозможно открыть видео кодек");
-
-String LABEL_SAVE_VIDEO_PAUSED = T("Остановлено");
 }
