@@ -240,6 +240,8 @@ void MainComponent::sliderValueChanged(Slider* slider)
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\config\\config.xml"),0,PropertiesFile::storeAsXML,0)
 {
+    load_locale("ru");
+
     mainWindow = mainWindow_;
     recent.restoreFromString(properties.getValue("recent",""));
 

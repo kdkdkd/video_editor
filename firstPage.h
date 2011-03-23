@@ -6,6 +6,7 @@
 
 class MainComponent;
 class SpecialButton;
+class Cloud;
 class firstPage:public Component,public ButtonListener
 {
     public:
@@ -14,7 +15,8 @@ class firstPage:public Component,public ButtonListener
         ~firstPage();
         MainComponent* main;
         void buttonClicked(Button* button);
-        Array<SpecialButton*> recent_list;
+        Array<Cloud*> recent_list;
+        Array<Cloud*> localization_buttons;
         void resized();
         Image logo;
         Image border;

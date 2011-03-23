@@ -1,25 +1,40 @@
 #include "firstPage.h"
 
+class Cloud : public Component
+{
+    public:
+    Image border;
+    Cloud(Image& border):Component()
+    {
+        this->border = border;
+    }
+    ~Cloud()
+    {
+        deleteAllChildren();
+    }
+
+    void paint(Graphics& g)
+    {
+        g.setColour(Colours::whitesmoke);
+        g.drawImage(border,0,0,getWidth(),getHeight(),0,0,95,31,true);
+    }
+
+};
 
 
 class SpecialButton : public Button
 {
     public:
-    Image border;
-    SpecialButton(const String& buttonName, Image& border):Button(buttonName)
+
+    SpecialButton(const String& buttonName):Button(buttonName)
     {
-        this->border = border;
         setMouseCursor (MouseCursor::PointingHandCursor);
     }
 
     void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown)
     {
         const Colour textColour(findColour(0x1001f00));
-        g.setColour(Colours::whitesmoke);
-        g.drawImage(border,0,0,getWidth(),getHeight(),0,0,95,31,true);
         g.setColour((isMouseOverButton) ? textColour.darker ((isButtonDown) ? 3.5f : 1.6f) : textColour);
-
-
         g.drawText(getButtonText(), 30, 0, getWidth() - 62, getHeight(), Justification::centredLeft, true);
     }
 
@@ -34,7 +49,16 @@ void firstPage::resized()
         delta = 170;
     for(int i = 0;i<size;++i)
     {
-        recent_list[i]->setBounds(width/2 - 150, i*35 + delta,300,35);
+        Cloud* current_cloud = recent_list[i];
+        current_cloud->setBounds(width/2 - 150, i*35 + delta,300,35);
+        current_cloud->getChildComponent(0)->setBounds(0,0,300,35);
+    }
+    size = localization_buttons.size();
+    for(int i = 0;i<size;++i)
+    {
+        Cloud* current_cloud = localization_buttons[i];
+        current_cloud->setBounds(width - 220, i*35 + 20,200,35);
+        current_cloud->getChildComponent(0)->setBounds(25,10,175,25);
     }
 }
 
@@ -55,12 +79,36 @@ firstPage::firstPage(MainComponent* main)
     {
         if(File(files[i]).exists())
         {
-            SpecialButton * new_button = new SpecialButton(files[i],border);
+            Cloud * new_cloud = new Cloud(border);
+            SpecialButton * new_button = new SpecialButton(files[i]);
             new_button->setButtonText(File(files[i]).getFileName());
-            addAndMakeVisible(new_button);
+            new_cloud->addAndMakeVisible(new_button);
+            addAndMakeVisible(new_cloud);
             new_button->addListener(this);
-            recent_list.add(new_button);
+            recent_list.add(new_cloud);
         }
+    }
+
+
+    DirectoryIterator iter(File("../localization/"), false, "*", File::findDirectories);
+    while (iter.next())
+    {
+        Cloud * new_cloud = new Cloud(border);
+        File pic_file(File::addTrailingSeparator(iter.getFile().getFullPathName()) + "icon.png");
+        DrawableButton* db = new DrawableButton(String::empty, DrawableButton::ImageRaw);
+        new_cloud->addAndMakeVisible(db);
+
+
+        DrawableImage normal,over;
+        Image flag = ImageCache::getFromFile(pic_file);
+        normal.setImage(flag);
+
+        normal.setOpacity(0.8);
+        over.setImage(flag);
+        db->setImages(&normal, &over, &normal);
+
+        localization_buttons.add(new_cloud);
+        addAndMakeVisible(new_cloud);
     }
 
 }

@@ -15,11 +15,7 @@ MainAppWindow::MainAppWindow()
         true
     )
 {
-    load_locale("en");
-
-
     commandManager = new ApplicationCommandManager();
-
 
     setResizeLimits (800, 600, 8192, 8192);
 
@@ -27,13 +23,12 @@ MainAppWindow::MainAppWindow()
 
     setTitleBarHeight (20);
 
-
     setIcon(ImageCache::getFromFile(File("../pic/taskTab/encoding.png")));
-
 
     contentComponent = new MainComponent (this);
 
     commandManager->registerAllCommandsForTarget (contentComponent);
+
     commandManager->registerAllCommandsForTarget (JUCEApplication::getInstance());
 
     addKeyListener (commandManager->getKeyMappings());
