@@ -23,7 +23,6 @@ extern String DIALOG_CHOOSE_FILE_TO_OPEN;
 extern String DIALOG_CHOOSE_SCREENSHOT_TO_SAVE;
 extern String LABEL_FRAMES;
 extern String LABEL_TIME;
-extern String LABEL_ESTIMATE;
 
 
 extern String LABEL_CHOOSE_JUMP;

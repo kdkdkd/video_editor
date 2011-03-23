@@ -15,7 +15,7 @@ MainAppWindow::MainAppWindow()
         true
     )
 {
-    load_locale("ru");
+    load_locale("en");
 
 
     commandManager = new ApplicationCommandManager();

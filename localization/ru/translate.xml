@@ -14,7 +14,6 @@
 	<VALUE name="DIALOG_CHOOSE_SCREENSHOT_TO_SAVE" val="Сохранить скриншот" />
 	<VALUE name="LABEL_FRAMES" val="Кадры" />
 	<VALUE name="LABEL_TIME" val="Время" />
-	<VALUE name="LABEL_ESTIMATE" val="Осталось" />
 	<VALUE name="LABEL_CHOOSE_JUMP" val="Введите время для перехода" />
 	<VALUE name="LABEL_TOTAL_TIME" val="Длина видео" />
 	<VALUE name="LABEL_OK" val="Принять" />

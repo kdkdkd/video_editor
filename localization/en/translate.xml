@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+	<VALUE name="MENU_FILE" val="File" />
+	<VALUE name="MENU_FILE_OPEN" val="Open" />
+	<VALUE name="MENU_FILE_SAVE" val="Save" />
+	<VALUE name="MENU_QUIT" val="Quit" />
+	<VALUE name="MENU_FRAME" val="Frame" />
+	<VALUE name="MENU_JUMP" val="Jump to..." />
+	<VALUE name="MENU_SAVE_FRAME" val="Screenshot" />
+	<VALUE name="MENU_RECENT" val="Open recent" />
+	<VALUE name="CANT_LOAD_FILE" val="Failed to load file" />
+	<VALUE name="DIALOG_CHOOSE_FILE_TO_OPEN" val="Choose video file" />
+	<VALUE name="DIALOG_CHOOSE_SCREENSHOT_TO_SAVE" val="Save screenshot" />
+	<VALUE name="LABEL_FRAMES" val="Frames" />
+	<VALUE name="LABEL_TIME" val="Time" />
+	<VALUE name="LABEL_CHOOSE_JUMP" val="Choose time, to jump" />
+	<VALUE name="LABEL_TOTAL_TIME" val="Video length" />
+	<VALUE name="LABEL_OK" val="Ok" />
+	<VALUE name="LABEL_CANCEL" val="Cancel" />
+	<VALUE name="FILE_SAVED" val="Saved" />
+	<VALUE name="FILE_NOT_SAVED" val="File not saved" />
+	<VALUE name="LABEL_PLAY" val="Play" />
+	<VALUE name="LABEL_PAUSE" val="Pause" />
+	<VALUE name="LABEL_STOP" val="Stop" />
+	<VALUE name="LABEL_NEXT_FRAME" val="+1 frame" />
+	<VALUE name="LABEL_PREV_FRAME" val="-1 frame" />
+	<VALUE name="LABEL_NEXT_FIVE_FRAME" val="+5 frames" />
+	<VALUE name="LABEL_PREV_FIVE_FRAME" val="-5 frames" />
+	<VALUE name="LABEL_NEXT_SECOND" val="+1 second" />
+	<VALUE name="LABEL_PREV_SECOND" val="-1 second" />
+	<VALUE name="LABEL_SPECIFIC_TIME" val="Specific time" />
+	<VALUE name="LABEL_HOURS" val="hour." />
+	<VALUE name="LABEL_MINUTES" val="min." />
+	<VALUE name="LABEL_SECONDS" val="sec." />
+	<VALUE name="LABEL_MINI_SECONDS" val="msec." />
+	<VALUE name="LABEL_INFO" val="File info" />
+	<VALUE name="LABEL_FILE" val="file" />
+	<VALUE name="LABEL_DURATION" val="duration" />
+	<VALUE name="LABEL_SIZE" val="size" />
+	<VALUE name="LABEL_FORMAT" val="format" />
+	<VALUE name="LABEL_CODEC" val="codec" />
+	<VALUE name="LABEL_RESOLUTION" val="resolution" />
+	<VALUE name="LABEL_FPS" val="fps" />
+	<VALUE name="LABEL_SAMPLE_RATE" val="sample rate" />
+	<VALUE name="LABEL_CHANNELS" val="channels" />
+	<VALUE name="LABEL_LANG" val="lang" />
+	<VALUE name="LABEL_COMMENT" val="comment" />
+	<VALUE name="LABEL_BITRATE" val="bitrate" />
+	<VALUE name="LABEL_NOT_AVIABLE" val="Not available" />
+	<VALUE name="LABEL_KB_PER_SECOND" val="kb/s" />
+	<VALUE name="LABEL_STREAM" val="Stream" />
+	<VALUE name="LABEL_VIDEO" val="Video" />
+	<VALUE name="LABEL_AUDIO" val="Audio" />
+	<VALUE name="LABEL_SUBTITLES" val="Subtitles" />
+	<VALUE name="LABEL_MOVIES" val="Movies" />
+	<VALUE name="LABEL_SOUNDS" val="Audios" />
+	<VALUE name="LABEL_PICTURES" val="Pictures" />
+	<VALUE name="LABEL_SCALE" val="Scale" />
+	<VALUE name="MENU_VIDEO_PART" val="Video part" />
+	<VALUE name="LABEL_DELETE" val="Delete" />
+	<VALUE name="LABEL_DELETE_VIDEO_PART" val="Delete video part" />
+	<VALUE name="LABEL_SPLIT" val="Split" />
+	<VALUE name="LABEL_REMOVE_SPACES" val="Remove spaces" />
+	<VALUE name="LABEL_SAVE_VIDEO" val="Save video" />
+	<VALUE name="LABEL_SAVE" val="Save" />
+	<VALUE name="LABEL_VIDEO_SAVE_PATH" val="Path" />
+	<VALUE name="LABEL_VIDEO_SAVE_FORMAT" val="Format" />
+	<VALUE name="LABEL_VIDEO_SAVE_CODEC" val="Codec" />
+	<VALUE name="LABEL_VIDEO_SAVE_SIZE" val="Size" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY" val="Quality" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION" val="Compression" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST" val="Ultrafast" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST" val="Superfast" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST" val="Veryfast" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_FASTER" val="Faster" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_FAST" val="Fast" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM" val="Medium" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SLOW" val="Slow" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SLOWER" val="Slower" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW" val="Very Slow" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO" val="Best quality" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BEST" val="Best" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BETTER" val="Better" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_GOOD" val="Good" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_NORMAL" val="Normal" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BAD" val="Bad" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_WORSE" val="Worse" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_WORST" val="Worst" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_OTHER" val="Other" />
+	<VALUE name="LABEL_VIDEO_SAVE_SIZE_OTHER" val="Other" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS" val="Pass amount" />
+	<VALUE name="LABEL_VIDEO_SAVE_ADVANCED_MODE" val="Advanced Mode" />
+	<VALUE name="LABEL_VIDEO_SAVE_BITRATE" val="Bitrate" />
+	<VALUE name="LABEL_VIDEO_SAVE_FPS" val="Fps" />
+	<VALUE name="LABEL_VIDEO_SAVE_RESOLUTION" val="Resolution" />
+	<VALUE name="LABEL_VIDEO_SAVE_AUTO" val="Auto" />
+	<VALUE name="LABEL_VIDEO_GOP" val="gop" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS_ONE" val="1 - one" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS_TWO" val="2 - two" />
+	<VALUE name="LABEL_AUDIO_SAVE_CODEC" val="Codec" />
+	<VALUE name="LABEL_AUDIO_SAVE_BITRATE" val="Bitrate" />
+	<VALUE name="LABEL_AUDIO_SAVE_SAMPLE_RATE" val="Sample rate" />
+	<VALUE name="LABEL_AUDIO_SAVE_CHANNELS" val="Channels" />
+	<VALUE name="MENU_HEADER_PC" val="Pc" />
+	<VALUE name="MENU_HEADER_WEB" val="Web" />
+	<VALUE name="MENU_HEADER_CELL_PHONE" val="Cell phone" />
+	<VALUE name="MENU_HEADER_AUDIO" val="Audio" />
+	<VALUE name="MENU_HEADER_IPOD" val="Ipod" />
+	<VALUE name="VALIDATION_SAVE_FPS" val="Fps must be between 5 and 60" />
+	<VALUE name="VALIDATION_SAVE_WIDTH" val="Height must be greater than 5 and and a multiple of 4" />
+	<VALUE name="VALIDATION_SAVE_HEIGHT" val="Width must be greater than 5 and and a multiple of 4" />
+	<VALUE name="VALIDATION_SAVE_BITRATE" val="Bitrate must be greater than zero" />
+	<VALUE name="VALIDATION_SAVE_CRF_MAIN" val="Rate must be between " />
+	<VALUE name="VALIDATION_SAVE_CRF_TO" val=" and " />
+	<VALUE name="LABEL_VIDEO_SAVE_ENABLE_VIDEO" val="Save video" />
+	<VALUE name="LABEL_VIDEO_SAVE_ENABLE_AUDIO" val="Save audio" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL" val="Rate control" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE" val="Bitrate" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_CRF" val="Constant quality(crf)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_CQ" val="Constant quality(cqp)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF" val="Rate (crf)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP" val="Rate (cqp)" />
+	<VALUE name="LABEL_VIDEO_SAVE_FAILED" val="Failed to save video" />
+	<VALUE name="LABEL_PREVIEW_VIDEO" val="Video preview" />
+	<VALUE name="LABEL_VIDEO_SAVE_PREVIEW" val="Preview" />
+	<VALUE name="LABEL_LOADING" val="Loading" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ORIGINAL" val="Original" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ENCODED" val="After encoding" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE" val="Estimated file size" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ESTIMATED_TIME" val="Estimated encoding time" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_FAILED" val="Failed to load picture" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP" val="Perhaps, current frame is outside movie border" />
+	<VALUE name="MENU_SHOW_TASKS" val="Tasks" />
+	<VALUE name="LABEL_TASK_TAB" val="Tasks" />
+	<VALUE name="LABEL_TASK_TAB_TYPE" val="Type" />
+	<VALUE name="LABEL_TASK_TAB_TYPE_ENCODING" val="Encoding" />
+	<VALUE name="LABEL_TASK_TAB_TYPE_PANORAMA" val="Panorama" />
+	<VALUE name="LABEL_TASK_TAB_DESCRPTION" val="File name" />
+	<VALUE name="LABEL_TASK_TAB_TIME_LEFT" val="Time left" />
+	<VALUE name="LABEL_TASK_TAB_PROGRESS" val="Status" />
+	<VALUE name="LABEL_SAVE_VIDEO_SUSPENDED" val="Encoding suspended" />
+	<VALUE name="LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE" val="Error. Failed to load file " />
+	<VALUE name="LABEL_TASK_TAB_ERROR_CUSTOM" val="Error." />
+	<VALUE name="LABEL_TASK_TAB_DONE" val="Completed." />
+	<VALUE name="LABEL_TASK_TAB_BEGIN" val="Waiting..." />
+	<VALUE name="LABEL_TASK_TAB_CONFIRM_DELETE" val="Are you really want to delete task?" />
+	<VALUE name="LABEL_YES" val="Yes" />
+	<VALUE name="LABEL_NO" val="No" />
+	<VALUE name="LABEL_ASK_QUIT" val="Are you really want to quit?" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING" val="Failed to write file" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_MEMORY" val="It is not enough free memory" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_HEADER" val="Invalid header" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_TRAILER" val="Invalid trailer" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET" val="Failed to write audio packet" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET" val="Failed to write video packet" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET" val="Failed to encode audio packet" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET" val="Failed to encode video packet" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE" val="Failed to allocate picture" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC" val="Failed to open audio codec" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC" val="Failed to open video codec" />
+	<VALUE name="LABEL_SAVE_VIDEO_PAUSED" val="Suspended" />
+</PROPERTIES>

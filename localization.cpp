@@ -16,7 +16,7 @@ String DIALOG_CHOOSE_FILE_TO_OPEN;
 String DIALOG_CHOOSE_SCREENSHOT_TO_SAVE;
 String LABEL_FRAMES;
 String LABEL_TIME;
-String LABEL_ESTIMATE;
+
 String LABEL_CHOOSE_JUMP;
 String LABEL_TOTAL_TIME;
 String LABEL_OK;
@@ -180,7 +180,6 @@ String LABEL_SAVE_VIDEO_PAUSED;
             DIALOG_CHOOSE_SCREENSHOT_TO_SAVE = video_editor_localization.getValue("DIALOG_CHOOSE_SCREENSHOT_TO_SAVE");
             LABEL_FRAMES = video_editor_localization.getValue("LABEL_FRAMES");
             LABEL_TIME = video_editor_localization.getValue("LABEL_TIME");
-            LABEL_ESTIMATE = video_editor_localization.getValue("LABEL_ESTIMATE");
             LABEL_CHOOSE_JUMP = video_editor_localization.getValue("LABEL_CHOOSE_JUMP");
             LABEL_TOTAL_TIME = video_editor_localization.getValue("LABEL_TOTAL_TIME");
             LABEL_OK = video_editor_localization.getValue("LABEL_OK");
