@@ -233,7 +233,7 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
 }
 File encodeVideoComponent::getCurrentFileName()
 {
-    String filename = Time::getCurrentTime().formatted(File(timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + "_%Y%m%d_%H%M%S.avi");
+    String filename = File(timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + Time::getCurrentTime().formatted("_%Y%m%d_%H%M%S.avi");
     return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
 }
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
