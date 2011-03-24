@@ -166,6 +166,9 @@ String LABEL_SAVE_VIDEO_PAUSED;
 
     void load_locale(String name)
     {
+            if(name!="en")
+                load_locale("en");
+
             PropertiesFile video_editor_localization(File("../localization/" + name + "/translate.xml"),0,PropertiesFile::storeAsXML,0);
             MENU_FILE = video_editor_localization.getValue("MENU_FILE");
             MENU_FILE_OPEN = video_editor_localization.getValue("MENU_FILE_OPEN");

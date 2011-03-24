@@ -21,7 +21,6 @@ class Cloud : public Component
 
 };
 
-
 class SpecialButton : public Button
 {
     public:
@@ -95,16 +94,45 @@ firstPage::firstPage(MainComponent* main)
     {
         Cloud * new_cloud = new Cloud(border);
         File pic_file(File::addTrailingSeparator(iter.getFile().getFullPathName()) + "icon.png");
+
         DrawableButton* db = new DrawableButton(String::empty, DrawableButton::ImageRaw);
+        db->setMouseCursor(MouseCursor::PointingHandCursor);
         new_cloud->addAndMakeVisible(db);
 
 
-        DrawableImage normal,over;
-        Image flag = ImageCache::getFromFile(pic_file);
-        normal.setImage(flag);
+        DrawableImage normal_image,over_image;
 
-        normal.setOpacity(0.8);
-        over.setImage(flag);
+        Image flag = ImageCache::getFromFile(pic_file);
+        normal_image.setImage(flag);
+
+        normal_image.setOpacity(0.8);
+        over_image.setImage(flag);
+        DrawableComposite normal,over;
+        RelativeParallelogram newBounds(Rectangle<float>(30,0,115,13));
+
+        normal.setBoundingBox(newBounds);
+
+        DrawableText normal_text,over_text;
+        Colour textColour(findColour(0x1001f00));
+        over_text.setColour(textColour.darker(3.5f));
+        normal_text.setColour(textColour);
+
+        normal_text.setBoundingBox(newBounds);
+        over_text.setBoundingBox(newBounds);
+
+        File name_file(File::addTrailingSeparator(iter.getFile().getFullPathName()) + "name.txt");
+        String lang_name = name_file.loadFileAsString();
+        normal_text.setText(lang_name);
+        over_text.setText(lang_name);
+        normal.insertDrawable(normal_text);
+        over.insertDrawable(over_text);
+
+
+
+        normal.insertDrawable(normal_image);
+        over.insertDrawable(over_image);
+
+
         db->setImages(&normal, &over, &normal);
 
         localization_buttons.add(new_cloud);
