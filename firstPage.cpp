@@ -79,7 +79,7 @@ firstPage::firstPage(MainComponent* main)
         if(File(files[i]).exists())
         {
             Cloud * new_cloud = new Cloud(border);
-            SpecialButton * new_button = new SpecialButton(files[i]);
+            SpecialButton * new_button = new SpecialButton("open:" + files[i]);
             new_button->setButtonText(File(files[i]).getFileName());
             new_cloud->addAndMakeVisible(new_button);
             addAndMakeVisible(new_cloud);
@@ -95,10 +95,12 @@ firstPage::firstPage(MainComponent* main)
         Cloud * new_cloud = new Cloud(border);
         File pic_file(File::addTrailingSeparator(iter.getFile().getFullPathName()) + "icon.png");
 
-        DrawableButton* db = new DrawableButton(String::empty, DrawableButton::ImageRaw);
+        String iter_locale = iter.getFile().getRelativePathFrom(File("../localization/"));
+
+        DrawableButton* db = new DrawableButton("locale:" + iter_locale, DrawableButton::ImageRaw);
+        db->addButtonListener(this);
         db->setMouseCursor(MouseCursor::PointingHandCursor);
         new_cloud->addAndMakeVisible(db);
-
 
         DrawableImage normal_image,over_image;
 
@@ -113,7 +115,9 @@ firstPage::firstPage(MainComponent* main)
         normal.setBoundingBox(newBounds);
 
         DrawableText normal_text,over_text;
-        Colour textColour(findColour(0x1001f00));
+        Colour textColour;
+        textColour = (iter_locale == localization::current_locale)?Colours::red:Colour(findColour(0x1001f00));
+
         over_text.setColour(textColour.darker(3.5f));
         normal_text.setColour(textColour);
 
@@ -134,7 +138,6 @@ firstPage::firstPage(MainComponent* main)
 
 
         db->setImages(&normal, &over, &normal);
-
         localization_buttons.add(new_cloud);
         addAndMakeVisible(new_cloud);
     }
@@ -142,7 +145,20 @@ firstPage::firstPage(MainComponent* main)
 }
 void firstPage::buttonClicked(Button* button)
 {
-    main->changeFileName(button->getName());
+    String name = button->getName();
+    if(name.startsWith("open:"))
+    {
+        name = name.substring(5);
+        main->changeFileName(name);
+    }else if(name.startsWith("locale:"))
+    {
+        name = name.substring(7);
+        load_locale(name);
+        repaint();
+
+        main->mainWindow->setMenuBar(0);
+        main->mainWindow->setMenuBar(main);
+    }
 }
 
 firstPage::~firstPage()
