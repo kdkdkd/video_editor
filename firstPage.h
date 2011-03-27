@@ -20,6 +20,7 @@ class firstPage:public Component,public ButtonListener
         void resized();
         Image logo;
         Image border;
+        void loadLocale();
 
 };
 

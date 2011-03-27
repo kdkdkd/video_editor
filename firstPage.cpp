@@ -66,29 +66,9 @@ void firstPage::paint(Graphics &g)
     g.drawImage(logo,0,0,getWidth(),getHeight(),0,0,300,179,false);
 }
 
-firstPage::firstPage(MainComponent* main)
+
+void firstPage::loadLocale()
 {
-    this->main = main;
-    StringArray files = main->recent.getAllFilenames();
-    int size = files.size();
-    border = ImageCache::getFromFile(String("../pic/border.png"));
-    logo = ImageCache::getFromFile(String("../pic/logo.png"));
-
-    for(int i = 0;i<size;++i)
-    {
-        if(File(files[i]).exists())
-        {
-            Cloud * new_cloud = new Cloud(border);
-            SpecialButton * new_button = new SpecialButton("open:" + files[i]);
-            new_button->setButtonText(File(files[i]).getFileName());
-            new_cloud->addAndMakeVisible(new_button);
-            addAndMakeVisible(new_cloud);
-            new_button->addListener(this);
-            recent_list.add(new_cloud);
-        }
-    }
-
-
     DirectoryIterator iter(File("../localization/"), false, "*", File::findDirectories);
     while (iter.next())
     {
@@ -98,7 +78,7 @@ firstPage::firstPage(MainComponent* main)
         String iter_locale = iter.getFile().getRelativePathFrom(File("../localization/"));
 
         DrawableButton* db = new DrawableButton("locale:" + iter_locale, DrawableButton::ImageRaw);
-        db->addButtonListener(this);
+        db->addListener(this);
         db->setMouseCursor(MouseCursor::PointingHandCursor);
         new_cloud->addAndMakeVisible(db);
 
@@ -141,6 +121,33 @@ firstPage::firstPage(MainComponent* main)
         localization_buttons.add(new_cloud);
         addAndMakeVisible(new_cloud);
     }
+}
+
+
+firstPage::firstPage(MainComponent* main)
+{
+    this->main = main;
+    StringArray files = main->recent.getAllFilenames();
+    int size = files.size();
+    border = ImageCache::getFromFile(String("../pic/border.png"));
+    logo = ImageCache::getFromFile(String("../pic/logo.png"));
+
+    for(int i = 0;i<size;++i)
+    {
+        if(File(files[i]).exists())
+        {
+            Cloud * new_cloud = new Cloud(border);
+            SpecialButton * new_button = new SpecialButton("open:" + files[i]);
+            new_button->setButtonText(File(files[i]).getFileName());
+            new_cloud->addAndMakeVisible(new_button);
+            addAndMakeVisible(new_cloud);
+            new_button->addListener(this);
+            recent_list.add(new_cloud);
+        }
+    }
+
+    loadLocale();
+
 
 }
 void firstPage::buttonClicked(Button* button)
@@ -154,6 +161,13 @@ void firstPage::buttonClicked(Button* button)
     {
         name = name.substring(7);
         load_locale(name);
+        int size = localization_buttons.size();
+        for(int i = 0;i<size;++i)
+        {
+            delete localization_buttons[i];
+        }
+        localization_buttons.clear();
+        loadLocale();
         repaint();
 
         main->mainWindow->setMenuBar(0);
