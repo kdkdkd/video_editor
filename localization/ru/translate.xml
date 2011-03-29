@@ -138,7 +138,7 @@
 	<VALUE name="LABEL_TASK_TAB_TYPE_PANORAMA" val="Панорама" />
 	<VALUE name="LABEL_TASK_TAB_DESCRPTION" val="Имя файла" />
 	<VALUE name="LABEL_TASK_TAB_TIME_LEFT" val="Осталось" />
-	<VALUE name="LABEL_TASK_TAB_PROGRESS" val="Сатус" />
+	<VALUE name="LABEL_TASK_TAB_PROGRESS" val="Статус" />
 	<VALUE name="LABEL_SAVE_VIDEO_SUSPENDED" val="Сохранение прервано" />
 	<VALUE name="LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE" val="Ошибка. Невозможно загрузить файл " />
 	<VALUE name="LABEL_TASK_TAB_ERROR_CUSTOM" val="Ошибка." />
