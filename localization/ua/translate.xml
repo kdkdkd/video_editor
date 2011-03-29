@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+	<VALUE name="MENU_FILE" val="Файл" />
+	<VALUE name="MENU_FILE_OPEN" val="Відкрити" />
+	<VALUE name="MENU_FILE_SAVE" val="Зберегти" />
+	<VALUE name="MENU_QUIT" val="Вихід" />
+	<VALUE name="MENU_FRAME" val="Кадр" />
+	<VALUE name="MENU_JUMP" val="Перейти до..." />
+	<VALUE name="MENU_SAVE_FRAME" val="Скріншот" />
+	<VALUE name="MENU_RECENT" val="Відкрити попередні" />
+	<VALUE name="CANT_LOAD_FILE" val="Не можливо відкрити файл" />
+	<VALUE name="DIALOG_CHOOSE_FILE_TO_OPEN" val="Оберіть відео файл" />
+	<VALUE name="DIALOG_CHOOSE_SCREENSHOT_TO_SAVE" val="Зберегти скріншот" />
+	<VALUE name="LABEL_FRAMES" val="Кадри" />
+	<VALUE name="LABEL_TIME" val="Час" />
+	<VALUE name="LABEL_CHOOSE_JUMP" val="Введіть час для переходу" />
+	<VALUE name="LABEL_TOTAL_TIME" val="Довжина відео" />
+	<VALUE name="LABEL_OK" val="Виконати" />
+	<VALUE name="LABEL_CANCEL" val="Скасувати" />
+	<VALUE name="FILE_SAVED" val="Збережено" />
+	<VALUE name="FILE_NOT_SAVED" val="Помилка при записі" />
+	<VALUE name="LABEL_PLAY" val="Грати" />
+	<VALUE name="LABEL_PAUSE" val="Пауза" />
+	<VALUE name="LABEL_STOP" val="Стоп" />
+	<VALUE name="LABEL_NEXT_FRAME" val="+1 кадр" />
+	<VALUE name="LABEL_PREV_FRAME" val="-1 кадр" />
+	<VALUE name="LABEL_NEXT_FIVE_FRAME" val="+5 кадрів" />
+	<VALUE name="LABEL_PREV_FIVE_FRAME" val="-5 кадрів" />
+	<VALUE name="LABEL_NEXT_SECOND" val="+1 секунда" />
+	<VALUE name="LABEL_PREV_SECOND" val="-1 секунда" />
+	<VALUE name="LABEL_SPECIFIC_TIME" val="Задати час" />
+	<VALUE name="LABEL_HOURS" val="год." />
+	<VALUE name="LABEL_MINUTES" val="хв." />
+	<VALUE name="LABEL_SECONDS" val="сек." />
+	<VALUE name="LABEL_MINI_SECONDS" val="мсек." />
+	<VALUE name="LABEL_INFO" val="Информація про файл" />
+	<VALUE name="LABEL_FILE" val="файл" />
+	<VALUE name="LABEL_DURATION" val="тривалість" />
+	<VALUE name="LABEL_SIZE" val="розмір" />
+	<VALUE name="LABEL_FORMAT" val="формат" />
+	<VALUE name="LABEL_CODEC" val="кодек" />
+	<VALUE name="LABEL_RESOLUTION" val="роздільна здатність" />
+	<VALUE name="LABEL_FPS" val="кадрів в сек." />
+	<VALUE name="LABEL_SAMPLE_RATE" val="част. діскетізаціі" />
+	<VALUE name="LABEL_CHANNELS" val="канали" />
+	<VALUE name="LABEL_LANG" val="мова" />
+	<VALUE name="LABEL_COMMENT" val="коментар" />
+	<VALUE name="LABEL_BITRATE" val="бітрейт" />
+	<VALUE name="LABEL_NOT_AVIABLE" val="Не досяжний" />
+	<VALUE name="LABEL_KB_PER_SECOND" val="кб/с" />
+	<VALUE name="LABEL_STREAM" val="Потік" />
+	<VALUE name="LABEL_VIDEO" val="Відео" />
+	<VALUE name="LABEL_AUDIO" val="Аудіо" />
+	<VALUE name="LABEL_SUBTITLES" val="Субтитри" />
+	<VALUE name="LABEL_MOVIES" val="Відео" />
+	<VALUE name="LABEL_SOUNDS" val="Звуки" />
+	<VALUE name="LABEL_PICTURES" val="Малюнки" />
+	<VALUE name="LABEL_SCALE" val="Масштаб" />
+	<VALUE name="MENU_VIDEO_PART" val="Фрагмент" />
+	<VALUE name="LABEL_DELETE" val="Видалити" />
+	<VALUE name="LABEL_DELETE_VIDEO_PART" val="Видалити фрагмент" />
+	<VALUE name="LABEL_SPLIT" val="Роз'єднати" />
+	<VALUE name="LABEL_REMOVE_SPACES" val="Видалити проміжки" />
+	<VALUE name="LABEL_SAVE_VIDEO" val="Зберегти відео" />
+	<VALUE name="LABEL_SAVE" val="Зберегти" />
+	<VALUE name="LABEL_VIDEO_SAVE_PATH" val="Шлях" />
+	<VALUE name="LABEL_VIDEO_SAVE_FORMAT" val="Формат" />
+	<VALUE name="LABEL_VIDEO_SAVE_CODEC" val="Кодек" />
+	<VALUE name="LABEL_VIDEO_SAVE_SIZE" val="Размір" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY" val="Якість" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION" val="Стиснення" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_ULTRAFAST" val="Максимум якості" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SUPERFAST" val="Супер швидко" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_VERYFAST" val="Дуже швидко" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_FASTER" val="Швидше" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_FAST" val="Швидко" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_MEDIUM" val="Нормально" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SLOW" val="Повільно" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_SLOWER" val="Повільніше" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_VERYSLOW" val="Дуже повільно" />
+	<VALUE name="LABEL_VIDEO_SAVE_COMPRESSION_PLACEBO" val="Максимум якості" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BEST" val="Найкраща" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BETTER" val="Дуже добра" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_GOOD" val="Добра" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_NORMAL" val="Нормальна" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_BAD" val="Погана" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_WORSE" val="Дуже погана" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_WORST" val="Найгірша" />
+	<VALUE name="LABEL_VIDEO_SAVE_QUALITY_OTHER" val="Інша" />
+	<VALUE name="LABEL_VIDEO_SAVE_SIZE_OTHER" val="Інший" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS" val="Проходів" />
+	<VALUE name="LABEL_VIDEO_SAVE_ADVANCED_MODE" val="Додаткові настройки" />
+	<VALUE name="LABEL_VIDEO_SAVE_BITRATE" val="Бітрейт" />
+	<VALUE name="LABEL_VIDEO_SAVE_FPS" val="Частота кадрів" />
+	<VALUE name="LABEL_VIDEO_SAVE_RESOLUTION" val="Розміри" />
+	<VALUE name="LABEL_VIDEO_SAVE_AUTO" val="Авто" />
+	<VALUE name="LABEL_VIDEO_GOP" val="gop" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS_ONE" val="1 - один" />
+	<VALUE name="LABEL_VIDEO_SAVE_PASS_TWO" val="2 - два" />
+	<VALUE name="LABEL_AUDIO_SAVE_CODEC" val="Кодек" />
+	<VALUE name="LABEL_AUDIO_SAVE_BITRATE" val="Бітрейт" />
+	<VALUE name="LABEL_AUDIO_SAVE_SAMPLE_RATE" val="Частота дискретизації" />
+	<VALUE name="LABEL_AUDIO_SAVE_CHANNELS" val="Канали" />
+	<VALUE name="MENU_HEADER_PC" val="Пк" />
+	<VALUE name="MENU_HEADER_WEB" val="Веб" />
+	<VALUE name="MENU_HEADER_CELL_PHONE" val="Мобільний" />
+	<VALUE name="MENU_HEADER_AUDIO" val="Аудіо" />
+	<VALUE name="MENU_HEADER_IPOD" val="Ipod" />
+	<VALUE name="VALIDATION_SAVE_FPS" val="Частота кадрів може бути в межах від 5 до 60" />
+	<VALUE name="VALIDATION_SAVE_WIDTH" val="Висота відео має бути не менше за 5 и ділитися на 4" />
+	<VALUE name="VALIDATION_SAVE_HEIGHT" val="Ширина відео має бути не менше за 5 и ділитися на 4" />
+	<VALUE name="VALIDATION_SAVE_BITRATE" val="Бітрейт не має бути рівним нулю" />
+	<VALUE name="VALIDATION_SAVE_CRF_MAIN" val="Коефіцієнт може бути в межах від " />
+	<VALUE name="VALIDATION_SAVE_CRF_TO" val=" до " />
+	<VALUE name="LABEL_VIDEO_SAVE_ENABLE_VIDEO" val="Зберегти відео" />
+	<VALUE name="LABEL_VIDEO_SAVE_ENABLE_AUDIO" val="Зберегти аудіо" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL" val="Якість" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_BITRATE" val="Бітрейт" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_CRF" val="Незмінна якість(crf)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_CQ" val="Незмінна якість(cqp)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CRF" val="Коефіцієнт (crf)" />
+	<VALUE name="LABEL_VIDEO_SAVE_RATE_CONTROL_COEFF_CQP" val="Коефіцієнт (cqp)" />
+	<VALUE name="LABEL_VIDEO_SAVE_FAILED" val="Не вдалось зберегти відео" />
+	<VALUE name="LABEL_PREVIEW_VIDEO" val="Оцінка якості" />
+	<VALUE name="LABEL_VIDEO_SAVE_PREVIEW" val="Попередній перегляд" />
+	<VALUE name="LABEL_LOADING" val="Завантаження" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ORIGINAL" val="Оригінал" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ENCODED" val="Після кодування" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ESTIMATED_FILE_SIZE" val="Очікуваний розмір файлу" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_ESTIMATED_TIME" val="Очікуваний час кодування" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_FAILED" val="Не вдалось завантажити малюнок" />
+	<VALUE name="LABEL_VIDEO_PREVIEW_FAILED_TOOLTIP" val="Можливо, поточний кадр знаходитися за межами фільму" />
+	<VALUE name="MENU_SHOW_TASKS" val="Завдання" />
+	<VALUE name="LABEL_TASK_TAB" val="Завдання" />
+	<VALUE name="LABEL_TASK_TAB_TYPE" val="Тип" />
+	<VALUE name="LABEL_TASK_TAB_TYPE_ENCODING" val="Кодування" />
+	<VALUE name="LABEL_TASK_TAB_TYPE_PANORAMA" val="Панорама" />
+	<VALUE name="LABEL_TASK_TAB_DESCRPTION" val="Ім'я файлу" />
+	<VALUE name="LABEL_TASK_TAB_TIME_LEFT" val="Залишилось" />
+	<VALUE name="LABEL_TASK_TAB_PROGRESS" val="Статус" />
+	<VALUE name="LABEL_SAVE_VIDEO_SUSPENDED" val="Кодування призупинено" />
+	<VALUE name="LABEL_TASK_TAB_ERROR_CANT_LOAD_FILE" val="Помилка. Неможливо відкрити файл " />
+	<VALUE name="LABEL_TASK_TAB_ERROR_CUSTOM" val="Помилка." />
+	<VALUE name="LABEL_TASK_TAB_DONE" val="Завершено." />
+	<VALUE name="LABEL_TASK_TAB_BEGIN" val="В черзі..." />
+	<VALUE name="LABEL_TASK_TAB_CONFIRM_DELETE" val="Ви дійсно хочете відмінити завдання" />
+	<VALUE name="LABEL_YES" val="Так" />
+	<VALUE name="LABEL_NO" val="Ні" />
+	<VALUE name="LABEL_ASK_QUIT" val="Ви впевнені, що хочете вийти?" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING" val="Неможливо записати файл" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_MEMORY" val="Недостатньо вільної оперативної пам'яті" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_HEADER" val="Неправильний заголовок" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_TRAILER" val="Неправильний трейлер" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING_AUDIO_PACKET" val="Невозможно записать аудио пакет" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_WRITTING_VIDEO_PACKET" val="Неможливо записати відео пакет" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_AUDIO_PACKET" val="Неможливо кодувати аудіо пакет" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_VIDEO_PACKET" val="Неможливо кодувати відео пакет" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE" val="Неможливо виділити пам'ять для зображення" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC" val="Неможливо відкрити аудіо кодек" />
+	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC" val="Неможливо відкрити відео кодек" />
+	<VALUE name="LABEL_SAVE_VIDEO_PAUSED" val="Зупинено" />
+</PROPERTIES>
