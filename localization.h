@@ -2,11 +2,11 @@
 #define LOCALIZATION_H_INCLUDED
 
 #include "juce/juce.h"
-
+#include "events.h"
 namespace localization
 {
 
-
+extern EventList AfterLocalizationChnaged;
 extern String MENU_FILE;
 extern String MENU_FILE_OPEN;
 extern String MENU_FILE_SAVE;

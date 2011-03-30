@@ -1,8 +1,10 @@
 ﻿#include "config.h"
 #include "localization.h"
 
+
 namespace localization
 {
+EventList AfterLocalizationChnaged;
 String MENU_FILE;
 String MENU_FILE_OPEN;
 String MENU_FILE_SAVE;
@@ -171,6 +173,10 @@ String current_locale;
             if(name!="en" && current_locale!="en")
                 load_locale("en");
 
+            if(!File("../localization/" + name).isDirectory())
+            {
+                return;
+            }
             PropertiesFile video_editor_localization(File("../localization/" + name + "/translate.xml"),0,PropertiesFile::storeAsXML,0);
 
             if(video_editor_localization.containsKey("MENU_FILE"))
@@ -492,8 +498,10 @@ String current_locale;
             if(video_editor_localization.containsKey("LABEL_SAVE_VIDEO_PAUSED"))
                 LABEL_SAVE_VIDEO_PAUSED = video_editor_localization.getValue("LABEL_SAVE_VIDEO_PAUSED");
 
-            current_locale = name;
 
+
+            current_locale = name;
+            CallEventList(AfterLocalizationChnaged);
     }
 
 }

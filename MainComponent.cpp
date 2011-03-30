@@ -237,19 +237,27 @@ void MainComponent::sliderValueChanged(Slider* slider)
     repaintSlider();
 }
 
+void UpdateGuiAfterLocalizationChangedInMainComponent(void *object)
+{
+    MainComponent * main = (MainComponent *)object;
+    main->tabs_data->setTabName(0,LABEL_MOVIES);
+    main->tabs_data->setTabName(1,LABEL_SOUNDS);
+    main->tabs_data->setTabName(2,LABEL_PICTURES);
+    main->scale_timeline->setTooltip(LABEL_SCALE);
+    main->properties.setValue("lastLocale",localization::current_locale);
+}
 
 MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\config\\config.xml"),0,PropertiesFile::storeAsXML,0)
 {
-    load_locale("en");
-
     mainWindow = mainWindow_;
+    load_locale(properties.getValue("lastLocale","en"));
     recent.restoreFromString(properties.getValue("recent",""));
 
     av_register_all();
     //av_log_set_level(AV_LOG_DEBUG);
     capabilities::InitFormats();
 
-    tasks = new taskTab();
+    tasks = 0;
 
     initImageButton(String("..\\pic\\zoomin.png"),zoomInButton);
     initImageButton(String("..\\pic\\zoomout.png"),zoomOutButton);
@@ -296,10 +304,12 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\c
     timeline_original = 0;
     encodeVideoWindow = 0;
 
+
+    AddEvent(AfterLocalizationChnaged,this,UpdateGuiAfterLocalizationChangedInMainComponent);
+
+
     first = new firstPage(this);
     addAndMakeVisible(first);
-
-
 }
 
 MainComponent::~MainComponent()
@@ -337,8 +347,8 @@ MainComponent::~MainComponent()
         delete encodeVideoWindow;
         encodeVideoWindow = 0;
     }
-
-    delete tasks;
+    if(tasks)
+        delete tasks;
     deleteAllChildren();
     Thread::stopAllThreads(20000);
 }
@@ -833,6 +843,8 @@ bool MainComponent::perform (const InvocationInfo& info)
     break;
     case commandShowTasks:
         {
+            if(!tasks)
+                tasks = new taskTab();
             tasks->add();
         }
     break;
