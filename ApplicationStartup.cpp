@@ -49,7 +49,7 @@ public:
     const String getApplicationVersion()
     {
 
-        return T("0.3");
+        return T("0.3.2");
     }
 
     bool moreThanOneInstanceAllowed()

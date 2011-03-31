@@ -212,6 +212,8 @@ extern String LABEL_SAVE_VIDEO_PAUSED;
 extern String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
 extern String LABEL_SOUNDS;
 extern String LABEL_PICTURES;
+extern String PROGRAM_NAME;
+extern String VISIT_WEB_SITE;
 void load_locale(String name);
 extern String current_locale;
 }

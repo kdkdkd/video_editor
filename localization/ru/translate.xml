@@ -160,4 +160,6 @@
 	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC" val="Невозможно открыть аудио кодек" />
 	<VALUE name="LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC" val="Невозможно открыть видео кодек" />
 	<VALUE name="LABEL_SAVE_VIDEO_PAUSED" val="Остановлено" />
+	<VALUE name="PROGRAM_NAME" val="Видео редактор" />
+	<VALUE name="VISIT_WEB_SITE" val="Посетить Сайт" />
 </PROPERTIES>

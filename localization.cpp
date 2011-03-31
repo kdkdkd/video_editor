@@ -165,6 +165,9 @@ String LABEL_SAVE_VIDEO_ERROR_ENCODING_ALLOC_PICTURE;
 String LABEL_SAVE_VIDEO_ERROR_OPEN_AUDIO_CODEC;
 String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
 String LABEL_SAVE_VIDEO_PAUSED;
+String PROGRAM_NAME;
+String VISIT_WEB_SITE;
+
 String current_locale;
     void load_locale(String name)
     {
@@ -178,7 +181,10 @@ String current_locale;
                 return;
             }
             PropertiesFile video_editor_localization(File("../localization/" + name + "/translate.xml"),0,PropertiesFile::storeAsXML,0);
-
+            if(video_editor_localization.containsKey("PROGRAM_NAME"))
+                PROGRAM_NAME = video_editor_localization.getValue("PROGRAM_NAME");
+            if(video_editor_localization.containsKey("VISIT_WEB_SITE"))
+                VISIT_WEB_SITE = video_editor_localization.getValue("VISIT_WEB_SITE");
             if(video_editor_localization.containsKey("MENU_FILE"))
                 MENU_FILE = video_editor_localization.getValue("MENU_FILE");
             if(video_editor_localization.containsKey("MENU_FILE_OPEN"))

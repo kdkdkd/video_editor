@@ -3,6 +3,45 @@
 #include "PopupWindow.h"
 namespace toolbox
 {
+
+
+
+String get_compilation_date()
+{
+  const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  int year,month,day;
+  char temp [] = __DATE__;
+  unsigned char i;
+
+  year = atoi(temp + 9);
+  *(temp + 6) = 0;
+  day = atoi(temp + 4);
+  *(temp + 3) = 0;
+  for (i = 0; i < 12; i++)
+  {
+    if (!strcmp(temp, months[i]))
+    {
+      month = i + 1;
+      break;
+    }
+  }
+  String res;
+  if(day<10)
+  {
+    res<<0;
+  }
+  res<<day;
+  res<<".";
+  if(month<10)
+  {
+    res<<0;
+  }
+  res<<month;
+  res<<".20";
+  res<<year;
+  return res;
+}
+
 void delete_all_child_components(Component * comp)
 {
     for(int i = 0;i<comp->getNumChildComponents();i++)

@@ -21,6 +21,15 @@ class firstPage:public Component,public ButtonListener
         Image logo;
         Image border;
         void loadLocale();
+        Label * label_video_editor_version;
+        Label * label_ffmpeg_version;
+        Label * label_juce_version;
+        Cloud * cloud_video_editor_version;
+        Cloud * cloud_ffmpeg_version;
+        Cloud * cloud_juce_version;
+        HyperlinkButton* link_video_editor_version;
+        HyperlinkButton* link_ffmpeg_version;
+        HyperlinkButton* link_juce_version;
 
 };
 

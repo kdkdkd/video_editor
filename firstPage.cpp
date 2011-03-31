@@ -1,4 +1,6 @@
 #include "firstPage.h"
+#include "toolbox.h"
+#include "events.h"
 
 class Cloud : public Component
 {
@@ -43,14 +45,14 @@ void firstPage::resized()
 {
     int size = recent_list.size();
     int width = getWidth();
-    int delta = getHeight()/2 - size*20;
-    if(delta<170)
-        delta = 170;
+    int delta = getHeight()/2 - size*35;
+    if(delta<260)
+        delta = 260;
     for(int i = 0;i<size;++i)
     {
         Cloud* current_cloud = recent_list[i];
-        current_cloud->setBounds(width/2 - 150, i*35 + delta,300,35);
-        current_cloud->getChildComponent(0)->setBounds(0,0,300,35);
+        current_cloud->setBounds((i%2) * (270) + width - 780, (i/2)*35 + delta,280,35);
+        current_cloud->getChildComponent(0)->setBounds(0,0,280,35);
     }
     size = localization_buttons.size();
     for(int i = 0;i<size;++i)
@@ -123,6 +125,54 @@ void firstPage::loadLocale()
     }
 }
 
+void UpdateGuiAfterLocalizationChangedInFirstPage(void *object)
+{
+    firstPage * main = (firstPage *)object;
+
+    String text_video_editor_version = String::empty;
+    JUCEApplication *app = JUCEApplication::getInstance();
+    text_video_editor_version<<PROGRAM_NAME;
+    text_video_editor_version<<":  V";
+    text_video_editor_version<<app->getApplicationVersion();
+    text_video_editor_version<<",  ";
+    text_video_editor_version<<toolbox::get_compilation_date();
+
+    main->label_video_editor_version->setText(text_video_editor_version,false);
+    main->label_ffmpeg_version->setText(FFMPEG_STRING,false);
+    main->label_juce_version->setText(JUCE_STRING,false);
+
+
+    if(main->link_ffmpeg_version)
+        delete main->link_ffmpeg_version;
+    main->link_ffmpeg_version = new HyperlinkButton(VISIT_WEB_SITE,URL(FFMPEG_URL));
+
+
+    if(main->link_juce_version)
+        delete main->link_juce_version;
+    main->link_juce_version = new HyperlinkButton(VISIT_WEB_SITE,URL(JUCE_URL));
+
+
+    if(main->link_video_editor_version)
+        delete main->link_video_editor_version;
+    main->link_video_editor_version = new HyperlinkButton(VISIT_WEB_SITE,URL(VIDEO_EDITOR_URL));
+
+    Font font = main->label_video_editor_version->getFont();
+    font.setHeight(12);
+
+    main->link_video_editor_version->setFont(font,false,Justification::centredRight);
+    main->link_video_editor_version->setBounds(250,0,100,40);
+
+    main->cloud_video_editor_version->addAndMakeVisible(main->link_video_editor_version);
+
+
+    main->link_ffmpeg_version->setFont(font,false,Justification::centredRight);
+    main->link_ffmpeg_version->setBounds(250,0,100,40);
+    main->cloud_ffmpeg_version->addAndMakeVisible(main->link_ffmpeg_version);
+
+    main->link_juce_version->setFont(font,false,Justification::centredRight);
+    main->link_juce_version->setBounds(250,0,100,40);
+    main->cloud_juce_version->addAndMakeVisible(main->link_juce_version);
+}
 
 firstPage::firstPage(MainComponent* main)
 {
@@ -147,6 +197,40 @@ firstPage::firstPage(MainComponent* main)
     }
 
     loadLocale();
+
+
+    label_video_editor_version = new Label();
+    label_ffmpeg_version = new Label();
+    label_juce_version = new Label();
+    link_video_editor_version = 0;
+    link_ffmpeg_version = 0;
+    link_juce_version = 0;
+    cloud_video_editor_version = new Cloud(border);
+    cloud_ffmpeg_version = new Cloud(border);
+    cloud_juce_version = new Cloud(border);
+    UpdateGuiAfterLocalizationChangedInFirstPage(this);
+    AddEvent(AfterLocalizationChnaged,this,UpdateGuiAfterLocalizationChangedInFirstPage);
+
+    Font font = label_video_editor_version->getFont();
+    font.setHeight(12);
+    label_video_editor_version->setFont(font);
+    label_ffmpeg_version->setFont(font);
+    label_juce_version->setFont(font);
+    cloud_video_editor_version->addAndMakeVisible(label_video_editor_version);
+    cloud_ffmpeg_version->addAndMakeVisible(label_ffmpeg_version);
+    cloud_juce_version->addAndMakeVisible(label_juce_version);
+    addAndMakeVisible(cloud_video_editor_version);
+    addAndMakeVisible(cloud_ffmpeg_version);
+    addAndMakeVisible(cloud_juce_version);
+    cloud_video_editor_version->setBounds(50,70,400,40);
+    cloud_ffmpeg_version->setBounds(50,110,400,40);
+    cloud_juce_version->setBounds(50,150,400,40);
+    label_video_editor_version->setBounds(40,0,200,40);
+    label_ffmpeg_version->setBounds(40,0,200,40);
+    label_juce_version->setBounds(40,0,200,40);
+
+
+
 
 
 }

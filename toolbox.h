@@ -1,8 +1,12 @@
 #ifndef TOOLBOX_H_INCLUDED
 #define TOOLBOX_H_INCLUDED
 #include "juce/juce.h"
+#include <string.h>
+#include <stdlib.h>
 namespace toolbox
 {
+
+String get_compilation_date();
 String format_duration(double duration);
 String format_duration_small(double duration);
 template< typename T > T GCD(T a, T b)
