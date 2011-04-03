@@ -1,5 +1,6 @@
-#include "stream.h"
 #include "config.h"
+#include "stream.h"
+
 
 CriticalSection avcodec_critical;
 
