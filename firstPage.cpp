@@ -233,6 +233,12 @@ firstPage::firstPage(MainComponent* main)
     Sound *sound = new Sound();
     String file("C:\\1.mov");
     sound->Load(file);
+    sound->GotoSecondAndRead(1);
+    for(int i = 0;i<30;++i)
+    {
+        sound->ReadFrame();
+    }
+
 
 
 }

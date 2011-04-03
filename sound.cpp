@@ -68,12 +68,7 @@ bool Sound::Load(String &filename)
     if(pCodec==NULL)
         return false; // Codec not found
 
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-    /*if(pCodec->capabilities & CODEC_CAP_TRUNCATED)
-        pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;*/
 
-    // Open codec
     {
         const ScopedLock myScopedLock (avcodec_critical);
         if(avcodec_open(pCodecCtx, pCodec)<0)
@@ -89,15 +84,78 @@ bool Sound::Load(String &filename)
         int duration_denum = pStream->time_base.den;
         duration = (double)duration_num / (double)duration_denum;
     }
-
-
+    sound_buff_size = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+    sound_buff = new short[sound_buff_size];
     loaded = true;
     return loaded;
 }
 
 AVPacket* Sound::ReadFrame()
 {
-  return new AVPacket();
+    AVPacket* packet = new AVPacket();
+
+
+
+    bool ok = false;
+    while(true)
+    {
+        if(av_read_frame( pFormatCtx, packet ) < 0)
+        {
+            ok = false;
+            break;
+        }
+        if(packet->stream_index == videoStream)
+        {
+            ok = true;
+            break;
+        }
+    }
+
+    if(ok)
+    {
+
+        while (packet->size>0)
+        {
+
+
+
+                if(packet && sound_buff_size < FFMAX(packet->size*sizeof(*sound_buff), AVCODEC_MAX_AUDIO_FRAME_SIZE))
+                {
+                    sound_buff_size = FFMAX(packet->size*sizeof(*sound_buff), AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                    delete []sound_buff;
+                    sound_buff = new short[sound_buff_size];
+                }
+                int decoded_data_size= sound_buff_size;
+                int ret = avcodec_decode_audio3 ( pCodecCtx, sound_buff, &decoded_data_size, packet);
+
+                if(ret < 0)
+                {
+                    av_free_packet(packet);
+                    delete packet;
+                    return 0;
+                }
+                packet->data += ret;
+                packet->size -= ret;
+                if (decoded_data_size <= 0)
+                {
+                    continue;
+                }
+
+                for(int i = 0;i<ret;++i)
+                {
+                    printf("%d ",sound_buff[i]);
+                }
+
+
+        }
+        current = ToSeconds(packet->dts - pStream->start_time);
+        return packet;
+
+
+    }
+    av_free_packet(packet);
+    delete packet;
+    return 0;
 }
 bool Sound::IsKeyFrame()
 {
@@ -106,4 +164,38 @@ bool Sound::IsKeyFrame()
 void Sound::DecodeFrame()
 {
 
+}
+
+void Sound::Dispose()
+{
+    const ScopedLock myScopedLock (avcodec_critical);
+    if(loaded)
+    {
+
+        delete []pDataBuffer;
+
+        avcodec_close(pCodecCtx);
+
+        av_close_input_stream(pFormatCtx);
+
+        delete fs;
+
+        delete ByteIOCtx;
+
+        delete []sound_buff;
+        sound_buff_size = 0;
+    }
+
+
+    loaded = false;
+}
+
+Sound::Sound()
+{
+    sound_buff_size = 0;
+    loaded = false;
+}
+Sound::~Sound()
+{
+    Dispose();
 }

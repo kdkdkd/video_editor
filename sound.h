@@ -29,7 +29,11 @@ class Sound: public Stream
     void DecodeFrame();
 
     bool loaded;
-
+    void Dispose();
+    Sound();
+    ~Sound();
+    short *sound_buff;
+    int sound_buff_size;
 };
 
 
