@@ -125,9 +125,10 @@ AVPacket* Sound::ReadFrame()
                     delete []sound_buff;
                     sound_buff = new short[sound_buff_size];
                 }
-                int decoded_data_size= sound_buff_size;
+                int decoded_data_size = sound_buff_size;
                 int ret = avcodec_decode_audio3 ( pCodecCtx, sound_buff, &decoded_data_size, packet);
-
+                current_buffer_length = ret;
+                current_buffer_position = 0;
                 if(ret < 0)
                 {
                     av_free_packet(packet);
@@ -141,12 +142,6 @@ AVPacket* Sound::ReadFrame()
                     continue;
                 }
 
-                for(int i = 0;i<ret;++i)
-                {
-                    printf("%d ",sound_buff[i]);
-                }
-
-
         }
         current = ToSeconds(packet->dts - pStream->start_time);
         return packet;
@@ -157,10 +152,25 @@ AVPacket* Sound::ReadFrame()
     delete packet;
     return 0;
 }
+
+bool Sound::ReadNextByte(short *data)
+{
+    if(current_buffer_position>=current_buffer_length)
+    {
+        if(!ReadFrame())
+            return false;
+    }
+
+    *data = sound_buff[current_buffer_position];
+    current_buffer_position++;
+    return true;
+}
+
 bool Sound::IsKeyFrame()
 {
     return true;
 }
+
 void Sound::DecodeFrame()
 {
 
@@ -186,13 +196,16 @@ void Sound::Dispose()
         sound_buff_size = 0;
     }
 
-
+    current_buffer_length = 0;
+    current_buffer_position = -1;
     loaded = false;
 }
 
 Sound::Sound()
 {
     sound_buff_size = 0;
+    current_buffer_length = 0;
+    current_buffer_position = -1;
     loaded = false;
 }
 Sound::~Sound()

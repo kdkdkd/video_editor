@@ -310,6 +310,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\c
 
     first = new firstPage(this);
     addAndMakeVisible(first);
+    init_sound();
 }
 
 MainComponent::~MainComponent()
@@ -858,7 +859,6 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandOpen:
     {
-        init_sound();
         FileChooser fc (DIALOG_CHOOSE_FILE_TO_OPEN,File::getCurrentWorkingDirectory(),"*",true);
         if (fc.browseForFileToOpen())
         {

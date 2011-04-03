@@ -34,6 +34,10 @@ class Sound: public Stream
     ~Sound();
     short *sound_buff;
     int sound_buff_size;
+
+    int current_buffer_length;
+    int current_buffer_position;
+    bool ReadNextByte(short *data);
 };
 
 

@@ -11,7 +11,10 @@ bool SineWaveVoice::canPlaySound (SynthesiserSound* sound)
 {
     return dynamic_cast <SineWaveSound*> (sound) != 0;
 }
-
+void SineWaveVoice::AddSound(Sound *sound)
+{
+    this->sound = sound;
+}
 void SineWaveVoice::startNote (const int midiNoteNumber, const float velocity, SynthesiserSound* /*sound*/, const int /*currentPitchWheelPosition*/)
 {
     currentAngle = 0.0;
@@ -86,9 +89,13 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
             while (--numSamples >= 0)
             {
                 const float currentSample = (float) (sin (currentAngle) * level);
+                short res = 0;
+                sound->ReadNextByte(&res);
+
 
                 for (int i = outputBuffer.getNumChannels(); --i >= 0;)
-                    *outputBuffer.getSampleData (i, startSample) += currentSample;
+                    *outputBuffer.getSampleData (i, startSample) += ((float)res)*0.0001;
+                    //*outputBuffer.getSampleData (i, startSample) += currentSample;
 
                 currentAngle += angleDelta;
                 ++startSample;
@@ -135,7 +142,7 @@ void init_sound()
     audioSourcePlayer.setSource (&synthAudioSource);
     sound_manager.addAudioCallback (&audioSourcePlayer);
 
-    //voice.startNote(80,1.0,0,0);
+    voice.startNote(80,1.0,0,0);
 
 }
 
