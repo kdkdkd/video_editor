@@ -44,7 +44,7 @@ int Stream::FindKeyFrame(double back, double dest, bool accurate)
                     return keyframe;
                 break;
             }
-            if(pFrame->key_frame || timestamp_new==0)
+            if(IsKeyFrame() || timestamp_new==0)
             {
                 keyframe = timestamp_new;
             }
@@ -146,4 +146,15 @@ bool Stream::GoBack(int frames)
         SkipFrame();
     }
     return true;
+}
+
+
+int Stream::ToInternalTime(double seconds)
+{
+    return (int)(seconds * ratio_to_internal);
+}
+
+double Stream::ToSeconds(int internals)
+{
+    return ((double)(internals)) * ratio_to_seconds;
 }

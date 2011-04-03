@@ -1223,6 +1223,11 @@ void encodeVideoComponent::buttonClicked (Button* buttonThatWasClicked)
         Movie::Info info = GetMovieInfo();
         AddEncodingTask(timeline,info);
 
+
+        if(!mainWindow->tasks)
+        {
+            mainWindow->tasks = new taskTab();
+        }
         if(!mainWindow->tasks->isVisible)
             mainWindow->tasks->add();
 

@@ -1,6 +1,7 @@
 #ifndef MOVIE_H
 #define	MOVIE_H
 #include "juce/juce.h"
+#include "stream.h"
 extern CriticalSection avcodec_critical;
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -12,7 +13,7 @@ extern "C" {
 
 #include <vector>
 using namespace std;
-class Movie
+class Movie: public Stream
 {
 private:
     AVProbeData *probeData;
@@ -24,30 +25,22 @@ private:
     uint8_t         *buffer;
     SwsContext *img_convert_ctx;
 
-    int videoStream;
 
-    int FindKeyFrame(double back, double dest, bool accurate = true);
-    double ratio_to_internal;
-    double ratio_to_seconds;
-    bool SeekToInternal(int frame);
 
 public:
     AVFrame         *pFrame;
     AVFrame         *pFrameRGB;
-    AVCodecContext  *pCodecCtx;
-    AVCodec         *pCodec;
-    AVStream        *pStream;
 
-    AVFormatContext *pFormatCtx;
+    bool IsKeyFrame();
+
+
     bool loaded;
     Image *image;
 
     Image *image_preview;
     Image::BitmapData *bitmapData;
 
-    double duration;
-    double current;
-    double fps;
+
 
     int width;
     int height;
@@ -60,19 +53,15 @@ public:
 
     Movie();
 
-    int ToInternalTime(double seconds);
-    double ToSeconds(int internals);
+
 
     bool Load(String &filename, bool soft);
     void Dispose();
     ~Movie();
     AVPacket* ReadFrame();
-    bool SkipFrame();
     void DecodeFrame();
-    bool ReadAndDecodeFrame();
-    bool GotoRatioAndRead(double ratio,bool decode = true, bool accurate = true);
-    bool GotoSecondAndRead(double dest,bool decode = true, bool accurate = true);
-    bool GoBack(int frames);
+
+
     Image * GeneratePreview();
 
     class VideoInfo
