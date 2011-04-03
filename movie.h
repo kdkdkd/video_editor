@@ -2,7 +2,7 @@
 #define	MOVIE_H
 #include "juce/juce.h"
 #include "stream.h"
-extern CriticalSection avcodec_critical;
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -44,11 +44,11 @@ public:
     int width;
     int height;
 
-    String filename;
+
 
     FileInputStream *fs;
 
-    double file_size;
+
 
     Movie();
 

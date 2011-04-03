@@ -7,6 +7,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 }
+extern CriticalSection avcodec_critical;
 
 class Stream
 {
@@ -19,7 +20,8 @@ public:
     AVCodec         *pCodec;
     AVStream        *pStream;
     AVFormatContext *pFormatCtx;
-
+    String filename;
+    double file_size;
     double duration;
     double current;
     double fps;
@@ -41,4 +43,7 @@ public:
     virtual void DecodeFrame() = 0;
 
 };
+
+int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize);
+int64_t _Seek(void* cookie, int64_t offset, int whence);
 #endif

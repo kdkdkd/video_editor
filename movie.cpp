@@ -11,40 +11,10 @@ Movie::Movie()
     image_preview=new Image();
     info = 0;
 };
-CriticalSection avcodec_critical;
 
 
-int _ReadPacket(void* cookie, uint8_t* buffer, int bufferSize)
-{
-    FileInputStream* fs = reinterpret_cast<FileInputStream*>(cookie);
-    int res = fs->read(buffer,bufferSize);
-    return res;
-}
-
-int64_t _Seek(void* cookie, int64_t offset, int whence)
-{
-    FileInputStream* fs = reinterpret_cast<FileInputStream*>(cookie);
-    int64_t real_offset = 0;
-    switch(whence)
-    {
-    case AVSEEK_SIZE:
-        return fs->getFile().getSize();
-    case SEEK_SET:
-        real_offset = offset;
-        break;
-    case SEEK_CUR:
-        real_offset = offset + fs->getPosition();
-        break;
-    case SEEK_END:
-        real_offset = fs->getFile().getSize() + offset - 1 ;
-        break;
-
-    }
 
 
-    fs->setPosition(offset);
-    return offset;
-}
 
 bool Movie::Load(String &filename, bool soft)
 {

@@ -1,6 +1,7 @@
 #ifndef FIRST_PAGE_H_INCLUDED
 #define FIRST_PAGE_H_INCLUDED
 #include "config.h"
+#include "sound.h"
 #include "MainComponent.h"
 #include "juce/juce.h"
 

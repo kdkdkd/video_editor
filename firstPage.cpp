@@ -230,7 +230,9 @@ firstPage::firstPage(MainComponent* main)
     label_juce_version->setBounds(40,0,200,40);
 
 
-
+    Sound *sound = new Sound();
+    String file("C:\\1.mov");
+    sound->Load(file);
 
 
 }
