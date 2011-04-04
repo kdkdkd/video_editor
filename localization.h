@@ -214,8 +214,13 @@ extern String LABEL_SOUNDS;
 extern String LABEL_PICTURES;
 extern String PROGRAM_NAME;
 extern String VISIT_WEB_SITE;
+extern String LABEL_EMPTY_PROJECT;
+
 void load_locale(String name);
 extern String current_locale;
+
+
+
 }
 
 

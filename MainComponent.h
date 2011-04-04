@@ -157,6 +157,7 @@ public:
     firstPage* first;
     PropertiesFile properties;
     RecentlyOpenedFilesList recent;
+    void startEmpty();
 
 };
 

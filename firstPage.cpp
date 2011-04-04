@@ -45,13 +45,15 @@ void firstPage::resized()
 {
     int size = recent_list.size();
     int width = getWidth();
-    int delta = getHeight()/2 - size*35;
-    if(delta<260)
-        delta = 260;
+    int delta = 350;
+    int d = 2*(width - 780)/3;
+    open_video->setBounds(d,delta - 70-20,280,35);
+    empty_video->setBounds(d + 270,delta - 70-20,280,35);
+    recent_video_list->setBounds(d + 135,delta - 35-10,280,35);
     for(int i = 0;i<size;++i)
     {
         Cloud* current_cloud = recent_list[i];
-        current_cloud->setBounds((i%2) * (270) + width - 780, (i/2)*35 + delta,280,35);
+        current_cloud->setBounds((i%2) * (270) + d, (i/2)*35 + delta,280,35);
         current_cloud->getChildComponent(0)->setBounds(0,0,280,35);
     }
     size = localization_buttons.size();
@@ -172,6 +174,117 @@ void UpdateGuiAfterLocalizationChangedInFirstPage(void *object)
     main->link_juce_version->setFont(font,false,Justification::centredRight);
     main->link_juce_version->setBounds(250,0,100,40);
     main->cloud_juce_version->addAndMakeVisible(main->link_juce_version);
+
+
+        /* Create open new button */
+        main->open_video->deleteAllChildren();
+
+        DrawableButton* open_file_button = new DrawableButton("open_file", DrawableButton::ImageRaw);
+        open_file_button->setBounds(30,10,250,25);
+        open_file_button->addListener(main);
+        open_file_button->setMouseCursor(MouseCursor::PointingHandCursor);
+        main->open_video->addAndMakeVisible(open_file_button);
+
+        DrawableImage normal_image,over_image;
+
+        Image pic = ImageCache::getFromFile(String("../pic/firstTab/folder-open-film.png"));
+        normal_image.setImage(pic);
+
+        normal_image.setOpacity(0.8);
+        over_image.setImage(pic);
+        DrawableComposite normal,over;
+        RelativeParallelogram newBounds(Rectangle<float>(30,0,215,13));
+
+        normal.setBoundingBox(newBounds);
+
+        DrawableText normal_text,over_text;
+        Colour textColour;
+        textColour = Colour(main->findColour(0x1001f00));
+
+        over_text.setColour(textColour.darker(3.5f));
+        normal_text.setColour(textColour);
+
+        normal_text.setBoundingBox(newBounds);
+        over_text.setBoundingBox(newBounds);
+
+        normal_text.setText(MENU_FILE_OPEN);
+        over_text.setText(MENU_FILE_OPEN);
+        normal.insertDrawable(normal_text);
+        over.insertDrawable(over_text);
+
+
+
+        normal.insertDrawable(normal_image);
+        over.insertDrawable(over_image);
+
+
+        open_file_button->setImages(&normal, &over, &normal);
+
+        /* Create open recent button */
+        main->recent_video_list->deleteAllChildren();
+        Label *recent_video_list_label = new Label();
+        recent_video_list_label->setText(MENU_RECENT + " :",true);
+        Font font_label = recent_video_list_label->getFont();
+        font_label.setHeight(14);
+        recent_video_list_label->setFont(font_label);
+        recent_video_list_label->setJustificationType(Justification::centred);
+        recent_video_list_label->setBounds(30,0,230,35);
+        main->recent_video_list->addAndMakeVisible(recent_video_list_label);
+        Image repeat = ImageCache::getFromFile(String("../pic/firstTab/arrow-repeat.png"));
+        DrawableButton * repeat_button = new DrawableButton(String::empty, DrawableButton::ImageRaw);
+        repeat_button->setBounds(30,9,16,16);
+        DrawableImage repeat_image;
+        repeat_image.setImage(repeat);
+        repeat_button->setImages(&repeat_image,&repeat_image,&repeat_image);
+        main->recent_video_list->addAndMakeVisible(repeat_button);
+
+
+        /* Create open empty button */
+        main->empty_video->deleteAllChildren();
+
+        DrawableButton* open_empty_button = new DrawableButton("open_empty", DrawableButton::ImageRaw);
+        open_empty_button->setBounds(30,10,250,25);
+        open_empty_button->addListener(main);
+        open_empty_button->setMouseCursor(MouseCursor::PointingHandCursor);
+        main->empty_video->addAndMakeVisible(open_empty_button);
+
+        DrawableImage normal_image_empty,over_image_empty;
+
+        Image pic_empty = ImageCache::getFromFile(String("../pic/firstTab/folder-open.png"));
+        normal_image_empty.setImage(pic_empty);
+
+        normal_image_empty.setOpacity(0.8);
+        over_image_empty.setImage(pic_empty);
+        DrawableComposite normal_empty,over_empty;
+        RelativeParallelogram newBounds_empty(Rectangle<float>(30,0,215,13));
+
+        normal_empty.setBoundingBox(newBounds_empty);
+
+        DrawableText normal_text_empty,over_text_empty;
+        Colour textColour_empty;
+        textColour_empty = Colour(main->findColour(0x1001f00));
+
+        over_text_empty.setColour(textColour_empty.darker(3.5f));
+        normal_text_empty.setColour(textColour_empty);
+
+        normal_text_empty.setBoundingBox(newBounds_empty);
+        over_text_empty.setBoundingBox(newBounds_empty);
+
+        normal_text_empty.setText(LABEL_EMPTY_PROJECT);
+        over_text_empty.setText(LABEL_EMPTY_PROJECT);
+        normal_empty.insertDrawable(normal_text_empty);
+        over_empty.insertDrawable(over_text_empty);
+
+
+
+        normal_empty.insertDrawable(normal_image_empty);
+        over_empty.insertDrawable(over_image_empty);
+
+
+        open_empty_button->setImages(&normal_empty, &over_empty, &normal_empty);
+
+
+
 }
 
 firstPage::firstPage(MainComponent* main)
@@ -208,6 +321,9 @@ firstPage::firstPage(MainComponent* main)
     cloud_video_editor_version = new Cloud(border);
     cloud_ffmpeg_version = new Cloud(border);
     cloud_juce_version = new Cloud(border);
+    open_video = new Cloud(border);
+    empty_video = new Cloud(border);
+    recent_video_list = new Cloud(border);
     UpdateGuiAfterLocalizationChangedInFirstPage(this);
     AddEvent(AfterLocalizationChnaged,this,UpdateGuiAfterLocalizationChangedInFirstPage);
 
@@ -230,10 +346,16 @@ firstPage::firstPage(MainComponent* main)
     label_juce_version->setBounds(40,0,200,40);
 
 
-    Sound *sound = new Sound();
+
+
+    addAndMakeVisible(open_video);
+    addAndMakeVisible(empty_video);
+    addAndMakeVisible(recent_video_list);
+
+    /*Sound *sound = new Sound();
     String file("C:\\1.mov");
     sound->Load(file);
-    voice.AddSound(sound);
+    voice.AddSound(sound);*/
 
     /*sound->GotoSecondAndRead(1);
     while(true)
@@ -269,6 +391,12 @@ void firstPage::buttonClicked(Button* button)
 
         main->mainWindow->setMenuBar(0);
         main->mainWindow->setMenuBar(main);
+    }else if(name == "open_file")
+    {
+        main->invokeDirectly(main->commandOpen,false);
+    }else if(name == "open_empty")
+    {
+        main->startEmpty();
     }
 }
 

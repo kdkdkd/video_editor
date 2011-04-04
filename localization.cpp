@@ -167,6 +167,7 @@ String LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC;
 String LABEL_SAVE_VIDEO_PAUSED;
 String PROGRAM_NAME;
 String VISIT_WEB_SITE;
+String LABEL_EMPTY_PROJECT;
 
 String current_locale;
     void load_locale(String name)
@@ -503,6 +504,8 @@ String current_locale;
                 LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC = video_editor_localization.getValue("LABEL_SAVE_VIDEO_ERROR_OPEN_VIDEO_CODEC");
             if(video_editor_localization.containsKey("LABEL_SAVE_VIDEO_PAUSED"))
                 LABEL_SAVE_VIDEO_PAUSED = video_editor_localization.getValue("LABEL_SAVE_VIDEO_PAUSED");
+            if(video_editor_localization.containsKey("LABEL_EMPTY_PROJECT"))
+                LABEL_EMPTY_PROJECT = video_editor_localization.getValue("LABEL_EMPTY_PROJECT");
 
 
 

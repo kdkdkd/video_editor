@@ -28,6 +28,10 @@ class firstPage:public Component,public ButtonListener
         Cloud * cloud_video_editor_version;
         Cloud * cloud_ffmpeg_version;
         Cloud * cloud_juce_version;
+
+        Cloud * open_video;
+        Cloud * empty_video;
+        Cloud * recent_video_list;
         HyperlinkButton* link_video_editor_version;
         HyperlinkButton* link_ffmpeg_version;
         HyperlinkButton* link_juce_version;

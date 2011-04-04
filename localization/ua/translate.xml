@@ -162,4 +162,5 @@
 	<VALUE name="LABEL_SAVE_VIDEO_PAUSED" val="Зупинено" />
 	<VALUE name="PROGRAM_NAME" val="Відео редактор" />
 	<VALUE name="VISIT_WEB_SITE" val="Відвідати Сайт" />
+	<VALUE name="LABEL_EMPTY_PROJECT" val="Відкрити порожній" />
 </PROPERTIES>

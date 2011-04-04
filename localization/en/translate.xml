@@ -162,4 +162,6 @@
 	<VALUE name="LABEL_SAVE_VIDEO_PAUSED" val="Suspended" />
 	<VALUE name="PROGRAM_NAME" val="Video Editor" />
 	<VALUE name="VISIT_WEB_SITE" val="Visit Website" />
+	<VALUE name="LABEL_EMPTY_PROJECT" val="Open empty" />
+	
 </PROPERTIES>

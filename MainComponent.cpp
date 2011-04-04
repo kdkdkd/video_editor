@@ -39,6 +39,20 @@ void MainComponent::changeFileName(String new_filename)
     }
 }
 
+void MainComponent::startEmpty()
+{
+    timeline->loaded = true;
+    if(first)
+    {
+        delete first;
+        first = 0;
+    }
+    SetVisibleButtons(true);
+    sliderValueChanged(scale_timeline);
+    ResizeViewport();
+    repaint();
+}
+
 void MainComponent::AddMovieToList(Movie*movie)
 {
     Component *preview = new Component();
