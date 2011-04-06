@@ -136,7 +136,7 @@ void encodeVideoComponent::recalculateBitrate()
     case 100:
     {
         int bit_rate_max = 0;
-        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); ++it)
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); ++it)
         {
             int bit_rate = (*it)->movie->GetMovieInfo()->bit_rate;
             if((*it)->movie->GetMovieInfo()->videos.size()>0)
@@ -233,7 +233,7 @@ void encodeVideoComponent::textEditorTextChanged(TextEditor& editor)
 }
 File encodeVideoComponent::getCurrentFileName()
 {
-    String filename = File(timeline->intervals[0]->movie->filename).getFileNameWithoutExtension() + Time::getCurrentTime().formatted("_%Y%m%d_%H%M%S.avi");
+    String filename = File(timeline->intervals_video[0]->movie->filename).getFileNameWithoutExtension() + Time::getCurrentTime().formatted("_%Y%m%d_%H%M%S.avi");
     return File(File::addTrailingSeparator(File::getCurrentWorkingDirectory().getFullPathName()) + filename);
 }
 encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
@@ -509,7 +509,7 @@ encodeVideoComponent::encodeVideoComponent (MainComponent* mainWindow)
     passList->addItem(LABEL_VIDEO_SAVE_PASS_TWO,2);
 
     /* ~display all formats and codecs */
-    Movie::Info *movie_info = timeline->intervals.front()->movie->GetMovieInfo();
+    Movie::Info *movie_info = timeline->intervals_video.front()->movie->GetMovieInfo();
     selectByMovieInfo(movie_info);
 
 
@@ -785,7 +785,7 @@ void encodeVideoComponent::paint (Graphics& g)
         g.setTiledImageFill (backgroundFill, 0, 0, 1.0f);
         g.fillAll();
     }
-    g.drawImageWithin(*(timeline->intervals[0]->preview),20,10,128,96 ,RectanglePlacement::centred,false);
+    g.drawImageWithin(*(timeline->intervals_video[0]->preview),20,10,128,96 ,RectanglePlacement::centred,false);
 
 
 }
@@ -1057,7 +1057,7 @@ void encodeVideoComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             int max_pixel = 0;
             int max_pixel_width = 0;
             int max_pixel_height = 0;
-            for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); ++it)
+            for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); ++it)
             {
                 int current_pixel_width = (*it)->movie->width;
                 int current_pixel_height = (*it)->movie->height;

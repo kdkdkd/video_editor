@@ -16,7 +16,9 @@
 void MainComponent::changeFileName(String new_filename)
 {
     bool loaded_local = false;
-    Movie * movie = timeline->Load(new_filename,false);
+    Movie * movie = 0;
+    Sound * sound = 0;
+    timeline->Load(new_filename,false,movie,sound);
     loaded_local = movie;
     if(loaded_local)
     {
@@ -515,7 +517,7 @@ void MainComponent::paint (Graphics& g)
         //List of intervals
 
 
-        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); it++)
         {
             double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
             if(start1<=end&&end1>=start)
@@ -691,9 +693,9 @@ void MainComponent::mouseMoveReaction()
         current_drag_x = mouse_x;
         current_drag_y = mouse_y;
         if(!shouldDrawDragImageWhenOver())
-            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),0);
         current_drag_x = -1;
-        for(vector<Timeline::Interval*>::iterator it = timeline->intervals.begin(); it != timeline->intervals.end(); it++)
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it != timeline->intervals_video.end(); it++)
         {
             if((*it)->selected)
                 (*it)->color = Timeline::Interval::select;
@@ -725,7 +727,7 @@ void MainComponent::mouseDown (const MouseEvent& e)
             current_drag_x = mouse_x;
             current_drag_y = mouse_y;
             if(!shouldDrawDragImageWhenOver())
-                interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x));
+                interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),0);
             if(interval && interval->selected)
             {
                 interval->selected = false;
@@ -840,7 +842,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         if(interval)
         {
             StopVideo();
-            if(timeline->intervals.size()==1 && encodeVideoWindow)
+            if(timeline->intervals_video.size()==1 && encodeVideoWindow)
             {
                 encodeVideoWindow->closeButtonPressed();
             }
@@ -982,10 +984,10 @@ bool MainComponent::perform (const InvocationInfo& info)
     case commandSaveFrame:
     {
         StopVideo();
-        if(isVideoReady() && timeline->GetCurrentInterval())
+        if(isVideoReady() && timeline->GetCurrentInterval(0))
         {
 
-            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,timeline->GetCurrentInterval()->movie->filename + ".jpg","*.jpg",true);
+            FileChooser fc (DIALOG_CHOOSE_SCREENSHOT_TO_SAVE,timeline->GetCurrentInterval(0)->movie->filename + ".jpg","*.jpg",true);
             if (fc.browseForFileToSave(true))
             {
                 File chosenFile = fc.getResult();
@@ -1117,7 +1119,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         break;
     case commandSplit:
         result.setInfo (LABEL_SPLIT, LABEL_SPLIT, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.setActive(isVideoReady() && timeline->current_interval && !timeline->IsNearMovieBoundary());
+        result.setActive(isVideoReady() && (timeline->current_interval_video || timeline->current_interval_audio) && !timeline->IsNearBoundary(0));
         break;
     case commandRemoveSpaces:
         result.setInfo (LABEL_REMOVE_SPACES, LABEL_REMOVE_SPACES, MENU_FILE, ApplicationCommandInfo::dontTriggerVisualFeedback);
@@ -1139,7 +1141,7 @@ void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo&
         break;
     case commandSaveFrame:
         result.setInfo (MENU_SAVE_FRAME, MENU_SAVE_FRAME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
-        result.setActive(isVideoReady() && timeline->GetCurrentInterval());
+        result.setActive(isVideoReady() && timeline->GetCurrentInterval(0));
         break;
     case commandJump:
         result.setInfo (LABEL_SPECIFIC_TIME, LABEL_SPECIFIC_TIME, MENU_FRAME, ApplicationCommandInfo::dontTriggerVisualFeedback);
@@ -1206,11 +1208,11 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         {
             Movie * movie = timeline_original->movies[index];
             Timeline::Interval *current_interval = current_interval = new Timeline::Interval(movie,pos,movie->image_preview);
-            timeline_original->InsertIntervalIn(current_interval);
+            timeline_original->InsertIntervalIn(current_interval,0);
         }
         else if(description.startsWith("i"))
         {
-            Timeline::Interval *current_interval = timeline_original->intervals[index];
+            Timeline::Interval *current_interval = timeline_original->intervals_video[index];
             if(shouldDrawDragImageWhenOver())
                 pos = -2.0;
 
@@ -1224,7 +1226,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         }
         current_drag_x = -1;
         delete timeline;
-        if(timeline_original->intervals.size()==0 && encodeVideoWindow)
+        if(timeline_original->intervals_video.size()==0 && encodeVideoWindow)
         {
             encodeVideoWindow->closeButtonPressed();
         }
@@ -1267,11 +1269,11 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
         {
             Movie * movie = timeline_original->movies[value];
             Timeline::Interval *current_interval = new Timeline::Interval(movie,GetPositionSecond(current_drag_x),movie->image_preview);
-            timeline = timeline_original->PreviewInsertIntervalIn(current_interval);
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,0);
         }
         else if(desc.startsWith("i"))
         {
-            Timeline::Interval *current_interval = timeline_original->intervals[value];
+            Timeline::Interval *current_interval = timeline_original->intervals_video[value];
             if(timeline)
                 dragIntervalOffset = (GetPositionSecond(current_drag_x) - current_interval->absolute_start);
             double pos = (shouldDrawDragImageWhenOver())?-2.0:GetPositionSecond(current_drag_x);
@@ -1306,10 +1308,10 @@ void MainComponent::mouseDrag (const MouseEvent& e)
         if(!shouldDrawDragImageWhenOver())
         {
             double second = GetPositionSecond();
-            int number = timeline->FindNumberIntervalBySecond(second);
+            int number = timeline->FindNumberIntervalBySecond(second,0);
             if(number>=0)
             {
-                startDragging(String("i") + String(number),this,*timeline->intervals[number]->movie->image_preview);
+                startDragging(String("i") + String(number),this,*timeline->intervals_video[number]->movie->image_preview);
                 StopVideo();
             }
         }

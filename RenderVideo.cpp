@@ -944,7 +944,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
     int dstW_candidate = video_info.width;
     int dstH_candidate = video_info.height;
 
-    if(!timeline->current_interval)
+    if(!timeline->current_interval_video)
     {
         memset(pict->data[0],0,pict->linesize[0] * dstH_candidate);
         memset(pict->data[1],128,(dstH_candidate/2) * pict->linesize[1]);
@@ -953,7 +953,7 @@ static void fill_frame(AVFrame *pict, int frame_index, const Movie::Info& info, 
         rc->end_writing = !timeline->SkipFrame();
         return;
     }
-    Movie * movie = timeline->current_interval->movie;
+    Movie * movie = timeline->current_interval_video->movie;
 
     int srcW_candidate = movie->width;
     int srcH_candidate = movie->height;

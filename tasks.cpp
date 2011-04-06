@@ -79,7 +79,7 @@ void task::run()
 {
     if(type == Encoding)
     {
-        for(vector<Timeline::Interval *>::iterator it = timeline->intervals.begin(); it!=timeline->intervals.end(); it++)
+        for(vector<Timeline::Interval *>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); it++)
         {
             Movie * movie = (*it)->movie;
             if(!movie->loaded)
