@@ -34,24 +34,26 @@ void videoPreviewComponent::run()
         const MessageManagerLock mml (Thread::getCurrentThread());
         if (! mml.lockWasGained())
             return;
-        if(!parent->timeline->current_interval)
+        if(!parent->timeline->current_interval_video)
             return;
         info_copy = parent->GetMovieInfo();
-        info_copy.videos[0].fps = parent->timeline->current_interval->movie->fps;
+        info_copy.videos[0].fps = parent->timeline->current_interval_video->movie->fps;
         info_copy.audios.clear();
-        timeline_second = parent->timeline->current - parent->timeline->current_interval->absolute_start + parent->timeline->current_interval->start;
-        timeline_copy->Load(parent->timeline->current_interval->movie->filename,true);
-        timeline_copy->current_interval->start = timeline_second;
+        timeline_second = parent->timeline->current - parent->timeline->current_interval_video->absolute_start + parent->timeline->current_interval_video->start;
+        Movie * temp_movie;
+        Sound * temp_sound;
+        timeline_copy->Load(parent->timeline->current_interval_video->movie->filename,true,temp_movie,temp_sound);
+        timeline_copy->current_interval_video->start = timeline_second;
         double end = timeline_second + 2.0;
-        if(parent->timeline->current_interval->end<end)
+        if(parent->timeline->current_interval_video->end<end)
         {
-            end = parent->timeline->current_interval->end;
+            end = parent->timeline->current_interval_video->end;
 
         }
-        timeline_copy->current_interval->end = end;
-        timeline_copy->current_interval->absolute_start = 0.0;
+        timeline_copy->current_interval_video->end = end;
+        timeline_copy->current_interval_video->absolute_start = 0.0;
         timeline_copy->RecalculateDuration();
-        timeline_copy->RecalculateCurrent();
+        timeline_copy->RecalculateCurrent(0);
     }
     info_copy.filename = File::createTempFile("tmp").getFullPathName();
     //Some very very wierd bug

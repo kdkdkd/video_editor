@@ -50,7 +50,7 @@ Stream* Timeline::GetCurrentStream(int interval_id)
 
 }
 
-void Timeline::Load(String &filename, bool soft, Movie*movie, Sound*sound)
+void Timeline::Load(String &filename, bool soft, Movie *&movie, Sound *&sound)
 {
     movie = new Movie();
     movie->Load(filename,soft);
@@ -207,7 +207,7 @@ bool Timeline::GotoSecondAndRead(double dest,bool decode,int interval_id)
     // audio jumping
     Interval * current_interval = SetCurrentInterval(FindIntervalBySecond(dest,interval_id),interval_id);
     bool res = false;
-    if(!current)
+    if(!current_interval)
     {
         current = dest;
     }
@@ -331,6 +331,12 @@ void Timeline::DecodeFrame(int interval_id)
     GetCurrentStream(interval_id)->DecodeFrame();
 }
 
+
+void Timeline::DecodeFrame()
+{
+    DecodeFrame(0);
+    DecodeFrame(1);
+}
 
 void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, int interval_id, double insert_position)
 {
@@ -518,7 +524,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
         copy(sounds.begin(),sounds.end(),back_inserter(res_prepare->sounds));
         copy(sounds_internal.begin(),sounds_internal.end(),back_inserter(res_prepare->sounds_internal));
 
-        res_prepare->SetCurrentInterval(current, interval_id);
+        res_prepare->current = current;
         Timeline *res = res_prepare->PreviewInsertIntervalIn(new_interval, interval_id, -1.0);
 
         delete res_prepare;
@@ -572,7 +578,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
         timeline_preview_intervals.push_back(interval);
         Interval * new_interval = new Interval(interval_current);
         if(interval_current == current_interval)
-            timeline_preview->SetCurrentInterval(new_interval);
+            timeline_preview->SetCurrentInterval(new_interval,interval_id);
         timeline_preview_intervals.push_back(new_interval);
     }
     else if(interval_current->absolute_start + interval_current->GetDuration()/2>interval->absolute_start)
@@ -609,7 +615,7 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
         Interval * new_interval = new Interval(interval_current);
         new_interval->absolute_start += diff;
         if(interval_current == current_interval)
-            timeline_previewSetCurrentInterval(new_interval,interval_id);
+            timeline_preview->SetCurrentInterval(new_interval,interval_id);
         timeline_preview_intervals.push_back(new_interval);
         it++;
     }
@@ -626,8 +632,8 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
 
     copy(movies.begin(),movies.end(),back_inserter(timeline_preview->movies));
     copy(movies_internal.begin(),movies_internal.end(),back_inserter(timeline_preview->movies_internal));
-    copy(sounds.begin(),sounds.end(),back_inserter(res_prepare->sounds));
-    copy(sounds_internal.begin(),sounds_internal.end(),back_inserter(res_prepare->sounds_internal));
+    copy(sounds.begin(),sounds.end(),back_inserter(timeline_preview->sounds));
+    copy(sounds_internal.begin(),sounds_internal.end(),back_inserter(timeline_preview->sounds_internal));
     return timeline_preview;
 
 }
@@ -695,7 +701,7 @@ Timeline::Interval* Timeline::FindSelected()
     return int2;
 }
 
-Timeline::Interval* Timeline::FindSelectedOrOver()
+Timeline::Interval* Timeline::FindSelectedOrOver(int interval_id)
 {
     Timeline::Interval * over = 0;
     vector<Interval*> &intervals = (interval_id)?intervals_audio:intervals_video;
@@ -726,7 +732,7 @@ bool Timeline::IsEmpty()
 void Timeline::CloneIntervals(int interval_id,Timeline* res)
 {
     res->disposeIntervals = true;
-    res->disposeMovies = true;
+    res->disposeMoviesAndSounds = true;
     vector<Interval*> &intervals = (interval_id)?intervals_audio:intervals_video;
     for(vector<Timeline::Interval*>::iterator it = intervals.begin(); it!=intervals.end(); it++)
     {
@@ -769,9 +775,9 @@ void Timeline::CloneIntervals(int interval_id,Timeline* res)
                 res->movies_internal.push_back(movie);
             }
         }
-        res->intervals.push_back(in);
+        vector<Interval*> &res_intervals = (interval_id)?res->intervals_audio:res->intervals_video;
+        res_intervals.push_back(in);
     }
-    return res;
 }
 
 Timeline* Timeline::CloneIntervals()

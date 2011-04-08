@@ -19,7 +19,7 @@ void MainComponent::changeFileName(String new_filename)
     Movie * movie = 0;
     Sound * sound = 0;
     timeline->Load(new_filename,false,movie,sound);
-    loaded_local = movie;
+    loaded_local = timeline->loaded;
     if(loaded_local)
     {
         recent.addFile(new_filename);
@@ -30,7 +30,8 @@ void MainComponent::changeFileName(String new_filename)
             first = 0;
         }
         SetVisibleButtons(true);
-        AddMovieToList(movie);
+        if(movie)
+            AddMovieToList(movie);
         sliderValueChanged(scale_timeline);
         ResizeViewport();
         repaint();
@@ -868,7 +869,8 @@ bool MainComponent::perform (const InvocationInfo& info)
 
     case commandSplit:
     {
-        timeline->Split();
+        timeline->Split(0);
+        timeline->Split(1);
         repaintSlider();
     }
     break;
@@ -918,7 +920,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
 
         timeline->GoBack(1);
-        timeline->DecodeFrame();
+        timeline->DecodeFrame(0);
         repaint();
     }
     break;
@@ -930,7 +932,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         {
             timeline->SkipFrame();
         }
-        timeline->DecodeFrame();
+        timeline->DecodeFrame(0);
         repaint();
 
     }
@@ -941,7 +943,7 @@ bool MainComponent::perform (const InvocationInfo& info)
         StopVideo();
 
         timeline->GoBack(5);
-        timeline->DecodeFrame();
+        timeline->DecodeFrame(0);
         repaint();
     }
     break;

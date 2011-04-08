@@ -105,7 +105,7 @@ public:
     double duration;
     double current;
     //movie and sound are out parameters
-    void Load(String &filename, bool soft, Movie*movie, Sound*sound);
+    void Load(String &filename, bool soft, Movie*&movie, Sound*&sound);
     void Dispose();
     ~Timeline();
     bool SkipFrame(bool jump_to_next = true);
@@ -152,13 +152,16 @@ public:
     void RemoveSpaces();
     void Split(int interval_id);
     // split everything
-    void Split();
+    //void Split();
     bool IsNearBoundary(int interval_id);
 
     String Render(const Movie::Info & info, Thread * thread, void (* reportProgress)(task*,double), task* t);
     bool IsEmpty();
 
     Timeline* CloneIntervals();
+
+    void DecodeFrame(int interval_id);
+
     private:
 
 
@@ -166,7 +169,7 @@ public:
     bool disposeIntervals;
     bool GotoSecondAndRead(double dest, bool decode, int interval_id);
     bool ContinueToNextFrame(bool decode, bool jump_to_next, int interval_id);
-    void DecodeFrame(int interval_id);
+
     void RemoveSpaces(int interval_id);
     int RecalculateDuration(int interval_id);
     void ResetIntervalColor(int interval_id);
