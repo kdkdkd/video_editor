@@ -84,7 +84,7 @@ bool Sound::Load(String &filename)
         int duration_denum = pStream->time_base.den;
         duration = (double)duration_num / (double)duration_denum;
     }
-    sound_buff_size = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+    sound_buff_size = AVCODEC_MAX_AUDIO_FRAME_SIZE*2;
     sound_buff = new short[sound_buff_size];
     loaded = true;
     return loaded;
@@ -93,7 +93,8 @@ bool Sound::Load(String &filename)
 AVPacket* Sound::ReadFrame()
 {
     AVPacket* packet = new AVPacket();
-
+    uint8_t *data;
+    int   size;
 
 
     bool ok = false;
@@ -104,11 +105,16 @@ AVPacket* Sound::ReadFrame()
             ok = false;
             break;
         }
+        data = packet->data;
+        size = packet->size;
         if(packet->stream_index == videoStream)
         {
             ok = true;
             break;
         }
+        av_free_packet(packet);
+        delete packet;
+        packet = new AVPacket();
     }
 
     if(ok)
@@ -116,34 +122,28 @@ AVPacket* Sound::ReadFrame()
 
         while (packet->size>0)
         {
+            int decoded_data_size = sound_buff_size * sizeof(short);
 
-
-
-                if(packet && sound_buff_size < FFMAX(packet->size*sizeof(*sound_buff), AVCODEC_MAX_AUDIO_FRAME_SIZE))
-                {
-                    sound_buff_size = FFMAX(packet->size*sizeof(*sound_buff), AVCODEC_MAX_AUDIO_FRAME_SIZE);
-                    delete []sound_buff;
-                    sound_buff = new short[sound_buff_size];
-                }
-                int decoded_data_size = sound_buff_size;
-                int ret = avcodec_decode_audio3 ( pCodecCtx, sound_buff, &decoded_data_size, packet);
-                current_buffer_length = ret;
-                current_buffer_position = 0;
-                if(ret < 0)
-                {
-                    av_free_packet(packet);
-                    delete packet;
-                    return 0;
-                }
-                packet->data += ret;
-                packet->size -= ret;
-                if (decoded_data_size <= 0)
-                {
-                    continue;
-                }
+            int ret = avcodec_decode_audio3 ( pCodecCtx, sound_buff, &decoded_data_size, packet);
+            current_buffer_length = ret;
+            current_buffer_position = 0;
+            if(ret < 0)
+            {
+                av_free_packet(packet);
+                delete packet;
+                return 0;
+            }
+            packet->data += ret;
+            packet->size -= ret;
+            if (decoded_data_size <= 0)
+            {
+                continue;
+            }
 
         }
         current = ToSeconds(packet->dts - pStream->start_time);
+        packet->data = data;
+        packet->size = size;
         return packet;
 
 

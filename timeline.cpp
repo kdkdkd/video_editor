@@ -222,7 +222,9 @@ bool Timeline::GotoSecondAndRead(double dest,bool decode,int interval_id)
 
 bool Timeline::GotoSecondAndRead(double dest,bool decode)
 {
-    return GotoSecondAndRead(dest,decode,1) || GotoSecondAndRead(dest,decode,0);
+    bool res1 = GotoSecondAndRead(dest,decode,1);
+    bool res2 = GotoSecondAndRead(dest,decode,0);
+    return res1 || res2;
 }
 
 
@@ -662,7 +664,7 @@ void Timeline::RecalculateDuration()
 void Timeline::RecalculateCurrent(int interval_id)
 {
     Interval*current_interval = GetCurrentInterval(interval_id);
-    current = current_interval->movie->current - current_interval->start + current_interval->absolute_start;
+    current = GetCurrentStream(interval_id)->current - current_interval->start + current_interval->absolute_start;
 }
 
 void Timeline::ResetIntervalColor(int interval_id)

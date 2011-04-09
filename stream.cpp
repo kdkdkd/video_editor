@@ -42,8 +42,8 @@ bool Stream::SeekToInternal(int frame)
     int dest = ToSeconds(frame);
     int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME;
 
-    int res = av_seek_frame( pFormatCtx, videoStream, frame, flags);
-    avcodec_flush_buffers (pCodecCtx);
+    int res = av_seek_frame(pFormatCtx, videoStream, frame, flags);
+    avcodec_flush_buffers(pCodecCtx);
     if(res>=0)
     {
         current = dest;
@@ -72,19 +72,21 @@ int Stream::FindKeyFrame(double back, double dest, bool accurate)
         if(packet)
         {
             timestamp_new =  packet->dts - pStream->start_time;
-
             av_free_packet(packet);
             delete packet;
+
+            if(IsKeyFrame() || timestamp_new==0)
+            {
+                keyframe = timestamp_new;
+            }
+
             if(timestamp_new>=timestamp)
             {
                 if(!accurate)
                     return keyframe;
                 break;
             }
-            if(IsKeyFrame() || timestamp_new==0)
-            {
-                keyframe = timestamp_new;
-            }
+
 
         }
         else
