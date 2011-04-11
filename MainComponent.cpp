@@ -515,7 +515,7 @@ void MainComponent::paint (Graphics& g)
         //~TimeLine
 
 
-        //List of intervals
+        //List of video intervals
 
 
         for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); it++)
@@ -592,14 +592,89 @@ void MainComponent::paint (Graphics& g)
 
             }
         }
-        //~List of intervals
+        //~List of video intervals
+
+        //List of sound intervals
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals_audio.begin(); it!=timeline->intervals_audio.end(); it++)
+        {
+            double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
+            if(start1<=end&&end1>=start)
+            {
+                int start_position_interval = (-timeline_position + (*it)->absolute_start) * second_to_pixel;
+                if(start_position_interval<0)
+                    start_position_interval = 0;
+
+                int end_position_interval = (-timeline_position + (*it)->GetAbsoluteEnd()) * second_to_pixel;
+                if(end_position_interval>width_current-65-1)
+                    end_position_interval = width_current-65-1;
+
+                g.setColour(Colour::fromRGB(70,70,70));
+
+                g.drawRect(start_position_interval + 40,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval + 1,AUDIO_TIMELINE_SIZE,1);
+
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
+                    g.setColour(Colour::fromRGB(220,220,220));
+                    break;
+
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(200,200,100));
+                    break;
+                case Timeline::Interval::select:
+                case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(180,70,70));
+                    break;
+                }
+
+                g.fillRect(start_position_interval+40+1,height_current-50-30+25- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50,end_position_interval - start_position_interval - 1,AUDIO_TIMELINE_SIZE/2-1);
+
+                switch((*it)->color)
+                {
+                case Timeline::Interval::usual:
+                    g.setColour(Colour::fromRGB(210,210,210));
+                    break;
+
+                case Timeline::Interval::over:
+                    g.setColour(Colour::fromRGB(180,180,80));
+                    break;
+                case Timeline::Interval::select:
+                case Timeline::Interval::dragg:
+                    g.setColour(Colour::fromRGB(160,50,50));
+                    break;
+                }
 
 
-        g.setColour(Colour::fromRGB(220,220,220));
+
+
+                g.fillRect(start_position_interval+40+1,height_current-50-30+25+9- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50 + (AUDIO_TIMELINE_SIZE-20)/2,end_position_interval - start_position_interval - 1,AUDIO_TIMELINE_SIZE/2-1);
+
+                String label = (*it)->sound->filename;
+                File f(label);
+                label = f.getFileName();
+                g.setColour(Colour::fromRGB(50,50,50));
+                /*int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
+                if(took_space>end_position_interval - start_position_interval)
+                {
+                    took_space = 0;
+                }
+                if(took_space)
+                    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
+                */
+                //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
+                g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 15,AUDIO_TIMELINE_SIZE,Justification::centredLeft,6);
+
+            }
+        }
+
+
+
+
+        /*g.setColour(Colour::fromRGB(220,220,220));
         g.fillRect(41,height_current-50-30+25- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
         g.setColour(Colour::fromRGB(210,210,210));
-        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50 + (AUDIO_TIMELINE_SIZE-20)/2,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);
-
+        g.fillRect(41,height_current-50-30+25+9- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE-50 + (AUDIO_TIMELINE_SIZE-20)/2,width_current-52-15,AUDIO_TIMELINE_SIZE/2-1);*/
+        //~List of sound intervals
 
         if(NeedDrawArrow())
             DrawArrow(g);
