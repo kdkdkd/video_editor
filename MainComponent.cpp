@@ -847,7 +847,7 @@ bool MainComponent::perform (const InvocationInfo& info)
             {
                 encodeVideoWindow->closeButtonPressed();
             }
-            timeline->InsertIntervalIn(interval,-2.0);
+            timeline->InsertIntervalIn(interval,0,-2.0);
             repaint();
         }
     }
@@ -1224,7 +1224,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
                 if(pos<timeline_position)
                     pos = timeline_position;
             }
-            timeline_original->InsertIntervalIn(current_interval,pos);
+            timeline_original->InsertIntervalIn(current_interval,0,pos);
         }
         current_drag_x = -1;
         delete timeline;
@@ -1285,7 +1285,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
                 if(pos<timeline_position)
                     pos = timeline_position;
             }
-            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,pos);
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,0,pos);
         }
 
     }

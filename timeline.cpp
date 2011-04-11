@@ -294,7 +294,9 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_
 
 bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next)
 {
-    return ContinueToNextFrame(decode,jump_to_next,1) || ContinueToNextFrame(decode,jump_to_next,0);
+    bool res1 = ContinueToNextFrame(decode,jump_to_next,1);
+    bool res2 = ContinueToNextFrame(decode,jump_to_next,0);
+    return res1 || res2;
 }
 
 bool Timeline::ReadAndDecodeFrame(bool jump_to_next)
