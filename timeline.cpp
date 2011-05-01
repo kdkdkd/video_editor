@@ -523,6 +523,15 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
         {
             res_prepare->SetCurrentInterval(new_interval, interval_id);
         }
+
+        //Copy rest of intervals
+        vector<Interval*> &not_intervals = (interval_id)?intervals_video:intervals_audio;
+        vector<Interval*> &res_not_prepare_intervals = (interval_id)?res_prepare->intervals_video:res_prepare->intervals_audio;
+        for(vector<Interval*>::iterator it = not_intervals.begin(); it != not_intervals.end(); it++)
+        {
+            res_not_prepare_intervals.push_back(*it);
+        }
+
         copy(movies.begin(),movies.end(),back_inserter(res_prepare->movies));
         copy(movies_internal.begin(),movies_internal.end(),back_inserter(res_prepare->movies_internal));
         copy(sounds.begin(),sounds.end(),back_inserter(res_prepare->sounds));
