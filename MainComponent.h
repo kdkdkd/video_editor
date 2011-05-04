@@ -158,7 +158,7 @@ public:
     PropertiesFile properties;
     RecentlyOpenedFilesList recent;
     void startEmpty();
-
+    bool IsOverStream(int interval_id);
 };
 
 #endif//_MAINCOMPONENT_H_

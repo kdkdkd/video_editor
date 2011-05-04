@@ -771,9 +771,28 @@ void MainComponent::mouseMoveReaction()
         Timeline::Interval *interval = 0;
         current_drag_x = mouse_x;
         current_drag_y = mouse_y;
-        if(!shouldDrawDragImageWhenOver())
+        int found = -1;
+        if(IsOverStream(0))
+        {
             interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),0);
+            found = 0;
+        }
+        else if(IsOverStream(1))
+        {
+            interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),1);
+            found = 1;
+        }
+
         current_drag_x = -1;
+
+        for(vector<Timeline::Interval*>::iterator it = timeline->intervals_audio.begin(); it != timeline->intervals_audio.end(); it++)
+        {
+            if((*it)->selected)
+                (*it)->color = Timeline::Interval::select;
+            else
+                (*it)->color = Timeline::Interval::usual;
+        }
+
         for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it != timeline->intervals_video.end(); it++)
         {
             if((*it)->selected)
@@ -781,6 +800,7 @@ void MainComponent::mouseMoveReaction()
             else
                 (*it)->color = Timeline::Interval::usual;
         }
+
         if(interval && !interval->selected)
             interval->color = Timeline::Interval::over;
     }
@@ -805,8 +825,10 @@ void MainComponent::mouseDown (const MouseEvent& e)
             Timeline::Interval *interval = 0;
             current_drag_x = mouse_x;
             current_drag_y = mouse_y;
-            if(!shouldDrawDragImageWhenOver())
+            if(IsOverStream(0))
                 interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),0);
+            if(IsOverStream(1))
+                interval = timeline->FindIntervalBySecond(GetPositionSecond(mouse_x),1);
             if(interval && interval->selected)
             {
                 interval->selected = false;
@@ -1278,7 +1300,7 @@ bool MainComponent::isInterestedInDragSource (const String& sourceDescription,Co
 
 void MainComponent::itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y)
 {
-    if((!shouldDrawDragImageWhenOver() || getCurrentDragDescription().startsWith("i")) && timeline_original)
+    if((IsOverStream(0) || getCurrentDragDescription().startsWith("i")) && timeline_original)
     {
         String description = getCurrentDragDescription();
         double pos = GetPositionSecond(x);
@@ -1293,7 +1315,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
         else if(description.startsWith("i"))
         {
             Timeline::Interval *current_interval = timeline_original->intervals_video[index];
-            if(shouldDrawDragImageWhenOver())
+            if(!IsOverStream(0))
                 pos = -2.0;
 
             if(pos>0.0)
@@ -1324,9 +1346,23 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
 }
 
 
+bool MainComponent::IsOverStream(int interval_id)
+{
+   bool res;
+   if(interval_id)
+   //audio
+        res = (current_drag_y <= getHeight() - 75 - 30 - TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE + AUDIO_TIMELINE_SIZE && current_drag_y >= getHeight() - 75 - 30- TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE && current_drag_x > 10 && current_drag_x<getWidth()-10);
+   else
+   //video
+        res = (current_drag_y<= getHeight() - 75 - 30 - TIMELINE_OFFSET + VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET && current_drag_x>10 && current_drag_x<getWidth()-10);
+   return res;
+}
+
+
 bool MainComponent::shouldDrawDragImageWhenOver()
 {
-    bool res = !(current_drag_y<= getHeight()-75 - 30- TIMELINE_OFFSET+VIDEO_TIMELINE_SIZE&&current_drag_y>=getHeight()-75 - 30- TIMELINE_OFFSET && current_drag_x>10 && current_drag_x<getWidth()-10);
+
+    bool res = !IsOverStream(1) && !IsOverStream(0);
     return res;
 }
 
@@ -1335,7 +1371,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
     current_drag_x = x;
     current_drag_y = y;
     String desc = getCurrentDragDescription();
-    if(!shouldDrawDragImageWhenOver() || desc.startsWith("i"))
+    if(IsOverStream(0) || desc.startsWith("i"))
     {
         int value = desc.substring(1).getIntValue();
         if(timeline_original)
@@ -1356,7 +1392,7 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
             Timeline::Interval *current_interval = timeline_original->intervals_video[value];
             if(timeline)
                 dragIntervalOffset = (GetPositionSecond(current_drag_x) - current_interval->absolute_start);
-            double pos = (shouldDrawDragImageWhenOver())?-2.0:GetPositionSecond(current_drag_x);
+            double pos = (!IsOverStream(0))?-2.0:GetPositionSecond(current_drag_x);
             if(pos>0.0)
             {
                 pos -= dragIntervalOffset;
@@ -1385,7 +1421,7 @@ void MainComponent::mouseDrag (const MouseEvent& e)
     {
         current_drag_x = e.x;
         current_drag_y = e.y;
-        if(!shouldDrawDragImageWhenOver())
+        if(IsOverStream(0))
         {
             double second = GetPositionSecond();
             int number = timeline->FindNumberIntervalBySecond(second,0);
