@@ -597,14 +597,14 @@ void MainComponent::paint (Graphics& g)
         //List of sound intervals
         for(vector<Timeline::Interval*>::iterator it = timeline->intervals_audio.begin(); it!=timeline->intervals_audio.end(); it++)
         {
-            double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
+            double start = timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
             if(start1<=end&&end1>=start)
             {
-                int start_position_interval = (-timeline_position + (*it)->absolute_start) * second_to_pixel;
+                int start_position_interval = (-timeline_position + start1) * second_to_pixel;
                 if(start_position_interval<0)
                     start_position_interval = 0;
 
-                int end_position_interval = (-timeline_position + (*it)->GetAbsoluteEnd()) * second_to_pixel;
+                int end_position_interval = (-timeline_position + end1) * second_to_pixel;
                 if(end_position_interval>width_current-65-1)
                     end_position_interval = width_current-65-1;
 
@@ -653,14 +653,14 @@ void MainComponent::paint (Graphics& g)
                 File f(label);
                 label = f.getFileName();
                 g.setColour(Colour::fromRGB(50,50,50));
-                /*int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
-                if(took_space>end_position_interval - start_position_interval)
-                {
-                    took_space = 0;
-                }
-                if(took_space)
-                    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
-                */
+                //int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
+                //if(took_space>end_position_interval - start_position_interval)
+                //{
+                //    took_space = 0;
+                //}
+                //if(took_space)
+                //    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
+
                 //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
                 g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 15,AUDIO_TIMELINE_SIZE,Justification::centredLeft,6);
 
