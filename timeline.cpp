@@ -202,19 +202,25 @@ int Timeline::FindNumberIntervalBySecond(double second, int interval_id)
 
 }
 
+bool Timeline::IsVideoInterval(int interval_id)
+{
+    return !interval_id;
+}
+
 bool Timeline::GotoSecondAndRead(double dest,bool decode,int interval_id)
 {
-    // audio jumping
     Interval * current_interval = SetCurrentInterval(FindIntervalBySecond(dest,interval_id),interval_id);
     bool res = false;
     if(!current_interval)
     {
-        current = dest;
+        if(!IsVideoInterval(interval_id))
+            current = dest;
     }
     else
     {
         res = GetCurrentStream(interval_id)->GotoSecondAndRead(dest - current_interval->absolute_start + current_interval->start,decode);
-        RecalculateCurrent(interval_id);
+        if(!IsVideoInterval(interval_id))
+            RecalculateCurrent(interval_id);
     }
 
     return res;
@@ -230,6 +236,9 @@ bool Timeline::GotoSecondAndRead(double dest,bool decode)
 
 bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_id)
 {
+    //Audio intervals should not set current.
+    double current_copy = current;
+
     Interval * current_interval = GetCurrentInterval(interval_id);
     if(!current_interval)
     {
@@ -240,6 +249,8 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_
             GetCurrentStream(interval_id)->GotoSecondAndRead(current_interval->start,decode);
             current = current_interval->absolute_start;
         }
+        if(!IsVideoInterval(interval_id))
+            current = current_copy;
         return true;
     }
     bool res = false;
@@ -253,7 +264,8 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_
 
     if(res)
     {
-        RecalculateCurrent(interval_id);
+        if(IsVideoInterval(interval_id))
+            RecalculateCurrent(interval_id);
         return true;
     }
 
@@ -274,7 +286,8 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_
             {
                 current_interval = SetCurrentInterval(*it,interval_id);
                 GetCurrentStream(interval_id)->GotoSecondAndRead(current_interval->start);
-                RecalculateCurrent(interval_id);
+                if(!IsVideoInterval(interval_id))
+                    RecalculateCurrent(interval_id);
                 return true;
             }
             break;
@@ -285,8 +298,12 @@ bool Timeline::ContinueToNextFrame(bool decode, bool jump_to_next, int interval_
     SetCurrentInterval(0,interval_id);
     if(current>=duration)
     {
+        if(!IsVideoInterval(interval_id))
+            current = current_copy;
         return false;
     }
+    if(!IsVideoInterval(interval_id))
+            current = current_copy;
     return true;
 
 

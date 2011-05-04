@@ -177,6 +177,9 @@ public:
     Interval* FindSelectedOrOver(int interval_id);
     void CloneIntervals(int interval_id,Timeline* res);
     void CopyOtherIntervalsPointersAndSetCurrent(Timeline* res,int interval_id, bool deep);
+
+    bool IsVideoInterval(int interval_id);
+
 };
 
 
