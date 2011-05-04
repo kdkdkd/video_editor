@@ -517,7 +517,7 @@ void MainComponent::paint (Graphics& g)
 
         //List of video intervals
 
-
+        g.saveState();
         for(vector<Timeline::Interval*>::iterator it = timeline->intervals_video.begin(); it!=timeline->intervals_video.end(); it++)
         {
             double start=timeline_position,end = timeline_position + timeline_duration,start1=(*it)->absolute_start,end1 = (*it)->GetAbsoluteEnd();
@@ -592,6 +592,7 @@ void MainComponent::paint (Graphics& g)
 
             }
         }
+        g.restoreState();
         //~List of video intervals
 
         //List of sound intervals
@@ -662,7 +663,9 @@ void MainComponent::paint (Graphics& g)
                 //    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
 
                 //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
+
                 g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 15,AUDIO_TIMELINE_SIZE,Justification::centredLeft,6);
+
 
             }
         }
