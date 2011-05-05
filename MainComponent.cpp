@@ -286,6 +286,10 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\c
     initImageButton(String("..\\pic\\next.png"),nextFrameButton);
     initImageButton(String("..\\pic\\stop.png"),stopButton);
 
+
+    sound_image = ImageCache::getFromFile(File("..\\pic\\sound.png"));
+
+
     timeline = new Timeline();
 
     movies_list = new ContainerBox("movies_list");
@@ -654,17 +658,17 @@ void MainComponent::paint (Graphics& g)
                 File f(label);
                 label = f.getFileName();
                 g.setColour(Colour::fromRGB(50,50,50));
-                //int took_space = 4*(VIDEO_TIMELINE_SIZE-2)/3;
-                //if(took_space>end_position_interval - start_position_interval)
-                //{
-                //    took_space = 0;
-                //}
-                //if(took_space)
-                //    g.drawImageWithin(*((*it)->preview),start_position_interval+41,height_current - 75 - 30 - TIMELINE_OFFSET+1,4*(VIDEO_TIMELINE_SIZE-2)/3,VIDEO_TIMELINE_SIZE-2,RectanglePlacement::centred,false);
+                int took_space = 32;
+                if(took_space>end_position_interval - start_position_interval)
+                {
+                    took_space = 0;
+                }
+                if(took_space)
+                    g.drawImageWithin(sound_image,start_position_interval+41,2+height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,36,AUDIO_TIMELINE_SIZE-4,RectanglePlacement::centred,false);
 
-                //g.drawImageWithin(*((*it)->movie->image_preview),0,0,64,50 ,RectanglePlacement::centred,false);
 
-                g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),start_position_interval + 50,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 15,AUDIO_TIMELINE_SIZE,Justification::centredLeft,6);
+
+                g.drawFittedText(label + String(" [") + toolbox::format_duration((*it)->start) + String("  ; ") + toolbox::format_duration((*it)->end) + String("]"),took_space + start_position_interval + 50,height_current - 75 - 30 + VIDEO_TIMELINE_SIZE - 1 - TIMELINE_OFFSET,end_position_interval - start_position_interval - 15 - took_space,AUDIO_TIMELINE_SIZE,Justification::centredLeft,6);
 
 
             }

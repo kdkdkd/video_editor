@@ -159,6 +159,8 @@ public:
     RecentlyOpenedFilesList recent;
     void startEmpty();
     bool IsOverStream(int interval_id);
+
+    Image sound_image;
 };
 
 #endif//_MAINCOMPONENT_H_
