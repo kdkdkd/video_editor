@@ -620,11 +620,11 @@ void MainComponent::paint (Graphics& g)
                     break;
 
                 case Timeline::Interval::over:
-                    g.setColour(Colour::fromRGB(200,200,100));
+                    g.setColour(Colour::fromRGB(230,230,160));
                     break;
                 case Timeline::Interval::select:
                 case Timeline::Interval::dragg:
-                    g.setColour(Colour::fromRGB(180,70,70));
+                    g.setColour(Colour::fromRGB(210,130,130));
                     break;
                 }
 
@@ -637,11 +637,11 @@ void MainComponent::paint (Graphics& g)
                     break;
 
                 case Timeline::Interval::over:
-                    g.setColour(Colour::fromRGB(180,180,80));
+                    g.setColour(Colour::fromRGB(210,210,140));
                     break;
                 case Timeline::Interval::select:
                 case Timeline::Interval::dragg:
-                    g.setColour(Colour::fromRGB(160,50,50));
+                    g.setColour(Colour::fromRGB(190,110,110));
                     break;
                 }
 
