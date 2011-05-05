@@ -947,7 +947,8 @@ bool MainComponent::perform (const InvocationInfo& info)
             {
                 encodeVideoWindow->closeButtonPressed();
             }
-            timeline->InsertIntervalIn(interval,0,-2.0);
+            int interval_id = (interval->movie)?0:1;
+            timeline->InsertIntervalIn(interval,interval_id,-2.0);
             repaint();
         }
     }
