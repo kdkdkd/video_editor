@@ -376,18 +376,16 @@ void Timeline::InsertIntervalIn(Timeline::Interval* insert_interval, int interva
         intervals.push_back(*it);
     }
 
-    //timeline_preview->CopyOtherIntervalsPointersAndSetCurrent(this,interval_id,false);
-
     Interval * current_interval = SetCurrentInterval(timeline_preview->GetCurrentInterval(interval_id),interval_id);
 
     RecalculateDuration();
-    if(!current_interval)
-    {
+    if(!current_interval_video)
         current = timeline_preview->current;
-        GotoSecondAndRead(current);
-    }
     else
-        RecalculateCurrent(interval_id);
+        RecalculateCurrent(0);
+
+
+    GotoSecondAndRead(current);
 
     timeline_preview->disposeIntervals = false;
     delete timeline_preview;
@@ -646,12 +644,12 @@ Timeline* Timeline::PreviewInsertIntervalIn(Timeline::Interval* interval, int in
         it++;
     }
 
-    if(!current_interval)
+    if(!current_interval_video)
     {
         timeline_preview->current = current;
     }
     else
-        timeline_preview->RecalculateCurrent(interval_id);
+        timeline_preview->RecalculateCurrent(0);
 
     timeline_preview->RecalculateDuration();
     timeline_preview->loaded = true;
