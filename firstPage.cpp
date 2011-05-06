@@ -54,7 +54,7 @@ void firstPage::resized()
     {
         Cloud* current_cloud = recent_list[i];
         current_cloud->setBounds((i%2) * (270) + d, (i/2)*35 + delta,280,35);
-        current_cloud->getChildComponent(0)->setBounds(0,0,280,35);
+        //current_cloud->getChildComponent(0)->setBounds(30,0,250,35);
     }
     size = localization_buttons.size();
     for(int i = 0;i<size;++i)
@@ -300,11 +300,49 @@ firstPage::firstPage(MainComponent* main)
         if(File(files[i]).exists())
         {
             Cloud * new_cloud = new Cloud(border);
-            SpecialButton * new_button = new SpecialButton("open:" + files[i]);
-            new_button->setButtonText(File(files[i]).getFileName());
-            new_cloud->addAndMakeVisible(new_button);
             addAndMakeVisible(new_cloud);
-            new_button->addListener(this);
+
+            DrawableButton* open_file_button = new DrawableButton("open:" + files[i], DrawableButton::ImageRaw);
+            open_file_button->setBounds(30,10,250,25);
+            open_file_button->addListener(this);
+            open_file_button->setMouseCursor(MouseCursor::PointingHandCursor);
+            new_cloud->addAndMakeVisible(open_file_button);
+
+            DrawableImage normal_image,over_image;
+
+            Image pic = ImageCache::getFromFile(String("../pic/firstTab/film.png"));
+            normal_image.setImage(pic);
+
+            normal_image.setOpacity(0.8);
+            over_image.setImage(pic);
+            DrawableComposite normal,over;
+            RelativeParallelogram newBounds(Rectangle<float>(30,0,190,13));
+
+            normal.setBoundingBox(newBounds);
+
+            DrawableText normal_text,over_text;
+            Colour textColour;
+            textColour = Colour(main->findColour(0x1001f00));
+
+            over_text.setColour(textColour.darker(3.5f));
+            normal_text.setColour(textColour);
+
+            normal_text.setBoundingBox(newBounds);
+            over_text.setBoundingBox(newBounds);
+
+            String text = File(files[i]).getFileName();
+            normal_text.setText(text);
+            over_text.setText(text);
+            normal.insertDrawable(normal_text);
+            over.insertDrawable(over_text);
+
+
+            normal.insertDrawable(normal_image);
+            over.insertDrawable(over_image);
+
+
+            open_file_button->setImages(&normal, &over, &normal);
+
             recent_list.add(new_cloud);
         }
     }
