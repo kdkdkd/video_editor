@@ -1380,8 +1380,16 @@ bool MainComponent::IsOverStream(int interval_id)
 
 bool MainComponent::shouldDrawDragImageWhenOver()
 {
-
+    String description = getCurrentDragDescription();
     bool res = !IsOverStream(1) && !IsOverStream(0);
+    if(description.startsWith("i") || description.startsWith("m"))
+    {
+        res = !IsOverStream(0);
+    }else if(description.startsWith("s") || description.startsWith("a"))
+    {
+        res = !IsOverStream(1);
+    }
+
     return res;
 }
 
