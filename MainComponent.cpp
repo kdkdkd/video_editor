@@ -1305,22 +1305,36 @@ bool MainComponent::isInterestedInDragSource (const String& sourceDescription,Co
 
 void MainComponent::itemDropped (const String& sourceDescription,Component* sourceComponent,int x, int y)
 {
-    if((IsOverStream(0) || getCurrentDragDescription().startsWith("i")) && timeline_original)
+    String description = getCurrentDragDescription();
+     bool
+    // video interval
+    i = description.startsWith("i"),
+    // sound interval
+    s = description.startsWith("s"),
+    // is over video stream
+    iso0 = IsOverStream(0),
+    // is over audio stream
+    iso1 = IsOverStream(1),
+    // movie from movie list
+    m = description.startsWith("m");
+    if((iso0 || i || iso1 || s) && timeline_original)
     {
-        String description = getCurrentDragDescription();
         double pos = GetPositionSecond(x);
         int index = description.substring(1).getIntValue();
 
-        if(description.startsWith("m"))
+        if(m)
         {
             Movie * movie = timeline_original->movies[index];
             Timeline::Interval *current_interval = current_interval = new Timeline::Interval(movie,pos,movie->image_preview);
             timeline_original->InsertIntervalIn(current_interval,0);
         }
-        else if(description.startsWith("i"))
+        else if(i || s)
         {
-            Timeline::Interval *current_interval = timeline_original->intervals_video[index];
-            if(!IsOverStream(0))
+            int interval_id = (i)?0:1;
+            vector<Timeline::Interval*> &intrvals_list = (i)?timeline_original->intervals_video:timeline_original->intervals_audio;
+
+            Timeline::Interval *current_interval = intrvals_list[index];
+            if(!IsOverStream(interval_id))
                 pos = -2.0;
 
             if(pos>0.0)
@@ -1329,7 +1343,7 @@ void MainComponent::itemDropped (const String& sourceDescription,Component* sour
                 if(pos<timeline_position)
                     pos = timeline_position;
             }
-            timeline_original->InsertIntervalIn(current_interval,0,pos);
+            timeline_original->InsertIntervalIn(current_interval,interval_id,pos);
         }
         current_drag_x = -1;
         delete timeline;
@@ -1376,7 +1390,19 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
     current_drag_x = x;
     current_drag_y = y;
     String desc = getCurrentDragDescription();
-    if(IsOverStream(0) || desc.startsWith("i"))
+    bool
+    // video interval
+    i = desc.startsWith("i"),
+    // sound interval
+    s = desc.startsWith("s"),
+    // is over video stream
+    iso0 = IsOverStream(0),
+    // is over audio stream
+    iso1 = IsOverStream(1),
+    // movie from movie list
+    m = desc.startsWith("m");
+
+    if(iso0 || i || iso1 || s)
     {
         int value = desc.substring(1).getIntValue();
         if(timeline_original)
@@ -1386,27 +1412,29 @@ void MainComponent::itemDragMove (const String& sourceDescription,Component* sou
         }
         else
             timeline_original = timeline;
-        if(desc.startsWith("m"))
+        if(m)
         {
             Movie * movie = timeline_original->movies[value];
             Timeline::Interval *current_interval = new Timeline::Interval(movie,GetPositionSecond(current_drag_x),movie->image_preview);
             timeline = timeline_original->PreviewInsertIntervalIn(current_interval,0);
         }
-        else if(desc.startsWith("i"))
+        else if(i || s)
         {
-            Timeline::Interval *current_interval = timeline_original->intervals_video[value];
+            int interval_id = (i)?0:1;
+            vector<Timeline::Interval*> &intrvals_list = (i)?timeline_original->intervals_video:timeline_original->intervals_audio;
+
+            Timeline::Interval *current_interval = intrvals_list[value];
             if(timeline)
                 dragIntervalOffset = (GetPositionSecond(current_drag_x) - current_interval->absolute_start);
-            double pos = (!IsOverStream(0))?-2.0:GetPositionSecond(current_drag_x);
+            double pos = (!IsOverStream(interval_id))?-2.0:GetPositionSecond(current_drag_x);
             if(pos>0.0)
             {
                 pos -= dragIntervalOffset;
                 if(pos<timeline_position)
                     pos = timeline_position;
             }
-            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,0,pos);
+            timeline = timeline_original->PreviewInsertIntervalIn(current_interval,interval_id,pos);
         }
-
     }
     else if(timeline_original)
     {
@@ -1435,6 +1463,15 @@ void MainComponent::mouseDrag (const MouseEvent& e)
                 startDragging(String("i") + String(number),this,*timeline->intervals_video[number]->movie->image_preview);
                 StopVideo();
             }
+        }else if(IsOverStream(1))
+        {
+            double second = GetPositionSecond();
+            int number = timeline->FindNumberIntervalBySecond(second,1);
+            if(number>=0)
+            {
+                startDragging(String("s") + String(number),this,sound_image);
+                StopVideo();
+            }
         }
     }
 }
@@ -1442,7 +1479,7 @@ void MainComponent::mouseDrag (const MouseEvent& e)
 void MainComponent::mouseExit(const MouseEvent& e)
 {
     if(timeline_original)
-        itemDropped(String(""),0,e.x, e.y);
+        itemDropped(String::empty,0,e.x, e.y);
 }
 
 void MainComponent::GotoSecondAndRead(double second)
