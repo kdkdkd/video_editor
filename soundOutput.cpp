@@ -11,9 +11,9 @@ bool SineWaveVoice::canPlaySound (SynthesiserSound* sound)
 {
     return dynamic_cast <SineWaveSound*> (sound) != 0;
 }
-void SineWaveVoice::AddSound(Sound *sound)
+void SineWaveVoice::AddTimeline(Timeline *timeline)
 {
-    this->sound = sound;
+    this->timeline = timeline;
 }
 void SineWaveVoice::startNote (const int midiNoteNumber, const float velocity, SynthesiserSound* /*sound*/, const int /*currentPitchWheelPosition*/)
 {
@@ -90,7 +90,10 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
             {
                 const float currentSample = (float) (sin (currentAngle) * level);
                 short res = 0;
-                sound->ReadNextByte(&res);
+                if(!timeline) return;
+                if(!timeline->current_interval_audio) return;
+
+                timeline->current_interval_audio->sound->ReadNextByte(&res);
 
 
                 for (int i = outputBuffer.getNumChannels(); --i >= 0;)
@@ -135,15 +138,24 @@ AudioDeviceManager sound_manager;
 AudioSourcePlayer audioSourcePlayer;
 SynthAudioSource synthAudioSource;
 
-void init_sound()
+void init_sound(Timeline * timeline)
 {
     sound_manager.initialise (2, 2, 0, true, String::empty, 0);
     //sound_manager.playTestSound();
     audioSourcePlayer.setSource (&synthAudioSource);
     sound_manager.addAudioCallback (&audioSourcePlayer);
+    voice.AddTimeline(timeline);
 
-    //voice.startNote(80,1.0,0,0);
+}
 
+void start_sound()
+{
+    voice.startNote(80,1.0,0,0);
+}
+
+void stop_sound()
+{
+    voice.stopNote(false);
 }
 
 void close_sound()

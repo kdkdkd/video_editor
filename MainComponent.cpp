@@ -331,7 +331,7 @@ MainComponent::MainComponent (MainAppWindow* mainWindow_):properties(File("..\\c
 
     first = new firstPage(this);
     addAndMakeVisible(first);
-    init_sound();
+    init_sound(timeline);
 }
 
 MainComponent::~MainComponent()
@@ -1207,12 +1207,14 @@ void MainComponent::StopVideo()
     stopTimer();
     video_playing = false;
     miliseconds_start = -1;
+    stop_sound();
 }
 
 void MainComponent::StartVideo()
 {
     startTimer(1);
     video_playing = true;
+    start_sound();
 }
 
 void MainComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)

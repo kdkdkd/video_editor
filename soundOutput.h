@@ -1,7 +1,7 @@
 #ifndef SOUND_OUTPUT
 #define SOUND_OUTPUT
 #include "config.h"
-#include "sound.h"
+#include "timeline.h"
 #include "juce/juce.h"
 
 
@@ -18,7 +18,7 @@ public:
 class SineWaveVoice  : public SynthesiserVoice
 {
 public:
-    Sound* sound;
+    Timeline *timeline;
     SineWaveVoice();
     bool canPlaySound (SynthesiserSound* sound);
     void startNote (const int midiNoteNumber, const float velocity, SynthesiserSound* /*sound*/, const int /*currentPitchWheelPosition*/);
@@ -26,7 +26,7 @@ public:
     void pitchWheelMoved (const int /*newValue*/);
     void controllerMoved (const int /*controllerNumber*/, const int /*newValue*/);
     void renderNextBlock (AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
-    void AddSound(Sound *sound);
+    void AddTimeline(Timeline *timeline);
 
 private:
     double currentAngle, angleDelta, level, tailOff;
@@ -50,10 +50,10 @@ public:
 
 };
 extern SineWaveVoice voice;
-void init_sound();
 void close_sound();
-
-
+void init_sound(Timeline * timeline);
+void start_sound();
+void stop_sound();
 
 
 #endif
