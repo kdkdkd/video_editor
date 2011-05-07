@@ -29,7 +29,7 @@ void SineWaveVoice::startNote (const int midiNoteNumber, const float velocity, S
 
 void SineWaveVoice::stopNote (const bool allowTailOff)
 {
-    if (allowTailOff)
+/*    if (allowTailOff)
     {
         // start a tail-off by setting this flag. The render callback will pick up on
         // this and do a fade out, calling clearCurrentNote() when it's finished.
@@ -41,10 +41,10 @@ void SineWaveVoice::stopNote (const bool allowTailOff)
     else
     {
         // we're being told to stop playing immediately, so reset everything..
-
+*/
         clearCurrentNote();
         angleDelta = 0.0;
-    }
+/*    }*/
 }
 
 void SineWaveVoice::pitchWheelMoved (const int /*newValue*/)
@@ -61,7 +61,7 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
 {
     if (angleDelta != 0.0)
     {
-        if (tailOff > 0)
+        /*if (tailOff > 0)
         {
             while (--numSamples >= 0)
             {
@@ -85,25 +85,27 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
             }
         }
         else
-        {
+        {*/
+
+            //if(!timeline) return;
+            //if(!timeline->current_interval_audio) return;
+
             while (--numSamples >= 0)
             {
                 const float currentSample = (float) (sin (currentAngle) * level);
                 short res = 0;
-                if(!timeline) return;
-                if(!timeline->current_interval_audio) return;
 
-                timeline->current_interval_audio->sound->ReadNextByte(&res);
-
+                //timeline->current_interval_audio->sound->ReadNextByte(&res);
+                //printf("%i\n",res);
 
                 for (int i = outputBuffer.getNumChannels(); --i >= 0;)
-                    *outputBuffer.getSampleData (i, startSample) += ((float)res)*0.0001;
-                    //*outputBuffer.getSampleData (i, startSample) += currentSample;
+                    //*outputBuffer.getSampleData (i, startSample) += ((float)res)*0.0001;
+                    *outputBuffer.getSampleData (i, startSample) += currentSample;
 
                 currentAngle += angleDelta;
                 ++startSample;
             }
-        }
+        /*}*/
     }
 }
 
