@@ -1,5 +1,5 @@
 #include "sound.h"
-
+#include "soundOutput.h"
 
 
 bool Sound::Load(String &filename)
@@ -144,6 +144,7 @@ AVPacket* Sound::ReadFrame()
         current = ToSeconds(packet->dts - pStream->start_time);
         packet->data = data;
         packet->size = size;
+        sound_connector.fill_buffer_in(packet->data,packet->size);
         return packet;
 
 
@@ -173,7 +174,7 @@ bool Sound::IsKeyFrame()
 
 void Sound::DecodeFrame()
 {
-
+    av_audio_resample_init
 }
 
 void Sound::Dispose()

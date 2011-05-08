@@ -49,6 +49,23 @@ public:
     void getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill);
 
 };
+
+class SoundConnector
+{
+    private :
+        uint8_t *data;
+        int length;
+        int position_in;
+        int position_out;
+    public :
+        SoundConnector();
+        ~SoundConnector();
+        void fill_buffer_in(uint8_t* data, int size);
+        void fill_buffer_out(AudioSampleBuffer& outputBuffer,int startSample,int number);
+};
+
+
+extern SoundConnector sound_connector;
 extern SineWaveVoice voice;
 void close_sound();
 void init_sound(Timeline * timeline);

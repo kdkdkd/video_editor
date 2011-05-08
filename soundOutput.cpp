@@ -1,4 +1,59 @@
 #include "soundOutput.h"
+
+void SoundConnector::fill_buffer_in(uint8_t* data, int size)
+{
+    if(position_in + size > length)
+    {
+        memcpy(this->data + position_in, data , length - position_in);
+        memcpy(this->data, data + length - position_in , size - length + position_in);
+        position_in += size - length + position_in;
+    }else
+    {
+        memcpy(this->data + position_in, data , size);
+        position_in += size;
+    }
+    printf("position in = %i/%i\n",position_in,length);
+}
+
+void SoundConnector::fill_buffer_out(AudioSampleBuffer& outputBuffer,int startSample,int number)
+{
+    int channels = outputBuffer.getNumChannels();
+
+
+    for(int j = 0; j < number; ++j)
+    {
+        if(position_out==position_in)
+        {
+            printf("position out = %i/%i  rest (%i/%i)\n",position_out,length,j,number);
+            return;
+        }
+        float dat = ((float)data[position_out])*0.0001;
+        for(int i=0;i<channels;++i)
+            *outputBuffer.getSampleData (i, startSample) += dat;
+        position_out++;
+        if(position_out>=length)
+            position_out = 0;
+
+    }
+
+}
+
+SoundConnector::SoundConnector()
+{
+    length = AVCODEC_MAX_AUDIO_FRAME_SIZE*10;
+    position_in = 0;
+    position_out = 0;
+    data = new uint8_t[length];
+}
+
+SoundConnector::~SoundConnector()
+{
+    delete [] data;
+}
+
+SoundConnector sound_connector;
+
+
 SineWaveSound::SineWaveSound(){}
 bool SineWaveSound::appliesToNote (const int /*midiNoteNumber*/){return true;}
 bool SineWaveSound::appliesToChannel (const int /*midiChannel*/){return true;}
@@ -90,7 +145,7 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
             //if(!timeline) return;
             //if(!timeline->current_interval_audio) return;
 
-            while (--numSamples >= 0)
+            /*while (--numSamples >= 0)
             {
                 const float currentSample = (float) (sin (currentAngle) * level);
                 short res = 0;
@@ -104,12 +159,14 @@ void SineWaveVoice::renderNextBlock (AudioSampleBuffer& outputBuffer, int startS
 
                 currentAngle += angleDelta;
                 ++startSample;
-            }
+            }*/
+            sound_connector.fill_buffer_out(outputBuffer, startSample, numSamples);
         /*}*/
     }
 }
 
 SineWaveVoice voice;
+
 
 SynthAudioSource::SynthAudioSource ()
 {
@@ -143,6 +200,9 @@ SynthAudioSource synthAudioSource;
 void init_sound(Timeline * timeline)
 {
     sound_manager.initialise (2, 2, 0, true, String::empty, 0);
+    AudioDeviceManager::AudioDeviceSetup setup;
+    sound_manager.getAudioDeviceSetup (setup);
+    printf("sample rate = %f\n",setup.sampleRate);
     //sound_manager.playTestSound();
     audioSourcePlayer.setSource (&synthAudioSource);
     sound_manager.addAudioCallback (&audioSourcePlayer);

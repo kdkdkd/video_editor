@@ -4,10 +4,13 @@
 #include "stream.h"
 #include "juce/juce.h"
 
+
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
+#include <libavcore/audioconvert.h>
 }
 
 class Sound: public Stream
